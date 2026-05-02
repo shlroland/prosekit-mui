@@ -1,0 +1,35 @@
+{
+  "name": "prosekit-mui",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@astrojs/react": "^5.0.4",
+    "@tailwindcss/vite": "^4.2.4",
+    "astro": "^6.2.1",
+    "astrobook": "^0.13.1",
+    "tailwindcss": "^4.2.4"
+  },
+  "aube": {
+    "allowBuilds": {
+      "esbuild": "set this to true or false",
+      "sharp": "set this to true or false"
+    }
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/roboto": "^5.2.10",
+    "@mui/material": "^7",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  }
+}

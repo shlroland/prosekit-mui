@@ -1,0 +1,16 @@
+:root {
+  --ab-sidebar-bg: rgba(252, 250, 245, 0.95);
+  --ab-main-bg: transparent;
+  --ab-preview-bg: transparent;
+  --ab-card-bg: rgba(255, 255, 255, 0.76);
+  --ab-border-color: rgba(23, 23, 23, 0.08);
+  --ab-text-color: #171717;
+}
+
+.ab-story-preview {
+  background: transparent;
+}
+
+.ab-story-preview > * {
+  width: 100%;
+}
