@@ -49,7 +49,7 @@ Library code should live under `src/`.
 
 TypeScript is split by responsibility:
 
-- `tsconfig.json`: default editor/Astro entry point, currently points at the demo app
+- `tsconfig.json`: root project-references entry point
 - `tsconfig.demo.json`: Astro + Astrobook typing for `demo/`
 - `tsconfig.src.json`: future ProseKit + MUI source code under `src/`
 - `tsconfig.node.json`: config-file and Node-side typing

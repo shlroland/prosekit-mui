@@ -14,9 +14,12 @@
   "devDependencies": {
     "@astrojs/react": "^5.0.4",
     "@tailwindcss/vite": "^4.2.4",
+    "@types/node": "^25.6.0",
     "astro": "^6.2.1",
     "astrobook": "^0.13.1",
-    "tailwindcss": "^4.2.4"
+    "postcss-nested": "^7.0.2",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^6.0.3"
   },
   "aube": {
     "allowBuilds": {

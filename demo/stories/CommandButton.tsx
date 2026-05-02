@@ -1,4 +1,4 @@
-import Button from '@mui/material/Button'
+import { Button } from '@mui/material'
 
 type CommandButtonProps = {
   label: string

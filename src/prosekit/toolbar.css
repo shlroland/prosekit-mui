@@ -1,0 +1,73 @@
+@reference "../../demo/styles/tailwind.css";
+
+@layer components {
+  .minimal-prosekit-editor-shell {
+    @apply overflow-hidden rounded-3xl border bg-[rgba(255,255,255,0.84)] shadow-none;
+    border-color: rgba(23, 23, 23, 0.08);
+  }
+
+  .minimal-prosekit-editor-toolbar-frame {
+    @apply border-b bg-[rgba(252,250,245,0.92)] px-1.5 py-1;
+    border-color: rgba(23, 23, 23, 0.08);
+  }
+
+  .minimal-prosekit-editor-content {
+    @apply px-2 py-1.5;
+
+    .ProseMirror {
+      min-height: 240px;
+      outline: none;
+      white-space: pre-wrap;
+    }
+  }
+
+  .editor-toolbar {
+    @apply w-full;
+
+    .editor-toolbar-row {
+      @apply min-h-11 flex-wrap items-center justify-center gap-x-px gap-y-2;
+    }
+
+    .editor-toolbar-group {
+      @apply shrink-0 items-center;
+    }
+
+    .editor-toolbar-divider {
+      @apply mx-[1px] h-5 shrink-0 self-center;
+    }
+
+    .editor-toolbar-placeholder {
+      @apply shrink-0 rounded-xl border border-dashed bg-[rgba(255,255,255,0.72)] px-3 py-1.5;
+      border-color: rgba(23, 23, 23, 0.14);
+    }
+
+    .MuiSelect-root {
+      @apply min-w-9 bg-white;
+
+      .MuiSelect-select {
+        padding: 0 !important;
+      }
+
+      input {
+        display: none;
+      }
+
+      &:hover {
+        background-color: var(--mui-palette-background-paper);
+      }
+
+      &.tool-active {
+        background-color: var(--mui-palette-background-paper);
+        color: var(--mui-palette-primary-main);
+
+        button {
+          color: inherit;
+        }
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-width: 0 !important;
+      }
+    }
+  }
+}

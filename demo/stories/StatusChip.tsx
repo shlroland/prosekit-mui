@@ -1,4 +1,4 @@
-import Chip from '@mui/material/Chip'
+import { Chip } from '@mui/material'
 
 type StatusChipProps = {
   label: string

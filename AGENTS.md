@@ -7,3 +7,5 @@
 - Use `aube exec <binary>` when invoking local project binaries directly.
 - Use `aube add <pkg>` and `aube remove <pkg>` for dependency changes.
 - Keep `aube-lock.yaml` in sync with dependency changes.
+- Prefer named imports and named exports throughout the project.
+- Do not introduce default imports or default exports unless a framework or tool requires them, such as Astro config or Astrobook story metadata.

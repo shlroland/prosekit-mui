@@ -12,8 +12,8 @@ export default {
       component: PlaygroundShell,
       props: {
         eyebrow: 'ProseKit',
-        title: 'Minimal editor',
-        copy: 'This is the first real editor component in src/. It follows the official ProseKit minimal example, then adds a thin Material UI shell so we can evolve it into a fuller integration.',
+        title: 'Full editor shell',
+        copy: 'This story always renders the full editor shell. We will keep replacing the toolbar and content internals step by step, but the complete editor stays visible the whole time.',
       },
     },
   ],

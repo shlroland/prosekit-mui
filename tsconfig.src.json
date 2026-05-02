@@ -1,9 +1,14 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./.types/src",
+    "tsBuildInfoFile": "./.types/tsconfig.src.tsbuildinfo",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["react", "react-dom"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/types.d.ts"],
   "exclude": ["demo", "dist", "node_modules"]
 }
