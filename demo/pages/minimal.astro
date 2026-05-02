@@ -1,0 +1,17 @@
+---
+import '../styles/tailwind.css'
+import { MinimalEditorPage } from '../components/MinimalEditorPage'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ProseKit Minimal Demo</title>
+  </head>
+  <body>
+    <main class="mx-auto w-[min(1100px,calc(100%-2rem))] py-16">
+      <MinimalEditorPage client:load />
+    </main>
+  </body>
+</html>

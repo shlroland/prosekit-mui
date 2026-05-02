@@ -6,6 +6,7 @@ import astrobook from 'astrobook'
 import { version } from './package.json'
 
 export default defineConfig({
+  srcDir: './demo',
   vite: {
     plugins: [tailwindcss()],
   },

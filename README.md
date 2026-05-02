@@ -10,6 +10,7 @@ The playground is prepared for:
 - `@mui/material` v7 as the component primitive layer
 - Tailwind CSS v4 as the primary styling approach for app components
 - Emotion only as the runtime styling engine required by Material UI
+- `prosekit` as the editor foundation
 
 ## Package management
 
@@ -32,6 +33,24 @@ Astrobook and the demo site now live under `demo/`.
 - `demo/stories`: Astrobook stories
 - `demo/components`: Astrobook-only support components
 - `demo/styles`: demo and Astrobook styles
+- `demo/env.d.ts`: Astro demo type references
 
 Add new Astrobook stories under `demo/stories` using
 `.stories.ts`, `.stories.tsx`, `.stories.js`, or `.stories.jsx`.
+
+## Source layout
+
+Library code should live under `src/`.
+
+- `src/prosekit`: ProseKit-based editor components and helpers
+- `src/index.ts`: package entry point
+
+## TypeScript configs
+
+TypeScript is split by responsibility:
+
+- `tsconfig.json`: default editor/Astro entry point, currently points at the demo app
+- `tsconfig.demo.json`: Astro + Astrobook typing for `demo/`
+- `tsconfig.src.json`: future ProseKit + MUI source code under `src/`
+- `tsconfig.node.json`: config-file and Node-side typing
+- `tsconfig.base.json`: shared compiler defaults for non-Astro configs

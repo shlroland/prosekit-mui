@@ -29,6 +29,7 @@
     "@emotion/styled": "^11.14.1",
     "@fontsource/roboto": "^5.2.10",
     "@mui/material": "^7",
+    "prosekit": "^0.20.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   }
