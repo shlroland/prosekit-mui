@@ -2,8 +2,8 @@ import 'prosekit/basic/typography.css'
 
 import { Box, Chip, Stack, Typography } from '@mui/material'
 
-import { ProseKitProvider } from '../../src'
 import { MuiPlaygroundProvider } from '../stories/MuiPlaygroundProvider'
+import { MinimalEditorDemo } from './MinimalEditorDemo'
 
 export function MinimalEditorPage() {
   return (
@@ -24,7 +24,7 @@ export function MinimalEditorPage() {
             small Material UI shell. It gives us a stable base before adding toolbar,
             command state, and richer extension wiring.
           </Typography>
-          <ProseKitProvider />
+          <MinimalEditorDemo />
         </Stack>
       </Box>
     </MuiPlaygroundProvider>

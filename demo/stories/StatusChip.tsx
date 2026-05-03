@@ -1,5 +1,7 @@
 import { Chip } from '@mui/material'
 
+import { cn } from '../../src/utils/cn'
+
 type StatusChipProps = {
   label: string
   tone?: 'neutral' | 'success' | 'warning' | 'danger'
@@ -19,10 +21,10 @@ export function StatusChip({
   return (
     <Chip
       label={label}
-      className={[
+      className={cn(
         'rounded-full border px-1 font-medium shadow-none',
         toneClasses[tone],
-      ].join(' ')}
+      )}
     />
   )
 }

@@ -1,3 +1,6 @@
 export * from './EditorToolbar'
-export * from './MinimalProsekitEditor'
+export * from './EditorContent'
+export * from './EditorShell'
+export * from './createBasicProseKitEditor'
 export * from './prosekit-provider'
+export * from './ToolbarItem'

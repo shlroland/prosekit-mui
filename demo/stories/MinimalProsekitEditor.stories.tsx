@@ -1,22 +1,23 @@
 import 'prosekit/basic/typography.css'
 
-import { MinimalProsekitEditor } from '../../src'
-import { MuiPlaygroundProvider } from './MuiPlaygroundProvider'
-import { PlaygroundShell } from './PlaygroundShell'
+import { MinimalEditorDemo } from '../components/MinimalEditorDemo'
+import { ClientOnlyStoryFrame } from './ClientOnlyStoryFrame'
+
+function MinimalProsekitEditorStory() {
+  return (
+    <ClientOnlyStoryFrame
+      eyebrow="ProseKit"
+      title="Full editor shell"
+      copy="This is a demo composition built from the abstract provider, shell, toolbar, toolbar item, and content primitives exported by src/."
+      loadingLabel="Loading editor playground..."
+    >
+      <MinimalEditorDemo />
+    </ClientOnlyStoryFrame>
+  )
+}
 
 export default {
-  component: MinimalProsekitEditor,
-  decorators: [
-    { component: MuiPlaygroundProvider },
-    {
-      component: PlaygroundShell,
-      props: {
-        eyebrow: 'ProseKit',
-        title: 'Full editor shell',
-        copy: 'This story always renders the full editor shell. We will keep replacing the toolbar and content internals step by step, but the complete editor stays visible the whole time.',
-      },
-    },
-  ],
+  component: MinimalProsekitEditorStory,
 }
 
 export const DefaultEditor = {}

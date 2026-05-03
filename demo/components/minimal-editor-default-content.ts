@@ -1,6 +1,6 @@
-import { type NodeJSON } from "prosekit/core";
+import type { NodeJSON } from 'prosekit/core'
 
-export const defaultContent: NodeJSON = {
+export const minimalEditorDefaultContent: NodeJSON = {
   type: 'doc',
   content: [
     {
@@ -33,5 +33,3 @@ export const defaultContent: NodeJSON = {
     },
   ],
 }
-
-

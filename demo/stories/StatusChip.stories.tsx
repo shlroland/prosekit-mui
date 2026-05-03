@@ -1,20 +1,21 @@
-import { MuiPlaygroundProvider } from './MuiPlaygroundProvider'
-import { PlaygroundShell } from './PlaygroundShell'
+import { ClientOnlyStoryFrame } from './ClientOnlyStoryFrame'
 import { StatusChip, type StatusChipProps } from './StatusChip'
 
+function StatusChipStory(args: StatusChipProps) {
+  return (
+    <ClientOnlyStoryFrame
+      eyebrow="Signals"
+      title="Status chips"
+      copy="Material UI Chip gives you behavior and shape primitives, while Tailwind handles the tone system you want to expose in product components."
+      loadingLabel="Loading status chip story..."
+    >
+      <StatusChip {...args} />
+    </ClientOnlyStoryFrame>
+  )
+}
+
 export default {
-  component: StatusChip,
-  decorators: [
-    { component: MuiPlaygroundProvider },
-    {
-      component: PlaygroundShell,
-      props: {
-        eyebrow: 'Signals',
-        title: 'Status chips',
-        copy: 'Material UI Chip gives you behavior and shape primitives, while Tailwind handles the tone system you want to expose in product components.',
-      },
-    },
-  ],
+  component: StatusChipStory,
 }
 
 export const Neutral = {

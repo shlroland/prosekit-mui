@@ -1,20 +1,21 @@
 import { CommandButton, type CommandButtonProps } from './CommandButton'
-import { MuiPlaygroundProvider } from './MuiPlaygroundProvider'
-import { PlaygroundShell } from './PlaygroundShell'
+import { ClientOnlyStoryFrame } from './ClientOnlyStoryFrame'
+
+function CommandButtonStory(args: CommandButtonProps) {
+  return (
+    <ClientOnlyStoryFrame
+      eyebrow="Primitive"
+      title="Command buttons"
+      copy="These examples use a Material UI Button underneath, but the visible surface styling stays in Tailwind classes so your app components can remain Tailwind-first."
+      loadingLabel="Loading command button story..."
+    >
+      <CommandButton {...args} />
+    </ClientOnlyStoryFrame>
+  )
+}
 
 export default {
-  component: CommandButton,
-  decorators: [
-    { component: MuiPlaygroundProvider },
-    {
-      component: PlaygroundShell,
-      props: {
-        eyebrow: 'Primitive',
-        title: 'Command buttons',
-        copy: 'These examples use a Material UI Button underneath, but the visible surface styling stays in Tailwind classes so your app components can remain Tailwind-first.',
-      },
-    },
-  ],
+  component: CommandButtonStory,
 }
 
 export const DefaultButton = {

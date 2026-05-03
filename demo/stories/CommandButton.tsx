@@ -1,5 +1,7 @@
 import { Button } from '@mui/material'
 
+import { cn } from '../../src/utils/cn'
+
 type CommandButtonProps = {
   label: string
   tone?: 'default' | 'accent' | 'ghost'
@@ -24,11 +26,11 @@ export function CommandButton({
     <Button
       disableElevation
       variant="contained"
-      className={[
+      className={cn(
         'min-h-11 rounded-2xl px-4 font-bold shadow-none transition-transform duration-150 hover:-translate-y-px',
         toneClasses[tone],
-        active ? 'border-clay-500 bg-clay-500 text-white hover:bg-clay-500' : '',
-      ].join(' ')}
+        active && 'border-clay-500 bg-clay-500 text-white hover:bg-clay-500',
+      )}
     >
       {label}
     </Button>

@@ -2,6 +2,8 @@ import { Box, Divider, Stack, Typography } from '@mui/material'
 import { useEditor } from 'prosekit/react'
 import { type PropsWithChildren } from 'react'
 
+import { cn } from '../utils/cn'
+
 export type EditorToolbarProps = PropsWithChildren
 
 export type EditorToolbarGroupProps = PropsWithChildren<{
@@ -35,7 +37,7 @@ export function EditorToolbarGroup({ className, children }: EditorToolbarGroupPr
     <Stack
       direction="row"
       alignItems="center"
-      className={['editor-toolbar-group', className ?? ''].join(' ').trim()}
+      className={cn('editor-toolbar-group', className)}
     >
       {children}
     </Stack>
@@ -47,7 +49,7 @@ export function EditorToolbarDivider({ className }: EditorToolbarDividerProps) {
     <Divider
       orientation="vertical"
       flexItem
-      className={['editor-toolbar-divider', className ?? ''].join(' ').trim()}
+      className={cn('editor-toolbar-divider', className)}
     />
   )
 }

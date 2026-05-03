@@ -8,6 +8,8 @@ import type { ReactNode } from 'react'
 
 const theme = createTheme({
   cssVariables: true,
+  modularCssLayers:
+    '@layer theme, base, mui.global, mui.components, mui.theme, mui.custom, mui.sx, components, utilities;',
   shape: {
     borderRadius: 16,
   },
@@ -41,6 +43,9 @@ export function MuiPlaygroundProvider({ children }: { children?: ReactNode }) {
   return (
     <StyledEngineProvider enableCssLayer>
       <ThemeProvider theme={theme}>
+        <GlobalStyles
+          styles="@layer theme, base, mui.global, mui.components, mui.theme, mui.custom, mui.sx, components, utilities;"
+        />
         <CssBaseline />
         <GlobalStyles
           styles={{

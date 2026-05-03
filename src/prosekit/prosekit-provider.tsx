@@ -1,29 +1,26 @@
-import { defineBasicExtension } from 'prosekit/basic'
-import { createEditor, type NodeJSON } from 'prosekit/core'
+import type { Editor, NodeJSON } from 'prosekit/core'
 import { ProseKit } from 'prosekit/react'
 import { type PropsWithChildren, useMemo } from 'react'
 
-import { defaultContent } from './default-content'
+import { createBasicProseKitEditor } from './createBasicProseKitEditor'
 
 export type ProseKitProviderProps = PropsWithChildren<{
+  editor?: Editor
   initialContent?: NodeJSON
 }>
 
 export function ProseKitProvider({
-  initialContent = defaultContent,
+  editor,
+  initialContent,
   children,
 }: ProseKitProviderProps) {
-  const editor = useMemo(
-    () =>
-      createEditor({
-        extension: defineBasicExtension(),
-        defaultContent: initialContent,
-      }),
-    [initialContent],
+  const resolvedEditor = useMemo(
+    () => editor ?? createBasicProseKitEditor({ defaultContent: initialContent }),
+    [editor, initialContent],
   )
 
   return (
-    <ProseKit editor={editor}>
+    <ProseKit editor={resolvedEditor}>
       {children}
     </ProseKit>
   )
