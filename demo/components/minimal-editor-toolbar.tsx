@@ -28,6 +28,7 @@ import {
   EditorToolbarGroup,
   ToolbarItem,
 } from '../../src'
+import { MinimalEditorFontSize } from './minimal-editor-font-size'
 import { MinimalEditorHeading } from './minimal-editor-heading'
 
 const toolbarIconProps = {
@@ -103,6 +104,7 @@ function clearFormatting(editor: Editor<BasicExtension>) {
   editor.commands.unsetMark({ type: 'underline' })
   editor.commands.unsetMark({ type: 'strike' })
   editor.commands.unsetMark({ type: 'code' })
+  editor.commands.unsetMark({ type: 'fontSize' })
   editor.commands.removeLink()
   editor.commands.setParagraph()
 
@@ -164,16 +166,13 @@ function getMinimalToolbarGroups(editor: Editor<BasicExtension>): ToolbarGroup[]
           editor.commands.unsetMark.canExec({ type: 'italic' }) ||
           editor.commands.unsetMark.canExec({ type: 'underline' }) ||
           editor.commands.unsetMark.canExec({ type: 'strike' }) ||
-          editor.commands.unsetMark.canExec({ type: 'code' }),
+          editor.commands.unsetMark.canExec({ type: 'code' }) ||
+          editor.commands.unsetMark.canExec({ type: 'fontSize' }),
         command: () => clearFormatting(editor),
       }),
     ],
     [],
     [
-      createStaticToolbarButtonItem('font-size', {
-        tip: '字号',
-        icon: TypeOutline,
-      }),
       createStaticToolbarButtonItem('text-color', {
         tip: '文字颜色',
         icon: Palette,
@@ -291,6 +290,9 @@ export function MinimalEditorToolbar() {
       <EditorToolbarDivider />
       <EditorToolbarGroup>
         <MinimalEditorHeading />
+      </EditorToolbarGroup>
+      <EditorToolbarGroup>
+        <MinimalEditorFontSize />
       </EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[3]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarDivider />
