@@ -1,5 +1,5 @@
-import { EditorToolbarPreview } from './EditorToolbarPreview'
-import { ClientOnlyStoryFrame } from './ClientOnlyStoryFrame'
+import { EditorToolbarPreview } from './editor-toolbar-preview'
+import { ClientOnlyStoryFrame } from './client-only-story-frame'
 
 function EditorToolbarPreviewStory() {
   return (

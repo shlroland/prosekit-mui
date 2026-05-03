@@ -2,8 +2,8 @@ import 'prosekit/basic/typography.css'
 
 import { Box, Chip, Stack, Typography } from '@mui/material'
 
-import { MuiPlaygroundProvider } from '../stories/MuiPlaygroundProvider'
-import { MinimalEditorDemo } from './MinimalEditorDemo'
+import { MuiPlaygroundProvider } from '../stories/mui-playground-provider'
+import { MinimalEditorDemo } from './minimal-editor-demo'
 
 export function MinimalEditorPage() {
   return (

@@ -16,7 +16,7 @@ export default defineConfig({
       subpath: '/playground',
       directory: 'demo/stories',
       css: ['./demo/styles/tailwind.css', './demo/styles/astrobook.css'],
-      head: './demo/components/AstrobookHead.astro',
+      head: './demo/components/astrobook-head.astro',
       title: 'ProseKit MUI Playground',
       homeContent: {
         title: 'ProseKit MUI Playground',

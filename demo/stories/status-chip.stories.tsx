@@ -1,5 +1,5 @@
-import { ClientOnlyStoryFrame } from './ClientOnlyStoryFrame'
-import { StatusChip, type StatusChipProps } from './StatusChip'
+import { ClientOnlyStoryFrame } from './client-only-story-frame'
+import { StatusChip, type StatusChipProps } from './status-chip'
 
 function StatusChipStory(args: StatusChipProps) {
   return (

@@ -1,7 +1,7 @@
 import { Box, Button, Stack, Tooltip, Typography } from '@mui/material'
 import { forwardRef, type MouseEvent, type ReactNode } from 'react'
 
-import { getShortcutKeyText } from './getShortcutKeyText'
+import { getShortcutKeyText } from './get-shortcut-key-text'
 import { cn } from '../utils/cn'
 import './toolbar.css'
 export type ToolbarItemProps = {

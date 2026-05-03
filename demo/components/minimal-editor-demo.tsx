@@ -8,12 +8,16 @@ import {
   EditorShell,
   ProseKitProvider,
 } from '../../src'
+import { minimalEditorExtension } from './minimal-editor-extension'
 import { minimalEditorDefaultContent } from './minimal-editor-default-content'
-import { MinimalEditorToolbar } from './MinimalEditorToolbar'
+import { MinimalEditorToolbar } from './minimal-editor-toolbar'
 
 export function MinimalEditorDemo() {
   return (
-    <ProseKitProvider initialContent={minimalEditorDefaultContent}>
+    <ProseKitProvider
+      extension={minimalEditorExtension}
+      initialContent={minimalEditorDefaultContent}
+    >
       <EditorShell
         toolbar={<MinimalEditorToolbar />}
         content={<EditorContent />}

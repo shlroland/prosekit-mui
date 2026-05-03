@@ -1,7 +1,7 @@
 import 'prosekit/basic/typography.css'
 
-import { MinimalEditorDemo } from '../components/MinimalEditorDemo'
-import { ClientOnlyStoryFrame } from './ClientOnlyStoryFrame'
+import { MinimalEditorDemo } from '../components/minimal-editor-demo'
+import { ClientOnlyStoryFrame } from './client-only-story-frame'
 
 function MinimalProsekitEditorStory() {
   return (

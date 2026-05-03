@@ -1,7 +1,7 @@
 import { Card, Divider, Stack, TextField, Typography } from '@mui/material'
 
-import { CommandButton } from './CommandButton'
-import { StatusChip } from './StatusChip'
+import { CommandButton } from './command-button'
+import { StatusChip } from './status-chip'
 
 export function EditorToolbarPreview() {
   return (

@@ -1,5 +1,5 @@
-import { CommandButton, type CommandButtonProps } from './CommandButton'
-import { ClientOnlyStoryFrame } from './ClientOnlyStoryFrame'
+import { CommandButton, type CommandButtonProps } from './command-button'
+import { ClientOnlyStoryFrame } from './client-only-story-frame'
 
 function CommandButtonStory(args: CommandButtonProps) {
   return (

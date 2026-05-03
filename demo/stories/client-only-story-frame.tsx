@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 
-import { MuiPlaygroundProvider } from './MuiPlaygroundProvider'
-import { PlaygroundShell } from './PlaygroundShell'
+import { MuiPlaygroundProvider } from './mui-playground-provider'
+import { PlaygroundShell } from './playground-shell'
 
 export type ClientOnlyStoryFrameProps = {
   eyebrow?: string
