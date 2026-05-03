@@ -42,7 +42,7 @@
     }
 
     .toolbar-item {
-      @apply min-h-9 min-w-9 rounded-xl p-2 normal-case;
+      @apply min-h-9 min-w-9 rounded-lg p-2 normal-case;
       color: var(--mui-palette-text-primary);
 
       &:hover {
@@ -80,6 +80,31 @@
       @apply text-xs;
     }
 
+    .toolbar-menu-trigger {
+      @apply inline-grid items-center gap-1.5;
+      grid-template-columns: 1rem 0.875rem;
+    }
+
+    .toolbar-menu-trigger-icon {
+      @apply inline-flex h-4 w-4 items-center justify-center;
+    }
+
+    .toolbar-menu-chevron {
+      @apply pointer-events-none h-3 w-3 text-[var(--mui-palette-text-disabled)];
+    }
+
+    .toolbar-heading-trigger {
+      @apply relative pr-3;
+    }
+
+    .toolbar-heading-icon {
+      @apply inline-flex w-5 items-center justify-start;
+    }
+
+    .toolbar-heading-chevron {
+      @apply pointer-events-none absolute right-[-1px] top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--mui-palette-text-disabled)];
+    }
+
     .MuiSelect-root {
       @apply min-w-9 bg-white;
 
@@ -108,5 +133,43 @@
         border-width: 0 !important;
       }
     }
+  }
+
+  .toolbar-menu-paper {
+    @apply mt-1 min-w-[176px] rounded-xl border border-black/6 bg-[rgba(255,255,255,0.98)] p-1 shadow-[0_12px_32px_rgba(23,23,23,0.08)] backdrop-blur-md;
+  }
+
+  .toolbar-menu-list {
+    @apply p-0;
+  }
+
+  .toolbar-menu-item {
+    @apply grid min-h-8 grid-cols-[0.875rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2 py-1.5;
+
+    &.Mui-selected {
+      background-color: rgb(23 23 23 / 0.052);
+    }
+
+    &.Mui-selected:hover {
+      background-color: rgb(23 23 23 / 0.072);
+    }
+
+    &:hover {
+      background-color: rgb(23 23 23 / 0.036);
+    }
+  }
+
+  .toolbar-menu-item-icon {
+    @apply inline-flex h-3.5 w-3.5 items-center justify-center text-[var(--mui-palette-text-secondary)];
+  }
+
+  .toolbar-menu-item-label {
+    @apply truncate text-[11px] font-medium leading-none tracking-[0.015em];
+    color: rgb(23 23 23 / 0.82);
+  }
+
+  .toolbar-menu-item-shortcut {
+    @apply ml-3 shrink-0 text-[10px] font-medium leading-none tracking-[0.025em];
+    color: rgb(23 23 23 / 0.26);
   }
 }

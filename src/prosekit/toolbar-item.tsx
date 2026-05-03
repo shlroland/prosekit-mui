@@ -7,6 +7,7 @@ import './toolbar.css'
 export type ToolbarItemProps = {
   tip?: string
   customComponent?: ReactNode
+  content?: ReactNode
   text?: ReactNode
   shortcutKey?: string[]
   icon?: ReactNode
@@ -53,6 +54,7 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
     {
       tip,
       customComponent,
+      content,
       shortcutKey = [],
       icon,
       text,
@@ -90,12 +92,14 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
               gap={0.5}
               className="toolbar-item-content"
             >
-              {icon ? (
+              {content ? (
+                content
+              ) : icon ? (
                 <Box component="span" className="toolbar-item-icon">
                   {icon}
                 </Box>
               ) : null}
-              {text ? (
+              {!content && text ? (
                 <Typography component="span" variant="caption" fontWeight={700}>
                   {text}
                 </Typography>

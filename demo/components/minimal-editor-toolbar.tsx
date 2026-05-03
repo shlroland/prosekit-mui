@@ -2,9 +2,9 @@ import {
   Bold,
   Ellipsis,
   Eraser,
-  Italic,
   Highlighter,
   type LucideIcon,
+  Italic,
   Link2,
   List,
   MessageSquareQuote,
@@ -16,7 +16,6 @@ import {
   TypeOutline,
   Underline,
   Undo2,
-  Heading,
   AlignLeft,
 } from 'lucide-react'
 import type { BasicExtension } from 'prosekit/basic'
@@ -29,6 +28,7 @@ import {
   EditorToolbarGroup,
   ToolbarItem,
 } from '../../src'
+import { MinimalEditorHeading } from './minimal-editor-heading'
 
 const toolbarIconProps = {
   className: 'toolbar-icon-svg',
@@ -57,142 +57,205 @@ function createToolbarButtonItem(
   }
 }
 
+function createCommandToolbarButtonItem(
+  key: string,
+  options: {
+    tip: string
+    icon: LucideIcon
+    shortcutKey?: string[]
+    isActive?: boolean
+    canExec: boolean
+    command: () => void
+  },
+): ToolbarButtonItem {
+  return createToolbarButtonItem(key, {
+    tip: options.tip,
+    icon: options.icon,
+    shortcutKey: options.shortcutKey,
+    isActive: options.isActive ?? false,
+    canExec: options.canExec,
+    command: options.command,
+  })
+}
+
+function createStaticToolbarButtonItem(
+  key: string,
+  options: {
+    tip: string
+    icon: LucideIcon
+    shortcutKey?: string[]
+    isActive?: boolean
+    canExec?: boolean
+  },
+): ToolbarButtonItem {
+  return createToolbarButtonItem(key, {
+    tip: options.tip,
+    icon: options.icon,
+    shortcutKey: options.shortcutKey,
+    isActive: options.isActive ?? false,
+    canExec: options.canExec ?? false,
+  })
+}
+
+function clearFormatting(editor: Editor<BasicExtension>) {
+  editor.commands.unsetMark({ type: 'bold' })
+  editor.commands.unsetMark({ type: 'italic' })
+  editor.commands.unsetMark({ type: 'underline' })
+  editor.commands.unsetMark({ type: 'strike' })
+  editor.commands.unsetMark({ type: 'code' })
+  editor.commands.removeLink()
+  editor.commands.setParagraph()
+
+  if (editor.nodes.list.isActive() && editor.commands.unwrapList?.canExec()) {
+    editor.commands.unwrapList()
+  }
+}
+
+function toggleLink(editor: Editor<BasicExtension>) {
+  if (editor.marks.link.isActive()) {
+    editor.commands.removeLink()
+    return
+  }
+
+  const href = window.prompt('输入链接地址', 'https://')
+
+  if (!href) {
+    return
+  }
+
+  editor.commands.toggleLink({ href })
+}
+
 function getMinimalToolbarGroups(editor: Editor<BasicExtension>): ToolbarGroup[] {
+  const isBulletList = editor.nodes.list.isActive({ kind: 'bullet' })
+  const isCodeBlock = editor.nodes.codeBlock.isActive()
+  const isLink = editor.marks.link.isActive()
+
   return [
     [
-      createToolbarButtonItem('insert', {
+      createStaticToolbarButtonItem('insert', {
         tip: '插入',
         icon: Plus,
-        isActive: false,
-        canExec: true,
+        canExec: false,
       }),
     ],
     [
-      createToolbarButtonItem('undo', {
+      createCommandToolbarButtonItem('undo', {
         tip: '撤销',
         shortcutKey: ['ctrl', 'z'],
         icon: Undo2,
-        isActive: false,
         canExec: editor.commands.undo ? editor.commands.undo.canExec() : false,
-        command: editor.commands.undo ? () => editor.commands.undo() : undefined,
+        command: () => editor.commands.undo(),
       }),
-      createToolbarButtonItem('redo', {
+      createCommandToolbarButtonItem('redo', {
         tip: '重做',
         shortcutKey: ['ctrl', 'y'],
         icon: Redo2,
-        isActive: false,
         canExec: editor.commands.redo ? editor.commands.redo.canExec() : false,
-        command: editor.commands.redo ? () => editor.commands.redo() : undefined,
+        command: () => editor.commands.redo(),
       }),
-      createToolbarButtonItem('clear', {
+      createCommandToolbarButtonItem('clear', {
         tip: '清除格式',
         icon: Eraser,
-        isActive: false,
-        canExec: true,
+        canExec:
+          editor.commands.setParagraph.canExec() ||
+          editor.commands.removeLink.canExec() ||
+          editor.commands.unsetMark.canExec({ type: 'bold' }) ||
+          editor.commands.unsetMark.canExec({ type: 'italic' }) ||
+          editor.commands.unsetMark.canExec({ type: 'underline' }) ||
+          editor.commands.unsetMark.canExec({ type: 'strike' }) ||
+          editor.commands.unsetMark.canExec({ type: 'code' }),
+        command: () => clearFormatting(editor),
       }),
     ],
+    [],
     [
-      createToolbarButtonItem('heading', {
-        tip: '标题',
-        icon: Heading,
-        isActive: false,
-        canExec: true,
-      }),
-    ],
-    [
-      createToolbarButtonItem('font-size', {
+      createStaticToolbarButtonItem('font-size', {
         tip: '字号',
         icon: TypeOutline,
-        isActive: false,
-        canExec: true,
       }),
-      createToolbarButtonItem('text-color', {
+      createStaticToolbarButtonItem('text-color', {
         tip: '文字颜色',
         icon: Palette,
-        isActive: false,
-        canExec: true,
       }),
-      createToolbarButtonItem('highlight', {
+      createStaticToolbarButtonItem('highlight', {
         tip: '高亮',
         icon: Highlighter,
-        isActive: false,
-        canExec: true,
       }),
     ],
     [
-      createToolbarButtonItem('bold', {
+      createCommandToolbarButtonItem('bold', {
         tip: '加粗',
         shortcutKey: ['ctrl', 'b'],
         icon: Bold,
         isActive: editor.marks.bold ? editor.marks.bold.isActive() : false,
         canExec: editor.commands.toggleBold ? editor.commands.toggleBold.canExec() : false,
-        command: editor.commands.toggleBold ? () => editor.commands.toggleBold() : undefined,
+        command: () => editor.commands.toggleBold(),
       }),
-      createToolbarButtonItem('italic', {
+      createCommandToolbarButtonItem('italic', {
         tip: '斜体',
         shortcutKey: ['ctrl', 'i'],
         icon: Italic,
         isActive: editor.marks.italic ? editor.marks.italic.isActive() : false,
         canExec: editor.commands.toggleItalic ? editor.commands.toggleItalic.canExec() : false,
-        command: editor.commands.toggleItalic ? () => editor.commands.toggleItalic() : undefined,
+        command: () => editor.commands.toggleItalic(),
       }),
     ],
     [
-      createToolbarButtonItem('underline', {
+      createCommandToolbarButtonItem('underline', {
         tip: '下划线',
         icon: Underline,
         isActive: editor.marks.underline ? editor.marks.underline.isActive() : false,
         canExec: editor.commands.toggleUnderline ? editor.commands.toggleUnderline.canExec() : false,
-        command: editor.commands.toggleUnderline ? () => editor.commands.toggleUnderline() : undefined,
+        command: () => editor.commands.toggleUnderline(),
       }),
-      createToolbarButtonItem('strike', {
+      createCommandToolbarButtonItem('strike', {
         tip: '删除线',
         icon: Strikethrough,
         isActive: editor.marks.strike ? editor.marks.strike.isActive() : false,
         canExec: editor.commands.toggleStrike ? editor.commands.toggleStrike.canExec() : false,
-        command: editor.commands.toggleStrike ? () => editor.commands.toggleStrike() : undefined,
+        command: () => editor.commands.toggleStrike(),
       }),
-      createToolbarButtonItem('tooltip', {
+      createStaticToolbarButtonItem('tooltip', {
         tip: '提示',
         icon: MessageSquareQuote,
-        isActive: false,
-        canExec: true,
       }),
     ],
     [
-      createToolbarButtonItem('list', {
+      createCommandToolbarButtonItem('list', {
         tip: '列表',
         icon: List,
-        isActive: false,
-        canExec: true,
+        isActive: isBulletList,
+        canExec: editor.commands.toggleList.canExec({ kind: 'bullet' }),
+        command: () => editor.commands.toggleList({ kind: 'bullet' }),
       }),
     ],
     [
-      createToolbarButtonItem('link', {
+      createCommandToolbarButtonItem('link', {
         tip: '链接',
         icon: Link2,
-        isActive: false,
-        canExec: true,
+        isActive: isLink,
+        canExec:
+          editor.commands.removeLink.canExec() ||
+          editor.commands.toggleLink.canExec({ href: 'https://example.com' }),
+        command: () => toggleLink(editor),
       }),
-      createToolbarButtonItem('align', {
+      createStaticToolbarButtonItem('align', {
         tip: '对齐',
         icon: AlignLeft,
-        isActive: false,
-        canExec: true,
       }),
-      createToolbarButtonItem('more', {
+      createStaticToolbarButtonItem('more', {
         tip: '更多',
         icon: Ellipsis,
-        isActive: false,
-        canExec: true,
       }),
     ],
     [
-      createToolbarButtonItem('code-block', {
+      createCommandToolbarButtonItem('code-block', {
         tip: '代码块',
         icon: SquareCode,
-        isActive: false,
-        canExec: true,
+        isActive: isCodeBlock,
+        canExec: editor.commands.toggleCodeBlock.canExec({ language: 'text' }),
+        command: () => editor.commands.toggleCodeBlock({ language: 'text' }),
       }),
     ],
   ]
@@ -226,7 +289,9 @@ export function MinimalEditorToolbar() {
       <EditorToolbarDivider />
       <EditorToolbarGroup>{toolbarGroups[1]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarDivider />
-      <EditorToolbarGroup>{toolbarGroups[2]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>
+        <MinimalEditorHeading />
+      </EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[3]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarDivider />
       <EditorToolbarGroup>{toolbarGroups[4]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
