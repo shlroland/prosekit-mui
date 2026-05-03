@@ -2,13 +2,11 @@ import {
   Bold,
   Ellipsis,
   Eraser,
-  Highlighter,
   type LucideIcon,
   Italic,
   Link2,
   List,
   MessageSquareQuote,
-  Palette,
   Plus,
   Redo2,
   SquareCode,
@@ -29,7 +27,9 @@ import {
   ToolbarItem,
 } from '../../src'
 import { MinimalEditorFontSize } from './minimal-editor-font-size'
+import { MinimalEditorTextBackgroundColor } from './minimal-editor-text-background-color'
 import { MinimalEditorHeading } from './minimal-editor-heading'
+import { MinimalEditorTextColor } from './minimal-editor-text-color'
 
 const toolbarIconProps = {
   className: 'toolbar-icon-svg',
@@ -109,6 +109,16 @@ function clearFormatting(editor: Editor<BasicExtension>) {
   } else {
     editor.commands.unsetMark({ type: 'fontSize' })
   }
+  if (editor.commands.unsetTextColor) {
+    editor.commands.unsetTextColor()
+  } else {
+    editor.commands.unsetMark({ type: 'textColor' })
+  }
+  if (editor.commands.unsetTextBackgroundColor) {
+    editor.commands.unsetTextBackgroundColor()
+  } else {
+    editor.commands.unsetMark({ type: 'textBackgroundColor' })
+  }
   editor.commands.removeLink()
   editor.commands.setParagraph()
 
@@ -171,6 +181,12 @@ function getMinimalToolbarGroups(editor: Editor<BasicExtension>): ToolbarGroup[]
           editor.commands.unsetMark.canExec({ type: 'underline' }) ||
           editor.commands.unsetMark.canExec({ type: 'strike' }) ||
           editor.commands.unsetMark.canExec({ type: 'code' }) ||
+          (editor.commands.unsetTextBackgroundColor
+            ? editor.commands.unsetTextBackgroundColor.canExec()
+            : editor.commands.unsetMark.canExec({ type: 'textBackgroundColor' })) ||
+          (editor.commands.unsetTextColor
+            ? editor.commands.unsetTextColor.canExec()
+            : editor.commands.unsetMark.canExec({ type: 'textColor' })) ||
           (editor.commands.unsetFontSize
             ? editor.commands.unsetFontSize.canExec()
             : editor.commands.unsetMark.canExec({ type: 'fontSize' })),
@@ -178,16 +194,7 @@ function getMinimalToolbarGroups(editor: Editor<BasicExtension>): ToolbarGroup[]
       }),
     ],
     [],
-    [
-      createStaticToolbarButtonItem('text-color', {
-        tip: '文字颜色',
-        icon: Palette,
-      }),
-      createStaticToolbarButtonItem('highlight', {
-        tip: '高亮',
-        icon: Highlighter,
-      }),
-    ],
+    [],
     [
       createCommandToolbarButtonItem('bold', {
         tip: '加粗',
@@ -300,7 +307,12 @@ export function MinimalEditorToolbar() {
       <EditorToolbarGroup>
         <MinimalEditorFontSize />
       </EditorToolbarGroup>
-      <EditorToolbarGroup>{toolbarGroups[3]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>
+        <MinimalEditorTextColor />
+      </EditorToolbarGroup>
+      <EditorToolbarGroup>
+        <MinimalEditorTextBackgroundColor />
+      </EditorToolbarGroup>
       <EditorToolbarDivider />
       <EditorToolbarGroup>{toolbarGroups[4]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[5]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>

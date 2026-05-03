@@ -1,0 +1,105 @@
+@reference "../../../demo/styles/tailwind.css";
+
+@layer components {
+  .prosekit-color-picker-popper {
+    @apply z-[1400];
+  }
+
+  .prosekit-color-picker-paper {
+    @apply mt-2 w-[252px] rounded-xl border border-black/8 bg-white p-2.5 shadow-[0_12px_32px_rgba(15,23,42,0.12)];
+  }
+
+  .prosekit-color-picker-header {
+    @apply border-b border-black/6 pb-2;
+  }
+
+  .prosekit-color-picker-caption {
+    @apply text-[10px] font-medium tracking-[0.02em];
+    color: rgb(23 23 23 / 0.42);
+  }
+
+  .prosekit-color-picker-grid {
+    @apply grid grid-cols-6 gap-0.75;
+  }
+
+  .prosekit-color-picker-swatch {
+    @apply h-5 w-5 cursor-pointer rounded-[6px] border border-black/8 transition-transform duration-150;
+
+    &:hover {
+      transform: scale(1.04);
+    }
+  }
+
+  .prosekit-color-picker-swatch-default {
+    @apply border-black/10;
+  }
+
+  .prosekit-color-picker-reset-label {
+    @apply text-[12px] font-medium leading-none;
+    color: rgb(23 23 23 / 0.78);
+  }
+
+  .prosekit-color-picker-panel {
+    @apply rounded-lg border border-black/6 bg-stone-50 p-2;
+  }
+
+  .prosekit-color-picker-panel .react-colorful {
+    @apply h-[140px] w-full;
+  }
+
+  .prosekit-color-picker-panel .react-colorful__saturation {
+    @apply rounded-md border border-black/6;
+  }
+
+  .prosekit-color-picker-panel .react-colorful__hue,
+  .prosekit-color-picker-panel .react-colorful__alpha {
+    @apply mt-2 rounded-full;
+    height: 12px !important;
+  }
+
+  .prosekit-color-picker-panel .react-colorful__interactive {
+    @apply rounded-full;
+  }
+
+  .prosekit-color-picker-panel .react-colorful__pointer {
+    @apply h-3.5 w-3.5 border-2 border-white shadow-[0_1px_4px_rgba(15,23,42,0.18)];
+  }
+
+  .prosekit-color-picker-panel .react-colorful__alpha-pointer,
+  .prosekit-color-picker-panel .react-colorful__hue-pointer {
+    @apply h-3.5 w-3.5;
+  }
+
+  .prosekit-color-picker-value {
+    @apply min-w-0 flex-1;
+  }
+
+  .prosekit-color-picker-value-label {
+    @apply text-[10px] font-medium uppercase tracking-[0.06em];
+    color: rgb(23 23 23 / 0.38);
+  }
+
+  .prosekit-color-picker-input {
+    @apply w-full rounded-md border border-black/8 bg-white px-2 py-1 font-mono text-[12px] leading-none;
+    color: rgb(23 23 23 / 0.74);
+  }
+
+  .prosekit-color-picker-footer {
+    @apply items-end gap-2 rounded-lg border border-black/6 bg-stone-50 px-2 py-2;
+  }
+
+  .prosekit-color-picker-submit {
+    @apply min-h-8 min-w-[58px] rounded-md px-3 py-0 text-[12px] shadow-none;
+    background-color: rgb(23 23 23);
+    color: white;
+
+    &:hover {
+      background-color: rgb(38 38 38);
+    }
+
+    &:disabled {
+      background-color: rgb(23 23 23 / 0.18);
+      color: rgb(255 255 255 / 0.76);
+    }
+  }
+}

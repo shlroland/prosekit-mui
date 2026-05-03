@@ -123,6 +123,35 @@
       @apply pointer-events-none absolute right-[-1px] top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--mui-palette-text-disabled)];
     }
 
+    .toolbar-color-trigger {
+      @apply relative inline-flex;
+    }
+
+    .toolbar-color-indicator {
+      @apply pointer-events-none absolute bottom-[6px] left-[10px] z-[1] h-[2px] w-[14px] rounded-sm;
+    }
+
+    .toolbar-color-main-button {
+      @apply min-w-11 justify-start pr-5;
+    }
+
+    .toolbar-color-arrow-button {
+      @apply absolute right-[3px] top-0 z-[1] h-full w-[14px] min-w-0 p-0;
+      color: var(--mui-palette-text-disabled);
+      border-radius: 0;
+    }
+
+    .toolbar-color-arrow-button-open {
+      .toolbar-color-arrow {
+        transform: rotate(-180deg);
+      }
+    }
+
+    .toolbar-color-arrow {
+      @apply h-4 w-4 transition-transform duration-300;
+      pointer-events: none;
+    }
+
     .MuiSelect-root {
       @apply min-w-9 bg-white;
 
