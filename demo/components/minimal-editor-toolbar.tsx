@@ -104,7 +104,11 @@ function clearFormatting(editor: Editor<BasicExtension>) {
   editor.commands.unsetMark({ type: 'underline' })
   editor.commands.unsetMark({ type: 'strike' })
   editor.commands.unsetMark({ type: 'code' })
-  editor.commands.unsetMark({ type: 'fontSize' })
+  if (editor.commands.unsetFontSize) {
+    editor.commands.unsetFontSize()
+  } else {
+    editor.commands.unsetMark({ type: 'fontSize' })
+  }
   editor.commands.removeLink()
   editor.commands.setParagraph()
 
@@ -167,7 +171,9 @@ function getMinimalToolbarGroups(editor: Editor<BasicExtension>): ToolbarGroup[]
           editor.commands.unsetMark.canExec({ type: 'underline' }) ||
           editor.commands.unsetMark.canExec({ type: 'strike' }) ||
           editor.commands.unsetMark.canExec({ type: 'code' }) ||
-          editor.commands.unsetMark.canExec({ type: 'fontSize' }),
+          (editor.commands.unsetFontSize
+            ? editor.commands.unsetFontSize.canExec()
+            : editor.commands.unsetMark.canExec({ type: 'fontSize' })),
         command: () => clearFormatting(editor),
       }),
     ],

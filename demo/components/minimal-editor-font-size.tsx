@@ -68,15 +68,25 @@ function getFontSizeState(editor: Editor<BasicExtension>): FontSizeState {
   return {
     selectedKey,
     canOpen:
-      editor.commands.addMark.canExec({
-        type: 'fontSize',
-        attrs: { value: defaultFontSize },
-      }) || editor.commands.removeMark.canExec({ type: 'fontSize' }),
+      (editor.commands.setFontSize
+        ? editor.commands.setFontSize.canExec(defaultFontSize)
+        : editor.commands.addMark.canExec({
+            type: 'fontSize',
+            attrs: { value: defaultFontSize },
+          })) ||
+      (editor.commands.unsetFontSize
+        ? editor.commands.unsetFontSize.canExec()
+        : editor.commands.unsetMark.canExec({ type: 'fontSize' })),
     isActive: Boolean(activeFontSize),
   }
 }
 
 function applyFontSize(editor: Editor<BasicExtension>, value: FontSizeOptionKey) {
+  if (editor.commands.setFontSize) {
+    editor.commands.setFontSize(value)
+    return
+  }
+
   editor.commands.addMark({
     type: 'fontSize',
     attrs: { value },
