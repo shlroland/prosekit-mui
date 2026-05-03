@@ -90,7 +90,11 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
               gap={0.5}
               className="toolbar-item-content"
             >
-              {icon}
+              {icon ? (
+                <Box component="span" className="toolbar-item-icon">
+                  {icon}
+                </Box>
+              ) : null}
               {text ? (
                 <Typography component="span" variant="caption" fontWeight={700}>
                   {text}
