@@ -4,6 +4,7 @@ import {
   Eraser,
   Italic,
   Highlighter,
+  type LucideIcon,
   Link2,
   List,
   MessageSquareQuote,
@@ -18,8 +19,9 @@ import {
   Heading,
   AlignLeft,
 } from 'lucide-react'
+import type { BasicExtension } from 'prosekit/basic'
+import type { Editor } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
-import { useCallback } from 'react'
 
 import {
   EditorToolbar,
@@ -33,143 +35,206 @@ const toolbarIconProps = {
   strokeWidth: 1.9,
 }
 
+type ToolbarButtonItem = {
+  key: string
+  tip: string
+  icon: LucideIcon
+  shortcutKey?: string[]
+  isActive: boolean
+  canExec: boolean
+  command?: () => void
+}
+
+type ToolbarGroup = ToolbarButtonItem[]
+
+function createToolbarButtonItem(
+  key: string,
+  options: Omit<ToolbarButtonItem, 'key'>,
+): ToolbarButtonItem {
+  return {
+    key,
+    ...options,
+  }
+}
+
+function getMinimalToolbarGroups(editor: Editor<BasicExtension>): ToolbarGroup[] {
+  return [
+    [
+      createToolbarButtonItem('insert', {
+        tip: '插入',
+        icon: Plus,
+        isActive: false,
+        canExec: true,
+      }),
+    ],
+    [
+      createToolbarButtonItem('undo', {
+        tip: '撤销',
+        shortcutKey: ['ctrl', 'z'],
+        icon: Undo2,
+        isActive: false,
+        canExec: editor.commands.undo ? editor.commands.undo.canExec() : false,
+        command: editor.commands.undo ? () => editor.commands.undo() : undefined,
+      }),
+      createToolbarButtonItem('redo', {
+        tip: '重做',
+        shortcutKey: ['ctrl', 'y'],
+        icon: Redo2,
+        isActive: false,
+        canExec: editor.commands.redo ? editor.commands.redo.canExec() : false,
+        command: editor.commands.redo ? () => editor.commands.redo() : undefined,
+      }),
+      createToolbarButtonItem('clear', {
+        tip: '清除格式',
+        icon: Eraser,
+        isActive: false,
+        canExec: true,
+      }),
+    ],
+    [
+      createToolbarButtonItem('heading', {
+        tip: '标题',
+        icon: Heading,
+        isActive: false,
+        canExec: true,
+      }),
+    ],
+    [
+      createToolbarButtonItem('font-size', {
+        tip: '字号',
+        icon: TypeOutline,
+        isActive: false,
+        canExec: true,
+      }),
+      createToolbarButtonItem('text-color', {
+        tip: '文字颜色',
+        icon: Palette,
+        isActive: false,
+        canExec: true,
+      }),
+      createToolbarButtonItem('highlight', {
+        tip: '高亮',
+        icon: Highlighter,
+        isActive: false,
+        canExec: true,
+      }),
+    ],
+    [
+      createToolbarButtonItem('bold', {
+        tip: '加粗',
+        shortcutKey: ['ctrl', 'b'],
+        icon: Bold,
+        isActive: editor.marks.bold ? editor.marks.bold.isActive() : false,
+        canExec: editor.commands.toggleBold ? editor.commands.toggleBold.canExec() : false,
+        command: editor.commands.toggleBold ? () => editor.commands.toggleBold() : undefined,
+      }),
+      createToolbarButtonItem('italic', {
+        tip: '斜体',
+        shortcutKey: ['ctrl', 'i'],
+        icon: Italic,
+        isActive: editor.marks.italic ? editor.marks.italic.isActive() : false,
+        canExec: editor.commands.toggleItalic ? editor.commands.toggleItalic.canExec() : false,
+        command: editor.commands.toggleItalic ? () => editor.commands.toggleItalic() : undefined,
+      }),
+    ],
+    [
+      createToolbarButtonItem('underline', {
+        tip: '下划线',
+        icon: Underline,
+        isActive: editor.marks.underline ? editor.marks.underline.isActive() : false,
+        canExec: editor.commands.toggleUnderline ? editor.commands.toggleUnderline.canExec() : false,
+        command: editor.commands.toggleUnderline ? () => editor.commands.toggleUnderline() : undefined,
+      }),
+      createToolbarButtonItem('strike', {
+        tip: '删除线',
+        icon: Strikethrough,
+        isActive: editor.marks.strike ? editor.marks.strike.isActive() : false,
+        canExec: editor.commands.toggleStrike ? editor.commands.toggleStrike.canExec() : false,
+        command: editor.commands.toggleStrike ? () => editor.commands.toggleStrike() : undefined,
+      }),
+      createToolbarButtonItem('tooltip', {
+        tip: '提示',
+        icon: MessageSquareQuote,
+        isActive: false,
+        canExec: true,
+      }),
+    ],
+    [
+      createToolbarButtonItem('list', {
+        tip: '列表',
+        icon: List,
+        isActive: false,
+        canExec: true,
+      }),
+    ],
+    [
+      createToolbarButtonItem('link', {
+        tip: '链接',
+        icon: Link2,
+        isActive: false,
+        canExec: true,
+      }),
+      createToolbarButtonItem('align', {
+        tip: '对齐',
+        icon: AlignLeft,
+        isActive: false,
+        canExec: true,
+      }),
+      createToolbarButtonItem('more', {
+        tip: '更多',
+        icon: Ellipsis,
+        isActive: false,
+        canExec: true,
+      }),
+    ],
+    [
+      createToolbarButtonItem('code-block', {
+        tip: '代码块',
+        icon: SquareCode,
+        isActive: false,
+        canExec: true,
+      }),
+    ],
+  ]
+}
+
+function renderToolbarButtonItem(item: ToolbarButtonItem) {
+  const Icon = item.icon
+
+  return (
+    <ToolbarItem
+      key={item.key}
+      tip={item.tip}
+      shortcutKey={item.shortcutKey}
+      icon={<Icon {...toolbarIconProps} />}
+      className={item.isActive ? 'tool-active' : undefined}
+      disabled={!item.canExec}
+      onClick={item.command}
+    />
+  )
+}
+
 export function MinimalEditorToolbar() {
-  const editor = useEditor<any>() as any
-
-  const deriveToolbarState = useCallback((currentEditor: any) => {
-    const typedEditor = currentEditor as any
-
-    return {
-      canUndo: typedEditor.commands.undo.canExec(),
-      canRedo: typedEditor.commands.redo.canExec(),
-      isBold: typedEditor.marks.bold.isActive(),
-      isItalic: typedEditor.marks.italic?.isActive?.() ?? false,
-      isUnderline: typedEditor.marks.underline?.isActive?.() ?? false,
-      isStrike: typedEditor.marks.strike?.isActive?.() ?? false,
-    }
-  }, [])
-
-  const { canUndo, canRedo, isBold, isItalic, isUnderline, isStrike } = useEditorDerivedValue<any, {
-    canUndo: boolean
-    canRedo: boolean
-    isBold: boolean
-    isItalic: boolean
-    isUnderline: boolean
-    isStrike: boolean
-  }>(deriveToolbarState)
+  useEditor<BasicExtension>()
+  const toolbarGroups = useEditorDerivedValue<BasicExtension, ToolbarGroup[]>(
+    getMinimalToolbarGroups,
+  )
 
   return (
     <EditorToolbar>
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="插入"
-          icon={<Plus {...toolbarIconProps} />}
-        />
-      </EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[0]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarDivider />
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="撤销"
-          shortcutKey={['ctrl', 'z']}
-          icon={<Undo2 {...toolbarIconProps} />}
-          disabled={!canUndo}
-          onClick={() => editor.commands.undo()}
-        />
-        <ToolbarItem
-          tip="重做"
-          shortcutKey={['ctrl', 'y']}
-          icon={<Redo2 {...toolbarIconProps} />}
-          disabled={!canRedo}
-          onClick={() => editor.commands.redo()}
-        />
-        <ToolbarItem
-          tip="清除格式"
-          icon={<Eraser {...toolbarIconProps} />}
-        />
-      </EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[1]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarDivider />
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="标题"
-          icon={<Heading {...toolbarIconProps} />}
-        />
-      </EditorToolbarGroup>
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="字号"
-          icon={<TypeOutline {...toolbarIconProps} />}
-        />
-        <ToolbarItem
-          tip="文字颜色"
-          icon={<Palette {...toolbarIconProps} />}
-        />
-        <ToolbarItem
-          tip="高亮"
-          icon={<Highlighter {...toolbarIconProps} />}
-        />
-      </EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[2]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[3]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarDivider />
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="加粗"
-          shortcutKey={['ctrl', 'b']}
-          icon={<Bold {...toolbarIconProps} />}
-          className={isBold ? 'tool-active' : ''}
-          onClick={() => editor.commands.toggleBold()}
-        />
-        <ToolbarItem
-          tip="斜体"
-          shortcutKey={['ctrl', 'i']}
-          icon={<Italic {...toolbarIconProps} />}
-          className={isItalic ? 'tool-active' : ''}
-          onClick={() => editor.commands.toggleItalic?.()}
-        />
-      </EditorToolbarGroup>
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="下划线"
-          icon={<Underline {...toolbarIconProps} />}
-          className={isUnderline ? 'tool-active' : ''}
-          onClick={() => editor.commands.toggleUnderline?.()}
-        />
-        <ToolbarItem
-          tip="删除线"
-          icon={<Strikethrough {...toolbarIconProps} />}
-          className={isStrike ? 'tool-active' : ''}
-          onClick={() => editor.commands.toggleStrike?.()}
-        />
-        <ToolbarItem
-          tip="提示"
-          icon={<MessageSquareQuote {...toolbarIconProps} />}
-        />
-      </EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[4]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[5]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarDivider />
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="列表"
-          icon={<List {...toolbarIconProps} />}
-        />
-      </EditorToolbarGroup>
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="链接"
-          icon={<Link2 {...toolbarIconProps} />}
-        />
-        <ToolbarItem
-          tip="对齐"
-          icon={<AlignLeft {...toolbarIconProps} />}
-        />
-        <ToolbarItem
-          tip="更多"
-          icon={<Ellipsis {...toolbarIconProps} />}
-        />
-      </EditorToolbarGroup>
-      <EditorToolbarGroup>
-        <ToolbarItem
-          tip="代码块"
-          icon={<SquareCode {...toolbarIconProps} />}
-        />
-      </EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[6]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[7]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>{toolbarGroups[8]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
     </EditorToolbar>
   )
 }
