@@ -1,5 +1,6 @@
 export * from './text-style'
 export * from './text-align/'
+export * from './trailing-node/'
 export * from './highlight/'
 export * from './superscript/'
 export * from './subscript/'

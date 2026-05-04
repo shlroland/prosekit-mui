@@ -7,6 +7,7 @@ import {
   defineSuperscriptExtension,
   defineTextAlignExtension,
   defineTextStyleExtension,
+  defineTrailingNode,
   defineTooltipExtension,
 } from '../../src/prosekit/extensions'
 
@@ -16,6 +17,7 @@ export const minimalEditorExtension = union(
     color: 'rgba(25, 118, 210, 0.72)',
     width: 2,
   }),
+  defineTrailingNode(),
   defineTextStyleExtension(),
   defineTextAlignExtension(),
   defineHighlightExtension(),
