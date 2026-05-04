@@ -2,16 +2,17 @@ import {
   Bold,
   Ellipsis,
   Eraser,
+  Highlighter,
   type LucideIcon,
   Italic,
   Link2,
   List,
   MessageSquareQuote,
+  PenTool,
   Plus,
   Redo2,
   SquareCode,
   Strikethrough,
-  TypeOutline,
   Underline,
   Undo2,
   AlignLeft,
@@ -104,6 +105,11 @@ function clearFormatting(editor: Editor<MinimalEditorExtension>) {
   editor.commands.removeMark({ type: 'underline' })
   editor.commands.removeMark({ type: 'strike' })
   editor.commands.removeMark({ type: 'code' }) 
+  if (editor.commands.unsetHighlight) {
+    editor.commands.unsetHighlight()
+  } else {
+    editor.commands.removeMark({ type: 'highlight' })
+  }
   if (editor.commands.unsetFontSize) {
     editor.commands.unsetFontSize()
   }
@@ -195,6 +201,9 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
           editor.commands.removeMark.canExec({ type: 'underline' }) ||
           editor.commands.removeMark.canExec({ type: 'strike' }) ||
           editor.commands.removeMark.canExec({ type: 'code' }) ||
+          (editor.commands.unsetHighlight
+            ? editor.commands.unsetHighlight.canExec()
+            : editor.commands.removeMark.canExec({ type: 'highlight' })) ||
           (editor.commands.unsetTextStyle
             ? editor.commands.unsetTextStyle.canExec([
                 'fontSize',
@@ -240,6 +249,16 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
         isActive: editor.marks.italic ? editor.marks.italic.isActive() : false,
         canExec: editor.commands.toggleItalic ? editor.commands.toggleItalic.canExec() : false,
         command: () => editor.commands.toggleItalic(),
+      }),
+      createCommandToolbarButtonItem('highlight', {
+        tip: '高亮',
+        shortcutKey: ['ctrl', 'shift', 'h'],
+        icon: PenTool,
+        isActive: editor.marks.highlight ? editor.marks.highlight.isActive() : false,
+        canExec: editor.commands.toggleHighlight
+          ? editor.commands.toggleHighlight.canExec()
+          : false,
+        command: () => editor.commands.toggleHighlight(),
       }),
     ],
     [
