@@ -1,5 +1,8 @@
+import { Box } from '@mui/material'
 import {
   Bold,
+  ChevronDown,
+  CornerDownLeft,
   Ellipsis,
   Eraser,
   Highlighter,
@@ -11,6 +14,7 @@ import {
   Minus,
   PenTool,
   Plus,
+  Quote,
   Redo2,
   SquareCode,
   Strikethrough,
@@ -21,11 +25,13 @@ import {
 } from 'lucide-react'
 import type { Editor } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
+import type { ReactElement } from 'react'
 
 import {
   EditorToolbar,
   EditorToolbarDivider,
   EditorToolbarGroup,
+  ToolbarMenu,
   ToolbarItem,
 } from '../../src'
 import type { MinimalEditorExtension } from './minimal-editor-extension'
@@ -51,6 +57,31 @@ type ToolbarButtonItem = {
 }
 
 type ToolbarGroup = ToolbarButtonItem[]
+type InsertOptionKey = 'hard-break' | 'horizontal-rule'
+
+type InsertMenuState = {
+  selectedKey: InsertOptionKey
+  canOpen: boolean
+}
+
+const insertOptions = [
+  {
+    key: 'hard-break',
+    label: '换行',
+    shortcutKey: ['shift', 'enter'],
+    icon: <CornerDownLeft {...toolbarIconProps} />,
+  },
+  {
+    key: 'horizontal-rule',
+    label: '分割线',
+    icon: <Minus {...toolbarIconProps} />,
+  },
+] satisfies {
+  key: InsertOptionKey
+  label: string
+  shortcutKey?: string[]
+  icon: ReactElement
+}[]
 
 function createToolbarButtonItem(
   key: string,
@@ -107,7 +138,7 @@ function clearFormatting(editor: Editor<MinimalEditorExtension>) {
   editor.commands.removeMark({ type: 'italic' })
   editor.commands.removeMark({ type: 'underline' })
   editor.commands.removeMark({ type: 'strike' })
-  editor.commands.removeMark({ type: 'code' }) 
+  editor.commands.removeMark({ type: 'code' })
   if (editor.commands.unsetHighlight) {
     editor.commands.unsetHighlight()
   } else {
@@ -161,6 +192,11 @@ function clearFormatting(editor: Editor<MinimalEditorExtension>) {
     editor.commands.removeEmptyTextStyle()
   }
   editor.commands.removeLink()
+
+  if (editor.nodes.blockquote.isActive() && editor.commands.toggleBlockquote?.canExec()) {
+    editor.commands.toggleBlockquote()
+  }
+
   editor.commands.setParagraph()
 
   if (editor.nodes.list.isActive() && editor.commands.unwrapList?.canExec()) {
@@ -197,14 +233,40 @@ function toggleLink(editor: Editor<MinimalEditorExtension>) {
   editor.commands.toggleLink({ href })
 }
 
+function getInsertMenuState(editor: Editor<MinimalEditorExtension>): InsertMenuState {
+  return {
+    selectedKey: 'hard-break',
+    canOpen:
+      (editor.commands.insertHardBreak
+        ? editor.commands.insertHardBreak.canExec()
+        : false) ||
+      (editor.commands.insertHorizontalRule
+        ? editor.commands.insertHorizontalRule.canExec()
+        : false),
+  }
+}
+
+function applyInsertOption(
+  editor: Editor<MinimalEditorExtension>,
+  selectedKey: InsertOptionKey,
+) {
+  if (selectedKey === 'hard-break') {
+    editor.commands.insertHardBreak()
+    return
+  }
+
+  editor.commands.insertHorizontalRule()
+}
+
 function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): ToolbarGroup[] {
   const isBulletList = editor.nodes.list.isActive({ kind: 'bullet' })
+  const isBlockquote = editor.nodes.blockquote.isActive()
   const isCodeBlock = editor.nodes.codeBlock.isActive()
   const isLink = editor.marks.link.isActive()
 
   return [
     [
-      createStaticToolbarButtonItem('insert', {
+      createStaticToolbarButtonItem('insert-placeholder', {
         tip: '插入',
         icon: Plus,
         canExec: false,
@@ -250,12 +312,12 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
             : editor.commands.removeMark.canExec({ type: 'tooltip' })) ||
           (editor.commands.unsetTextStyle
             ? editor.commands.unsetTextStyle.canExec([
-                'fontSize',
-                'color',
-                'backgroundColor',
-                'fontFamily',
-                'lineHeight',
-              ])
+              'fontSize',
+              'color',
+              'backgroundColor',
+              'fontFamily',
+              'lineHeight',
+            ])
             : false) ||
           (editor.commands.unsetTextBackgroundColor
             ? editor.commands.unsetTextBackgroundColor.canExec()
@@ -271,7 +333,8 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
             : false) ||
           (editor.commands.unsetFontSize
             ? editor.commands.unsetFontSize.canExec()
-            : editor.commands.removeMark.canExec({ type: 'textStyle' })),
+            : editor.commands.removeMark.canExec({ type: 'textStyle' })) ||
+          (isBlockquote && (editor.commands.toggleBlockquote?.canExec() ?? false)),
         command: () => clearFormatting(editor),
       }),
     ],
@@ -363,13 +426,14 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
         canExec: editor.commands.toggleList.canExec({ kind: 'bullet' }),
         command: () => editor.commands.toggleList({ kind: 'bullet' }),
       }),
-      createCommandToolbarButtonItem('horizontal-rule', {
-        tip: '分割线',
-        icon: Minus,
-        canExec: editor.commands.insertHorizontalRule
-          ? editor.commands.insertHorizontalRule.canExec()
+      createCommandToolbarButtonItem('blockquote', {
+        tip: '引用',
+        icon: Quote,
+        isActive: isBlockquote,
+        canExec: editor.commands.toggleBlockquote
+          ? editor.commands.toggleBlockquote.canExec()
           : false,
-        command: () => editor.commands.insertHorizontalRule(),
+        command: () => editor.commands.toggleBlockquote(),
       }),
     ],
     [
@@ -420,10 +484,42 @@ export function MinimalEditorToolbar() {
   const toolbarGroups = useEditorDerivedValue<MinimalEditorExtension, ToolbarGroup[]>(
     getMinimalToolbarGroups,
   )
+  const editor = useEditor<MinimalEditorExtension>()
+  const insertMenuState = useEditorDerivedValue<MinimalEditorExtension, InsertMenuState>(
+    getInsertMenuState,
+  )
 
   return (
     <EditorToolbar>
-      <EditorToolbarGroup>{toolbarGroups[0]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>
+        <ToolbarMenu
+          tip="插入"
+          options={insertOptions}
+          selectedKey={insertMenuState.selectedKey}
+          disabled={!insertMenuState.canOpen}
+          triggerContent={
+            <Box className="inline-flex shrink-0 items-center gap-1.5">
+              <Box
+                component="span"
+                className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
+              >
+                <Plus className="toolbar-icon-svg" strokeWidth={1.9} />
+              </Box>
+              <Box
+                component="span"
+                className="shrink-0 text-[12px] font-medium leading-none"
+              >
+                插入
+              </Box>
+              <ChevronDown
+                className="pointer-events-none h-3 w-3 shrink-0 text-[var(--mui-palette-text-disabled)]"
+                strokeWidth={1.85}
+              />
+            </Box>
+          }
+          onSelect={(selectedKey) => applyInsertOption(editor, selectedKey)}
+        />
+      </EditorToolbarGroup>
       <EditorToolbarDivider />
       <EditorToolbarGroup>{toolbarGroups[1]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarDivider />
