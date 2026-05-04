@@ -122,6 +122,11 @@ function clearFormatting(editor: Editor<MinimalEditorExtension>) {
   } else {
     editor.commands.removeMark({ type: 'subscript' })
   }
+  if (editor.commands.unsetTooltip) {
+    editor.commands.unsetTooltip()
+  } else {
+    editor.commands.removeMark({ type: 'tooltip' })
+  }
   if (editor.commands.unsetFontSize) {
     editor.commands.unsetFontSize()
   }
@@ -157,6 +162,46 @@ function clearFormatting(editor: Editor<MinimalEditorExtension>) {
   if (editor.nodes.list.isActive() && editor.commands.unwrapList?.canExec()) {
     editor.commands.unwrapList()
   }
+}
+
+function getActiveTooltip(editor: Editor<MinimalEditorExtension>): string | undefined {
+  const storedMark = editor.state.storedMarks?.find(
+    (mark) => mark.type.name === 'tooltip',
+  )
+
+  if (typeof storedMark?.attrs.tooltip === 'string' && storedMark.attrs.tooltip) {
+    return String(storedMark.attrs.tooltip)
+  }
+
+  const activeMark = editor.state.selection.$from
+    .marks()
+    .find((mark) => mark.type.name === 'tooltip')
+
+  if (typeof activeMark?.attrs.tooltip === 'string' && activeMark.attrs.tooltip) {
+    return String(activeMark.attrs.tooltip)
+  }
+
+  return undefined
+}
+
+function toggleTooltip(editor: Editor<MinimalEditorExtension>) {
+  if (editor.marks.tooltip?.isActive()) {
+    editor.commands.unsetTooltip?.()
+    return
+  }
+
+  const tooltip = window.prompt('输入提示内容', getActiveTooltip(editor) ?? '')
+
+  if (!tooltip) {
+    return
+  }
+
+  if (editor.commands.setTooltip) {
+    editor.commands.setTooltip(tooltip)
+    return
+  }
+
+  editor.commands.toggleTooltip?.(tooltip)
 }
 
 function toggleLink(editor: Editor<MinimalEditorExtension>) {
@@ -222,6 +267,9 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
           (editor.commands.unsetSubscript
             ? editor.commands.unsetSubscript.canExec()
             : editor.commands.removeMark.canExec({ type: 'subscript' })) ||
+          (editor.commands.unsetTooltip
+            ? editor.commands.unsetTooltip.canExec()
+            : editor.commands.removeMark.canExec({ type: 'tooltip' })) ||
           (editor.commands.unsetTextStyle
             ? editor.commands.unsetTextStyle.canExec([
                 'fontSize',
@@ -316,9 +364,17 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
           : false,
         command: () => editor.commands.toggleSubscript(),
       }),
-      createStaticToolbarButtonItem('tooltip', {
+      createCommandToolbarButtonItem('tooltip', {
         tip: '提示',
         icon: MessageSquareQuote,
+        isActive: editor.marks.tooltip ? editor.marks.tooltip.isActive() : false,
+        canExec:
+          editor.commands.setTooltip
+            ? editor.commands.setTooltip.canExec('tooltip')
+            : editor.commands.toggleTooltip
+              ? editor.commands.toggleTooltip.canExec('tooltip')
+              : false,
+        command: () => toggleTooltip(editor),
       }),
     ],
     [

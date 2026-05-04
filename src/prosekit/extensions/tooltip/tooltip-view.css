@@ -1,0 +1,25 @@
+@reference "../../../../demo/styles/tailwind.css";
+
+.prosekit-tooltip-mark {
+  @apply inline cursor-help border-b border-dotted border-neutral-400 transition-colors;
+}
+
+.prosekit-tooltip-mark:hover {
+  @apply border-neutral-600;
+}
+
+.prosekit-tooltip-mark-content {
+  @apply inline;
+}
+
+.prosekit-tooltip-mark-popup {
+  @apply max-w-[20rem] rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-[12px] leading-5 text-neutral-700 shadow-md;
+}
+
+.prosekit-tooltip-mark-arrow {
+  @apply text-white;
+}
+
+.prosekit-tooltip-mark-text {
+  @apply whitespace-pre-wrap break-words;
+}
