@@ -8,6 +8,7 @@ import {
   Link2,
   List,
   MessageSquareQuote,
+  Minus,
   PenTool,
   Plus,
   Redo2,
@@ -361,6 +362,14 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
         isActive: isBulletList,
         canExec: editor.commands.toggleList.canExec({ kind: 'bullet' }),
         command: () => editor.commands.toggleList({ kind: 'bullet' }),
+      }),
+      createCommandToolbarButtonItem('horizontal-rule', {
+        tip: '分割线',
+        icon: Minus,
+        canExec: editor.commands.insertHorizontalRule
+          ? editor.commands.insertHorizontalRule.canExec()
+          : false,
+        command: () => editor.commands.insertHorizontalRule(),
       }),
     ],
     [
