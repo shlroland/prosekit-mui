@@ -17,7 +17,6 @@ import {
   Superscript,
   Underline,
   Undo2,
-  AlignLeft,
 } from 'lucide-react'
 import type { Editor } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
@@ -32,6 +31,7 @@ import type { MinimalEditorExtension } from './minimal-editor-extension'
 import { MinimalEditorFontSize } from './minimal-editor-font-size'
 import { MinimalEditorTextBackgroundColor } from './minimal-editor-text-background-color'
 import { MinimalEditorHeading } from './minimal-editor-heading'
+import { MinimalEditorTextAlign } from './minimal-editor-text-align'
 import { MinimalEditorTextColor } from './minimal-editor-text-color'
 
 const toolbarIconProps = {
@@ -141,6 +141,9 @@ function clearFormatting(editor: Editor<MinimalEditorExtension>) {
   }
   if (editor.commands.unsetLineHeight) {
     editor.commands.unsetLineHeight()
+  }
+  if (editor.commands.unsetTextAlign) {
+    editor.commands.unsetTextAlign()
   }
   if (editor.commands.unsetTextStyle) {
     editor.commands.unsetTextStyle([
@@ -370,10 +373,6 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
           editor.commands.toggleLink.canExec({ href: 'https://example.com' }),
         command: () => toggleLink(editor),
       }),
-      createStaticToolbarButtonItem('align', {
-        tip: '对齐',
-        icon: AlignLeft,
-      }),
       createStaticToolbarButtonItem('more', {
         tip: '更多',
         icon: Ellipsis,
@@ -434,6 +433,9 @@ export function MinimalEditorToolbar() {
       <EditorToolbarDivider />
       <EditorToolbarGroup>{toolbarGroups[4]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[5]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>
+        <MinimalEditorTextAlign />
+      </EditorToolbarGroup>
       <EditorToolbarDivider />
       <EditorToolbarGroup>{toolbarGroups[6]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[7]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>

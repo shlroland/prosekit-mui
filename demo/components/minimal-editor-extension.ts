@@ -4,6 +4,7 @@ import {
   defineHighlightExtension,
   defineSubscriptExtension,
   defineSuperscriptExtension,
+  defineTextAlignExtension,
   defineTextStyleExtension,
   defineTooltipExtension,
 } from '../../src/prosekit/extensions'
@@ -11,6 +12,7 @@ import {
 export const minimalEditorExtension = union(
   defineBasicExtension(),
   defineTextStyleExtension(),
+  defineTextAlignExtension(),
   defineHighlightExtension(),
   defineSuperscriptExtension(),
   defineSubscriptExtension(),
