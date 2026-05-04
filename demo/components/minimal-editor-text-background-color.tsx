@@ -1,11 +1,12 @@
 import { Box, IconButton } from '@mui/material'
 import { ChevronDown, Highlighter } from 'lucide-react'
-import type { BasicExtension } from 'prosekit/basic'
 import type { Editor } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useState, type MouseEvent } from 'react'
 
 import { ColorPicker, ToolbarItem } from '../../src'
+import type { MinimalEditorExtension } from './minimal-editor-extension'
+import { getTextStyleAttribute } from './minimal-editor-text-style'
 
 type TextBackgroundColorState = {
   selectedColor: string
@@ -41,62 +42,70 @@ export function createMinimalEditorTextBackgroundColorPreset(): TextBackgroundCo
 
 const textBackgroundColorPreset = createMinimalEditorTextBackgroundColorPreset()
 
-function getActiveTextBackgroundColor(editor: Editor<BasicExtension>): string | undefined {
-  const storedMark = editor.state.storedMarks?.find(
-    (mark) => mark.type.name === 'textBackgroundColor',
-  )
-
-  if (storedMark?.attrs.value) {
-    return String(storedMark.attrs.value)
-  }
-
-  const marks = editor.state.selection.$from.marks()
-  const activeMark = marks.find((mark) => mark.type.name === 'textBackgroundColor')
-  return activeMark?.attrs.value ? String(activeMark.attrs.value) : undefined
+function getActiveTextBackgroundColor(editor: Editor<MinimalEditorExtension>): string | undefined {
+  return getTextStyleAttribute(editor, 'backgroundColor')
 }
 
-function canSetTextBackgroundColor(editor: Editor<BasicExtension>, color: string) {
+function canSetTextBackgroundColor(editor: Editor<MinimalEditorExtension>, color: string) {
   if (editor.commands.setTextBackgroundColor) {
     return editor.commands.setTextBackgroundColor.canExec(color)
   }
 
+  if (editor.commands.setTextStyle) {
+    return editor.commands.setTextStyle.canExec({ backgroundColor: color })
+  }
+
   return editor.commands.addMark.canExec({
-    type: 'textBackgroundColor',
-    attrs: { value: color },
+    type: 'textStyle',
+    attrs: { backgroundColor: color },
   })
 }
 
-function canUnsetTextBackgroundColor(editor: Editor<BasicExtension>) {
+function canUnsetTextBackgroundColor(editor: Editor<MinimalEditorExtension>) {
   if (editor.commands.unsetTextBackgroundColor) {
     return editor.commands.unsetTextBackgroundColor.canExec()
   }
 
-  return editor.commands.unsetMark.canExec({ type: 'textBackgroundColor' })
+  if (editor.commands.unsetTextStyle) {
+    return editor.commands.unsetTextStyle.canExec('backgroundColor')
+  }
+
+  return editor.commands.removeMark.canExec({ type: 'textStyle' })
 }
 
-function setTextBackgroundColor(editor: Editor<BasicExtension>, color: string) {
+function setTextBackgroundColor(editor: Editor<MinimalEditorExtension>, color: string) {
   if (editor.commands.setTextBackgroundColor) {
     editor.commands.setTextBackgroundColor(color)
     return
   }
 
+  if (editor.commands.setTextStyle) {
+    editor.commands.setTextStyle({ backgroundColor: color })
+    return
+  }
+
   editor.commands.addMark({
-    type: 'textBackgroundColor',
-    attrs: { value: color },
+    type: 'textStyle',
+    attrs: { backgroundColor: color },
   })
 }
 
-function unsetTextBackgroundColor(editor: Editor<BasicExtension>) {
+function unsetTextBackgroundColor(editor: Editor<MinimalEditorExtension>) {
   if (editor.commands.unsetTextBackgroundColor) {
     editor.commands.unsetTextBackgroundColor()
     return
   }
 
-  editor.commands.unsetMark({ type: 'textBackgroundColor' })
+  if (editor.commands.unsetTextStyle) {
+    editor.commands.unsetTextStyle('backgroundColor')
+    return
+  }
+
+  editor.commands.removeMark({ type: 'textStyle' })
 }
 
 function getTextBackgroundColorState(
-  editor: Editor<BasicExtension>,
+  editor: Editor<MinimalEditorExtension>,
 ): TextBackgroundColorState {
   const activeTextBackgroundColor = getActiveTextBackgroundColor(editor)
 
@@ -109,9 +118,9 @@ function getTextBackgroundColorState(
 }
 
 export function MinimalEditorTextBackgroundColor() {
-  const editor = useEditor<BasicExtension>()
+  const editor = useEditor<MinimalEditorExtension>()
   const textBackgroundColorState = useEditorDerivedValue<
-    BasicExtension,
+    MinimalEditorExtension,
     TextBackgroundColorState
   >(getTextBackgroundColorState)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)

@@ -1,12 +1,10 @@
 import { defineBasicExtension } from 'prosekit/basic'
 import { union } from 'prosekit/core'
-import { defineFontSizeExtension } from '../../src/prosekit/extensions/font-size'
-import { defineTextBackgroundColorExtension } from '../../src/prosekit/extensions/text-background-color'
-import { defineTextColorExtension } from '../../src/prosekit/extensions/text-color'
+import { defineTextStyleExtension } from '../../src/prosekit/extensions'
 
 export const minimalEditorExtension = union(
   defineBasicExtension(),
-  defineFontSizeExtension(),
-  defineTextBackgroundColorExtension(),
-  defineTextColorExtension(),
+  defineTextStyleExtension(),
 )
+
+export type MinimalEditorExtension = typeof minimalEditorExtension

@@ -1,10 +1,11 @@
 import { Box } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
-import type { BasicExtension } from 'prosekit/basic'
 import type { Editor } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 
 import { ToolbarMenu, type ToolbarMenuOption } from '../../src'
+import type { MinimalEditorExtension } from './minimal-editor-extension'
+import { getTextStyleAttribute } from './minimal-editor-text-style'
 
 type FontSizeOptionKey = '12px' | '14px' | '16px' | '18px' | '20px' | '24px' | '28px'
 
@@ -47,19 +48,11 @@ const fontSizeOptions: ToolbarMenuOption<FontSizeOptionKey>[] = fontSizeOptionPr
   }),
 )
 
-function getActiveFontSize(editor: Editor<BasicExtension>): string | undefined {
-  const storedMark = editor.state.storedMarks?.find((mark) => mark.type.name === 'fontSize')
-
-  if (storedMark?.attrs.value) {
-    return String(storedMark.attrs.value)
-  }
-
-  const marks = editor.state.selection.$from.marks()
-  const activeMark = marks.find((mark) => mark.type.name === 'fontSize')
-  return activeMark?.attrs.value ? String(activeMark.attrs.value) : undefined
+function getActiveFontSize(editor: Editor<MinimalEditorExtension>): string | undefined {
+  return getTextStyleAttribute(editor, 'fontSize')
 }
 
-function getFontSizeState(editor: Editor<BasicExtension>): FontSizeState {
+function getFontSizeState(editor: Editor<MinimalEditorExtension>): FontSizeState {
   const activeFontSize = getActiveFontSize(editor)
   const selectedKey = fontSizeOptionPreset.some((option) => option.key === activeFontSize)
     ? (activeFontSize as FontSizeOptionKey)
@@ -70,32 +63,41 @@ function getFontSizeState(editor: Editor<BasicExtension>): FontSizeState {
     canOpen:
       (editor.commands.setFontSize
         ? editor.commands.setFontSize.canExec(defaultFontSize)
+        : editor.commands.setTextStyle
+          ? editor.commands.setTextStyle.canExec({ fontSize: defaultFontSize })
         : editor.commands.addMark.canExec({
-            type: 'fontSize',
-            attrs: { value: defaultFontSize },
+            type: 'textStyle',
+            attrs: { fontSize: defaultFontSize },
           })) ||
       (editor.commands.unsetFontSize
         ? editor.commands.unsetFontSize.canExec()
-        : editor.commands.unsetMark.canExec({ type: 'fontSize' })),
+        : editor.commands.unsetTextStyle
+          ? editor.commands.unsetTextStyle.canExec('fontSize')
+        : editor.commands.removeMark.canExec({ type: 'textStyle' })),
     isActive: Boolean(activeFontSize),
   }
 }
 
-function applyFontSize(editor: Editor<BasicExtension>, value: FontSizeOptionKey) {
+function applyFontSize(editor: Editor<MinimalEditorExtension>, value: FontSizeOptionKey) {
   if (editor.commands.setFontSize) {
     editor.commands.setFontSize(value)
     return
   }
 
+  if (editor.commands.setTextStyle) {
+    editor.commands.setTextStyle({ fontSize: value })
+    return
+  }
+
   editor.commands.addMark({
-    type: 'fontSize',
-    attrs: { value },
+    type: 'textStyle',
+    attrs: { fontSize: value },
   })
 }
 
 export function MinimalEditorFontSize() {
-  const editor = useEditor<BasicExtension>()
-  const fontSizeState = useEditorDerivedValue<BasicExtension, FontSizeState>(
+  const editor = useEditor<MinimalEditorExtension>()
+  const fontSizeState = useEditorDerivedValue<MinimalEditorExtension, FontSizeState>(
     getFontSizeState,
   )
 

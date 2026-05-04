@@ -9,11 +9,12 @@ import {
   Heading6,
   Pilcrow,
 } from 'lucide-react'
-import type { BasicExtension } from 'prosekit/basic'
 import type { Editor } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
+import type { ReactElement } from 'react'
 
 import { ToolbarMenu, type ToolbarMenuOption } from '../../src'
+import type { MinimalEditorExtension } from './minimal-editor-extension'
 
 const toolbarIconProps = {
   className: 'toolbar-icon-svg',
@@ -85,7 +86,7 @@ const headingIcons = {
   '4': <Heading4 {...toolbarIconProps} />,
   '5': <Heading5 {...toolbarIconProps} />,
   '6': <Heading6 {...toolbarIconProps} />,
-} satisfies Record<HeadingOptionId, JSX.Element>
+} satisfies Record<HeadingOptionId, ReactElement>
 
 const headingOptions: ToolbarMenuOption<HeadingOptionId>[] = headingOptionPreset.map(
   (option) => ({
@@ -102,7 +103,7 @@ type HeadingState = {
   canOpen: boolean
 }
 
-function getHeadingState(editor: Editor<BasicExtension>): HeadingState {
+function getHeadingState(editor: Editor<MinimalEditorExtension>): HeadingState {
   const selectedOption = headingOptionPreset.find((option) => {
     if (!option.level) {
       return false
@@ -124,7 +125,7 @@ function getHeadingState(editor: Editor<BasicExtension>): HeadingState {
 }
 
 function applyHeadingOption(
-  editor: Editor<BasicExtension>,
+  editor: Editor<MinimalEditorExtension>,
   selectedKey: HeadingOptionId,
 ) {
   const option = headingOptionPreset.find((item) => item.key === selectedKey)
@@ -142,8 +143,8 @@ function applyHeadingOption(
 }
 
 export function MinimalEditorHeading() {
-  const editor = useEditor<BasicExtension>()
-  const headingState = useEditorDerivedValue<BasicExtension, HeadingState>(
+  const editor = useEditor<MinimalEditorExtension>()
+  const headingState = useEditorDerivedValue<MinimalEditorExtension, HeadingState>(
     getHeadingState,
   )
 

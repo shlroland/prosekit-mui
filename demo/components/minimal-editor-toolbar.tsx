@@ -16,7 +16,6 @@ import {
   Undo2,
   AlignLeft,
 } from 'lucide-react'
-import type { BasicExtension } from 'prosekit/basic'
 import type { Editor } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 
@@ -26,6 +25,7 @@ import {
   EditorToolbarGroup,
   ToolbarItem,
 } from '../../src'
+import type { MinimalEditorExtension } from './minimal-editor-extension'
 import { MinimalEditorFontSize } from './minimal-editor-font-size'
 import { MinimalEditorTextBackgroundColor } from './minimal-editor-text-background-color'
 import { MinimalEditorHeading } from './minimal-editor-heading'
@@ -98,26 +98,40 @@ function createStaticToolbarButtonItem(
   })
 }
 
-function clearFormatting(editor: Editor<BasicExtension>) {
-  editor.commands.unsetMark({ type: 'bold' })
-  editor.commands.unsetMark({ type: 'italic' })
-  editor.commands.unsetMark({ type: 'underline' })
-  editor.commands.unsetMark({ type: 'strike' })
-  editor.commands.unsetMark({ type: 'code' })
+function clearFormatting(editor: Editor<MinimalEditorExtension>) {
+  editor.commands.removeMark({ type: 'bold' })
+  editor.commands.removeMark({ type: 'italic' })
+  editor.commands.removeMark({ type: 'underline' })
+  editor.commands.removeMark({ type: 'strike' })
+  editor.commands.removeMark({ type: 'code' }) 
   if (editor.commands.unsetFontSize) {
     editor.commands.unsetFontSize()
-  } else {
-    editor.commands.unsetMark({ type: 'fontSize' })
   }
   if (editor.commands.unsetTextColor) {
     editor.commands.unsetTextColor()
-  } else {
-    editor.commands.unsetMark({ type: 'textColor' })
   }
   if (editor.commands.unsetTextBackgroundColor) {
     editor.commands.unsetTextBackgroundColor()
+  }
+  if (editor.commands.unsetFontFamily) {
+    editor.commands.unsetFontFamily()
+  }
+  if (editor.commands.unsetLineHeight) {
+    editor.commands.unsetLineHeight()
+  }
+  if (editor.commands.unsetTextStyle) {
+    editor.commands.unsetTextStyle([
+      'fontSize',
+      'color',
+      'backgroundColor',
+      'fontFamily',
+      'lineHeight',
+    ])
   } else {
-    editor.commands.unsetMark({ type: 'textBackgroundColor' })
+    editor.commands.removeMark({ type: 'textStyle' })
+  }
+  if (editor.commands.removeEmptyTextStyle) {
+    editor.commands.removeEmptyTextStyle()
   }
   editor.commands.removeLink()
   editor.commands.setParagraph()
@@ -127,7 +141,7 @@ function clearFormatting(editor: Editor<BasicExtension>) {
   }
 }
 
-function toggleLink(editor: Editor<BasicExtension>) {
+function toggleLink(editor: Editor<MinimalEditorExtension>) {
   if (editor.marks.link.isActive()) {
     editor.commands.removeLink()
     return
@@ -142,7 +156,7 @@ function toggleLink(editor: Editor<BasicExtension>) {
   editor.commands.toggleLink({ href })
 }
 
-function getMinimalToolbarGroups(editor: Editor<BasicExtension>): ToolbarGroup[] {
+function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): ToolbarGroup[] {
   const isBulletList = editor.nodes.list.isActive({ kind: 'bullet' })
   const isCodeBlock = editor.nodes.codeBlock.isActive()
   const isLink = editor.marks.link.isActive()
@@ -176,20 +190,35 @@ function getMinimalToolbarGroups(editor: Editor<BasicExtension>): ToolbarGroup[]
         canExec:
           editor.commands.setParagraph.canExec() ||
           editor.commands.removeLink.canExec() ||
-          editor.commands.unsetMark.canExec({ type: 'bold' }) ||
-          editor.commands.unsetMark.canExec({ type: 'italic' }) ||
-          editor.commands.unsetMark.canExec({ type: 'underline' }) ||
-          editor.commands.unsetMark.canExec({ type: 'strike' }) ||
-          editor.commands.unsetMark.canExec({ type: 'code' }) ||
+          editor.commands.removeMark.canExec({ type: 'bold' }) ||
+          editor.commands.removeMark.canExec({ type: 'italic' }) ||
+          editor.commands.removeMark.canExec({ type: 'underline' }) ||
+          editor.commands.removeMark.canExec({ type: 'strike' }) ||
+          editor.commands.removeMark.canExec({ type: 'code' }) ||
+          (editor.commands.unsetTextStyle
+            ? editor.commands.unsetTextStyle.canExec([
+                'fontSize',
+                'color',
+                'backgroundColor',
+                'fontFamily',
+                'lineHeight',
+              ])
+            : false) ||
           (editor.commands.unsetTextBackgroundColor
             ? editor.commands.unsetTextBackgroundColor.canExec()
-            : editor.commands.unsetMark.canExec({ type: 'textBackgroundColor' })) ||
+            : editor.commands.removeMark.canExec({ type: 'textStyle' })) ||
           (editor.commands.unsetTextColor
             ? editor.commands.unsetTextColor.canExec()
-            : editor.commands.unsetMark.canExec({ type: 'textColor' })) ||
+            : editor.commands.removeMark.canExec({ type: 'textStyle' })) ||
+          (editor.commands.unsetFontFamily
+            ? editor.commands.unsetFontFamily.canExec()
+            : false) ||
+          (editor.commands.unsetLineHeight
+            ? editor.commands.unsetLineHeight.canExec()
+            : false) ||
           (editor.commands.unsetFontSize
             ? editor.commands.unsetFontSize.canExec()
-            : editor.commands.unsetMark.canExec({ type: 'fontSize' })),
+            : editor.commands.removeMark.canExec({ type: 'textStyle' })),
         command: () => clearFormatting(editor),
       }),
     ],
@@ -290,8 +319,8 @@ function renderToolbarButtonItem(item: ToolbarButtonItem) {
 }
 
 export function MinimalEditorToolbar() {
-  useEditor<BasicExtension>()
-  const toolbarGroups = useEditorDerivedValue<BasicExtension, ToolbarGroup[]>(
+  useEditor<MinimalEditorExtension>()
+  const toolbarGroups = useEditorDerivedValue<MinimalEditorExtension, ToolbarGroup[]>(
     getMinimalToolbarGroups,
   )
 

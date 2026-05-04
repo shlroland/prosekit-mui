@@ -1,11 +1,12 @@
 import { Box, IconButton } from '@mui/material'
 import { ChevronDown, Palette } from 'lucide-react'
-import type { BasicExtension } from 'prosekit/basic'
 import type { Editor } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useState, type MouseEvent } from 'react'
 
 import { ColorPicker, ToolbarItem } from '../../src'
+import type { MinimalEditorExtension } from './minimal-editor-extension'
+import { getTextStyleAttribute } from './minimal-editor-text-style'
 
 type TextColorState = {
   selectedColor: string
@@ -41,59 +42,69 @@ export function createMinimalEditorTextColorPreset(): TextColorPreset[] {
 
 const textColorPreset = createMinimalEditorTextColorPreset()
 
-function getActiveTextColor(editor: Editor<BasicExtension>): string | undefined {
-  const storedMark = editor.state.storedMarks?.find((mark) => mark.type.name === 'textColor')
-
-  if (storedMark?.attrs.value) {
-    return String(storedMark.attrs.value)
-  }
-
-  const marks = editor.state.selection.$from.marks()
-  const activeMark = marks.find((mark) => mark.type.name === 'textColor')
-  return activeMark?.attrs.value ? String(activeMark.attrs.value) : undefined
+function getActiveTextColor(editor: Editor<MinimalEditorExtension>): string | undefined {
+  return getTextStyleAttribute(editor, 'color')
 }
 
-function canSetTextColor(editor: Editor<BasicExtension>, color: string) {
+function canSetTextColor(editor: Editor<MinimalEditorExtension>, color: string) {
   if (editor.commands.setTextColor) {
     return editor.commands.setTextColor.canExec(color)
   }
 
+  if (editor.commands.setTextStyle) {
+    return editor.commands.setTextStyle.canExec({ color })
+  }
+
   return editor.commands.addMark.canExec({
-    type: 'textColor',
-    attrs: { value: color },
+    type: 'textStyle',
+    attrs: { color },
   })
 }
 
-function canUnsetTextColor(editor: Editor<BasicExtension>) {
+function canUnsetTextColor(editor: Editor<MinimalEditorExtension>) {
   if (editor.commands.unsetTextColor) {
     return editor.commands.unsetTextColor.canExec()
   }
 
-  return editor.commands.unsetMark.canExec({ type: 'textColor' })
+  if (editor.commands.unsetTextStyle) {
+    return editor.commands.unsetTextStyle.canExec('color')
+  }
+
+  return editor.commands.removeMark.canExec({ type: 'textStyle' })
 }
 
-function setTextColor(editor: Editor<BasicExtension>, color: string) {
+function setTextColor(editor: Editor<MinimalEditorExtension>, color: string) {
   if (editor.commands.setTextColor) {
     editor.commands.setTextColor(color)
     return
   }
 
+  if (editor.commands.setTextStyle) {
+    editor.commands.setTextStyle({ color })
+    return
+  }
+
   editor.commands.addMark({
-    type: 'textColor',
-    attrs: { value: color },
+    type: 'textStyle',
+    attrs: { color },
   })
 }
 
-function unsetTextColor(editor: Editor<BasicExtension>) {
+function unsetTextColor(editor: Editor<MinimalEditorExtension>) {
   if (editor.commands.unsetTextColor) {
     editor.commands.unsetTextColor()
     return
   }
 
-  editor.commands.unsetMark({ type: 'textColor' })
+  if (editor.commands.unsetTextStyle) {
+    editor.commands.unsetTextStyle('color')
+    return
+  }
+
+  editor.commands.removeMark({ type: 'textStyle' })
 }
 
-function getTextColorState(editor: Editor<BasicExtension>): TextColorState {
+function getTextColorState(editor: Editor<MinimalEditorExtension>): TextColorState {
   const activeTextColor = getActiveTextColor(editor)
   return {
     selectedColor: activeTextColor ?? defaultTextColor,
@@ -104,8 +115,8 @@ function getTextColorState(editor: Editor<BasicExtension>): TextColorState {
 }
 
 export function MinimalEditorTextColor() {
-  const editor = useEditor<BasicExtension>()
-  const textColorState = useEditorDerivedValue<BasicExtension, TextColorState>(
+  const editor = useEditor<MinimalEditorExtension>()
+  const textColorState = useEditorDerivedValue<MinimalEditorExtension, TextColorState>(
     getTextColorState,
   )
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
