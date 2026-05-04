@@ -13,6 +13,8 @@ import {
   Redo2,
   SquareCode,
   Strikethrough,
+  Subscript,
+  Superscript,
   Underline,
   Undo2,
   AlignLeft,
@@ -110,6 +112,16 @@ function clearFormatting(editor: Editor<MinimalEditorExtension>) {
   } else {
     editor.commands.removeMark({ type: 'highlight' })
   }
+  if (editor.commands.unsetSuperscript) {
+    editor.commands.unsetSuperscript()
+  } else {
+    editor.commands.removeMark({ type: 'superscript' })
+  }
+  if (editor.commands.unsetSubscript) {
+    editor.commands.unsetSubscript()
+  } else {
+    editor.commands.removeMark({ type: 'subscript' })
+  }
   if (editor.commands.unsetFontSize) {
     editor.commands.unsetFontSize()
   }
@@ -204,6 +216,12 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
           (editor.commands.unsetHighlight
             ? editor.commands.unsetHighlight.canExec()
             : editor.commands.removeMark.canExec({ type: 'highlight' })) ||
+          (editor.commands.unsetSuperscript
+            ? editor.commands.unsetSuperscript.canExec()
+            : editor.commands.removeMark.canExec({ type: 'superscript' })) ||
+          (editor.commands.unsetSubscript
+            ? editor.commands.unsetSubscript.canExec()
+            : editor.commands.removeMark.canExec({ type: 'subscript' })) ||
           (editor.commands.unsetTextStyle
             ? editor.commands.unsetTextStyle.canExec([
                 'fontSize',
@@ -275,6 +293,28 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
         isActive: editor.marks.strike ? editor.marks.strike.isActive() : false,
         canExec: editor.commands.toggleStrike ? editor.commands.toggleStrike.canExec() : false,
         command: () => editor.commands.toggleStrike(),
+      }),
+      createCommandToolbarButtonItem('superscript', {
+        tip: '上标',
+        shortcutKey: ['ctrl', '.'],
+        icon: Superscript,
+        isActive: editor.marks.superscript
+          ? editor.marks.superscript.isActive()
+          : false,
+        canExec: editor.commands.toggleSuperscript
+          ? editor.commands.toggleSuperscript.canExec()
+          : false,
+        command: () => editor.commands.toggleSuperscript(),
+      }),
+      createCommandToolbarButtonItem('subscript', {
+        tip: '下标',
+        shortcutKey: ['ctrl', ','],
+        icon: Subscript,
+        isActive: editor.marks.subscript ? editor.marks.subscript.isActive() : false,
+        canExec: editor.commands.toggleSubscript
+          ? editor.commands.toggleSubscript.canExec()
+          : false,
+        command: () => editor.commands.toggleSubscript(),
       }),
       createStaticToolbarButtonItem('tooltip', {
         tip: '提示',
