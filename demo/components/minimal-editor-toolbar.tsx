@@ -164,44 +164,18 @@ function clearFormatting(editor: Editor<MinimalEditorExtension>) {
   }
 }
 
-function getActiveTooltip(editor: Editor<MinimalEditorExtension>): string | undefined {
-  const storedMark = editor.state.storedMarks?.find(
-    (mark) => mark.type.name === 'tooltip',
-  )
-
-  if (typeof storedMark?.attrs.tooltip === 'string' && storedMark.attrs.tooltip) {
-    return String(storedMark.attrs.tooltip)
-  }
-
-  const activeMark = editor.state.selection.$from
-    .marks()
-    .find((mark) => mark.type.name === 'tooltip')
-
-  if (typeof activeMark?.attrs.tooltip === 'string' && activeMark.attrs.tooltip) {
-    return String(activeMark.attrs.tooltip)
-  }
-
-  return undefined
-}
-
 function toggleTooltip(editor: Editor<MinimalEditorExtension>) {
   if (editor.marks.tooltip?.isActive()) {
     editor.commands.unsetTooltip?.()
     return
   }
 
-  const tooltip = window.prompt('输入提示内容', getActiveTooltip(editor) ?? '')
-
-  if (!tooltip) {
-    return
-  }
-
   if (editor.commands.setTooltip) {
-    editor.commands.setTooltip(tooltip)
+    editor.commands.setTooltip('')
     return
   }
 
-  editor.commands.toggleTooltip?.(tooltip)
+  editor.commands.toggleTooltip?.('')
 }
 
 function toggleLink(editor: Editor<MinimalEditorExtension>) {
