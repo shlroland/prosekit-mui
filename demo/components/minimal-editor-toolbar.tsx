@@ -9,7 +9,6 @@ import {
   type LucideIcon,
   Italic,
   Link2,
-  List,
   MessageSquareQuote,
   Minus,
   PenTool,
@@ -38,6 +37,7 @@ import type { MinimalEditorExtension } from './minimal-editor-extension'
 import { MinimalEditorFontSize } from './minimal-editor-font-size'
 import { MinimalEditorTextBackgroundColor } from './minimal-editor-text-background-color'
 import { MinimalEditorHeading } from './minimal-editor-heading'
+import { MinimalEditorList } from './minimal-editor-list'
 import { MinimalEditorTextAlign } from './minimal-editor-text-align'
 import { MinimalEditorTextColor } from './minimal-editor-text-color'
 
@@ -259,7 +259,6 @@ function applyInsertOption(
 }
 
 function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): ToolbarGroup[] {
-  const isBulletList = editor.nodes.list.isActive({ kind: 'bullet' })
   const isBlockquote = editor.nodes.blockquote.isActive()
   const isCodeBlock = editor.nodes.codeBlock.isActive()
   const isLink = editor.marks.link.isActive()
@@ -419,13 +418,6 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
       }),
     ],
     [
-      createCommandToolbarButtonItem('list', {
-        tip: '列表',
-        icon: List,
-        isActive: isBulletList,
-        canExec: editor.commands.toggleList.canExec({ kind: 'bullet' }),
-        command: () => editor.commands.toggleList({ kind: 'bullet' }),
-      }),
       createCommandToolbarButtonItem('blockquote', {
         tip: '引用',
         icon: Quote,
@@ -542,6 +534,9 @@ export function MinimalEditorToolbar() {
         <MinimalEditorTextAlign />
       </EditorToolbarGroup>
       <EditorToolbarDivider />
+      <EditorToolbarGroup>
+        <MinimalEditorList />
+      </EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[6]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[7]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[8]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>

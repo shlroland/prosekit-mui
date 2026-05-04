@@ -1,5 +1,6 @@
 import 'prosekit/basic/style.css'
 import 'prosekit/basic/typography.css'
+import 'prosekit/extensions/list/style.css'
 
 import { Typography } from '@mui/material'
 

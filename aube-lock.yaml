@@ -529,6 +529,9 @@ importers:
       prosekit:
         specifier: ^0.20.0
         version: 0.20.0(react@19.2.5)(react-dom@19.2.5(react@19.2.5))
+      prosemirror-flat-list:
+        specifier: ^0.5.8
+        version: 0.5.8
       react:
         specifier: ^19.2.5
         version: 19.2.5
