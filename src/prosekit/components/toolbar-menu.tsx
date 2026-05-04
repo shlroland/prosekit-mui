@@ -2,8 +2,8 @@ import { Box, Menu, MenuItem, Typography } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
 import { useState, type MouseEvent, type ReactNode } from 'react'
 
-import { cn } from '../utils/cn'
-import { getShortcutKeyText } from './get-shortcut-key-text'
+import { cn } from '../../utils/cn'
+import { getShortcutKeyText } from '../get-shortcut-key-text'
 import { ToolbarItem } from './toolbar-item'
 import './toolbar.css'
 

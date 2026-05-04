@@ -1,0 +1,47 @@
+@reference "../../../demo/styles/tailwind.css";
+
+@layer components {
+  .prosekit-inline-menu-root {
+    @apply contents;
+  }
+
+  .prosekit-inline-menu-positioner {
+    @apply z-20;
+  }
+
+  .prosekit-inline-menu-popup {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-xl border bg-white p-1 shadow-[0_8px_24px_rgba(23,23,23,0.12)];
+    border-color: rgba(23, 23, 23, 0.12);
+  }
+
+  .prosekit-inline-menu-group {
+    @apply flex items-center;
+  }
+
+  .prosekit-inline-menu-button {
+    @apply h-8 w-8 rounded-lg;
+    color: var(--mui-palette-text-primary);
+
+    &:hover {
+      background-color: rgba(23, 23, 23, 0.05);
+    }
+
+    &.is-active {
+      background-color: rgba(23, 23, 23, 0.08);
+      color: var(--mui-palette-primary-main);
+    }
+
+    &:disabled {
+      color: var(--mui-palette-text-disabled);
+    }
+  }
+
+  .prosekit-inline-menu-divider {
+    @apply mx-1 h-5 w-px shrink-0 bg-black/12;
+  }
+
+  .prosekit-inline-menu-panel {
+    @apply inline-flex items-center gap-2 rounded-lg border bg-white px-2 py-1;
+    border-color: rgba(23, 23, 23, 0.12);
+  }
+}

@@ -1,4 +1,4 @@
-@reference "../../demo/styles/tailwind.css";
+@reference "../../../demo/styles/tailwind.css";
 
 @layer components {
   .minimal-prosekit-editor-shell {

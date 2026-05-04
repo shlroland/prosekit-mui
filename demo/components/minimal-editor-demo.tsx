@@ -10,6 +10,7 @@ import {
 } from '../../src'
 import { minimalEditorExtension } from './minimal-editor-extension'
 import { minimalEditorDefaultContent } from './minimal-editor-default-content'
+import { MinimalEditorInlineMenu } from './minimal-editor-inline-menu'
 import { MinimalEditorToolbar } from './minimal-editor-toolbar'
 
 export function MinimalEditorDemo() {
@@ -18,6 +19,7 @@ export function MinimalEditorDemo() {
       extension={minimalEditorExtension}
       initialContent={minimalEditorDefaultContent}
     >
+      <MinimalEditorInlineMenu />
       <EditorShell
         toolbar={<MinimalEditorToolbar />}
         content={<EditorContent />}

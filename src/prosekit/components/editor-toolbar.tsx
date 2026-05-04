@@ -2,7 +2,7 @@ import { Box, Divider, Stack, Typography } from '@mui/material'
 import { useEditor } from 'prosekit/react'
 import { type PropsWithChildren } from 'react'
 
-import { cn } from '../utils/cn'
+import { cn } from '../../utils/cn'
 
 export type EditorToolbarProps = PropsWithChildren
 
