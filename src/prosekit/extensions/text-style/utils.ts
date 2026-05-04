@@ -7,7 +7,16 @@ export const textStyleAttrKeys: TextStyleAttrKey[] = [
   'fontSize',
   'fontFamily',
   'lineHeight',
+  'verticalAlign',
 ]
+
+export const verticalAlignValues = ['top', 'middle', 'bottom'] as const
+
+export type VerticalAlignValue = (typeof verticalAlignValues)[number]
+
+export function isVerticalAlignValue(value: string): value is VerticalAlignValue {
+  return verticalAlignValues.includes(value as VerticalAlignValue)
+}
 
 export function normalizeTextStyleAttrs(
   attrs: Partial<TextStyleAttrs>,
@@ -17,6 +26,10 @@ export function normalizeTextStyleAttrs(
       const value = attrs[key]
 
       if (typeof value !== 'string' || value.length === 0) {
+        return []
+      }
+
+      if (key === 'verticalAlign' && !isVerticalAlignValue(value)) {
         return []
       }
 
@@ -34,6 +47,7 @@ export function createTextStyleDeclaration(attrs: TextStyleAttrs) {
     attrs.fontSize ? `font-size:${attrs.fontSize}` : null,
     attrs.fontFamily ? `font-family:${attrs.fontFamily}` : null,
     attrs.lineHeight ? `line-height:${attrs.lineHeight}` : null,
+    attrs.verticalAlign ? `vertical-align:${attrs.verticalAlign}` : null,
   ]
 
   return entries.filter(Boolean).join(';')

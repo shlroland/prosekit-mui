@@ -30,6 +30,7 @@ export function defineTextStyleSpec(): TextStyleSpecExtension {
             fontSize: node.style.fontSize || undefined,
             fontFamily: node.style.fontFamily || undefined,
             lineHeight: node.style.lineHeight || undefined,
+            verticalAlign: node.style.verticalAlign || undefined,
           })
 
           return Object.keys(attrs).length > 0 ? attrs : false

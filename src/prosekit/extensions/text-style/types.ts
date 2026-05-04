@@ -6,6 +6,7 @@ export type TextStyleAttrs = {
   fontSize?: string
   fontFamily?: string
   lineHeight?: string
+  verticalAlign?: string
 }
 
 export type TextStyleAttrKey = keyof TextStyleAttrs
@@ -67,10 +68,19 @@ export type TextStyleLineHeightCommandsExtension = Extension<{
   }
 }>
 
+export type TextStyleVerticalAlignCommandsExtension = Extension<{
+  Commands: {
+    setVerticalAlign: [string]
+    unsetVerticalAlign: []
+    toggleVerticalAlign: [string]
+  }
+}>
+
 export type TextStyleExtension = Union<[TextStyleSpecExtension,
   TextStyleCommandsExtension,
   TextStyleColorCommandsExtension,
   TextStyleBackgroundColorCommandsExtension,
   TextStyleFontSizeCommandsExtension,
   TextStyleFontFamilyCommandsExtension,
-  TextStyleLineHeightCommandsExtension]>
+  TextStyleLineHeightCommandsExtension,
+  TextStyleVerticalAlignCommandsExtension]>
