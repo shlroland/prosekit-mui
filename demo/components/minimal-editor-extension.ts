@@ -1,7 +1,7 @@
-import { defineBasicExtension } from 'prosekit/basic'
 import { defineDropCursor } from 'prosekit/extensions/drop-cursor'
 import { union } from 'prosekit/core'
 import {
+  defineBasicExtension,
   defineFlipGridExtension,
   defineEmojiSyntaxExtension,
   defineHighlightExtension,

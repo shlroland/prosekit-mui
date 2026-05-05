@@ -32,9 +32,11 @@ import {
   EditorToolbar,
   EditorToolbarDivider,
   EditorToolbarGroup,
+  LinkEditorPopover,
   ToolbarMenu,
   ToolbarItem,
 } from '../../src'
+import { isLinkActive } from '../../src'
 import type { MinimalEditorExtension } from './minimal-editor-extension'
 import { MinimalEditorFontSize } from './minimal-editor-font-size'
 import { MinimalEditorTextBackgroundColor } from './minimal-editor-text-background-color'
@@ -43,6 +45,7 @@ import { MinimalEditorList } from './minimal-editor-list'
 import { MinimalEditorEmojiPicker } from './minimal-editor-emoji-picker'
 import { MinimalEditorTextAlign } from './minimal-editor-text-align'
 import { MinimalEditorTextColor } from './minimal-editor-text-color'
+import { useLinkEditor } from './use-link-editor'
 
 const toolbarIconProps = {
   className: 'toolbar-icon-svg',
@@ -235,21 +238,6 @@ function toggleTooltip(editor: Editor<MinimalEditorExtension>) {
   editor.commands.toggleTooltip?.('')
 }
 
-function toggleLink(editor: Editor<MinimalEditorExtension>) {
-  if (editor.marks.link.isActive()) {
-    editor.commands.removeLink()
-    return
-  }
-
-  const href = window.prompt('输入链接地址', 'https://')
-
-  if (!href) {
-    return
-  }
-
-  editor.commands.toggleLink({ href })
-}
-
 function getInsertMenuState(editor: Editor<MinimalEditorExtension>): InsertMenuState {
   return {
     selectedKey: 'hard-break',
@@ -291,7 +279,7 @@ function applyInsertOption(
 function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): ToolbarGroup[] {
   const isBlockquote = editor.nodes.blockquote.isActive()
   const isCodeBlock = editor.nodes.codeBlock.isActive()
-  const isLink = editor.marks.link.isActive()
+  const isLink = isLinkActive(editor.state)
 
   return [
     [
@@ -466,7 +454,7 @@ function getMinimalToolbarGroups(editor: Editor<MinimalEditorExtension>): Toolba
         canExec:
           editor.commands.removeLink.canExec() ||
           editor.commands.toggleLink.canExec({ href: 'https://example.com' }),
-        command: () => toggleLink(editor),
+        command: () => {},
       }),
       createStaticToolbarButtonItem('more', {
         tip: '更多',
@@ -507,6 +495,7 @@ export function MinimalEditorToolbar() {
     getMinimalToolbarGroups,
   )
   const editor = useEditor<MinimalEditorExtension>()
+  const linkEditor = useLinkEditor(editor)
   const insertMenuState = useEditorDerivedValue<MinimalEditorExtension, InsertMenuState>(
     getInsertMenuState,
   )
@@ -571,8 +560,29 @@ export function MinimalEditorToolbar() {
         <MinimalEditorList />
       </EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[6]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
-      <EditorToolbarGroup>{toolbarGroups[7]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>
+        {toolbarGroups[7]?.map((item) => {
+          if (item.key !== 'link') {
+            return renderToolbarButtonItem(item)
+          }
+
+          const Icon = item.icon
+          return (
+            <ToolbarItem
+              key={item.key}
+              ref={linkEditor.anchorRef}
+              tip={item.tip}
+              shortcutKey={item.shortcutKey}
+              icon={<Icon {...toolbarIconProps} />}
+              className={item.isActive || linkEditor.open ? 'tool-active' : undefined}
+              disabled={!linkEditor.canOpen}
+              onClick={() => linkEditor.openEditor()}
+            />
+          )
+        })}
+      </EditorToolbarGroup>
       <EditorToolbarGroup>{toolbarGroups[8]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <LinkEditorPopover {...linkEditor.popoverProps} />
     </EditorToolbar>
   )
 }

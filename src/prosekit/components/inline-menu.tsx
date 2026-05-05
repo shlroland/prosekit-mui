@@ -6,6 +6,7 @@ import {
 } from 'prosekit/react/inline-popover'
 import {
   type ComponentProps,
+  forwardRef,
   type PropsWithChildren,
   type ReactNode,
 } from 'react'
@@ -92,27 +93,32 @@ export function InlineMenuGroup({ className, children }: InlineMenuGroupProps) {
   )
 }
 
-export function InlineMenuButton({
-  active = false,
-  disabled = false,
-  title,
-  onClick,
-  children,
-}: InlineMenuButtonProps) {
-  return (
-    <IconButton
-      size="small"
-      aria-label={title}
-      title={title}
-      disabled={disabled}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={onClick}
-      className={cn('prosekit-inline-menu-button', active && 'is-active')}
-    >
-      {children}
-    </IconButton>
-  )
-}
+export const InlineMenuButton = forwardRef<HTMLButtonElement, InlineMenuButtonProps>(
+  ({
+    active = false,
+    disabled = false,
+    title,
+    onClick,
+    children,
+  }, ref) => {
+    return (
+      <IconButton
+        ref={ref}
+        size="small"
+        aria-label={title}
+        title={title}
+        disabled={disabled}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={onClick}
+        className={cn('prosekit-inline-menu-button', active && 'is-active')}
+      >
+        {children}
+      </IconButton>
+    )
+  },
+)
+
+InlineMenuButton.displayName = 'InlineMenuButton'
 
 export function InlineMenuDivider({ className }: InlineMenuDividerProps) {
   return <Box className={cn('prosekit-inline-menu-divider', className)} />

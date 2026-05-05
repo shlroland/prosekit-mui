@@ -1,18 +1,17 @@
-import { Button, Stack, TextField } from '@mui/material'
 import { Bold, Code2, Italic, Link2, Strikethrough, Underline } from 'lucide-react'
 import type { Editor } from 'prosekit/core'
-import type { EditorState } from 'prosekit/pm/state'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
 
 import {
   InlineMenu,
   InlineMenuButton,
   InlineMenuDivider,
   InlineMenuGroup,
-  InlineMenuPanel,
+  LinkEditorPopover,
+  isLinkActive,
 } from '../../src'
 import type { MinimalEditorExtension } from './minimal-editor-extension'
+import { useLinkEditor } from './use-link-editor'
 
 const inlineMenuIconProps = {
   className: 'h-4 w-4',
@@ -26,7 +25,6 @@ type InlineMenuCommandItem = {
 }
 
 type InlineMenuLinkItem = InlineMenuCommandItem & {
-  currentLink: string
   expandSelection?: () => void
 }
 
@@ -38,23 +36,6 @@ type MinimalEditorInlineMenuState = {
   code?: InlineMenuCommandItem
   link?: InlineMenuLinkItem
   selectionKey: string
-}
-
-function getCurrentLink(state: EditorState): string {
-  const { $from, from, to } = state.selection
-  const marks = from === to ? $from.marks() : $from.marksAcross(state.doc.resolve(to))
-
-  if (!marks) {
-    return ''
-  }
-
-  for (const mark of marks) {
-    if (mark.type.name === 'link') {
-      return typeof mark.attrs.href === 'string' ? mark.attrs.href : ''
-    }
-  }
-
-  return ''
 }
 
 function getMinimalEditorInlineMenuState(
@@ -96,23 +77,20 @@ function getMinimalEditorInlineMenuState(
           command: () => editor.commands.toggleCode(),
         }
       : undefined,
-    link: editor.commands.addLink
-      ? {
-          isActive: editor.marks.link?.isActive() ?? false,
-          canExec:
-            editor.commands.addLink.canExec({ href: 'https://' }) ||
-            editor.commands.removeLink.canExec(),
-          command: () => {
-            if (editor.commands.expandLink?.canExec()) {
-              editor.commands.expandLink()
-            }
-          },
-          expandSelection: editor.commands.expandLink
-            ? () => editor.commands.expandLink()
-            : undefined,
-          currentLink: getCurrentLink(editor.state),
+    link: {
+      isActive: isLinkActive(editor.state),
+      canExec:
+        !editor.state.selection.empty ||
+        isLinkActive(editor.state),
+      command: () => {
+        if (editor.commands.expandLink?.canExec()) {
+          editor.commands.expandLink()
         }
-      : undefined,
+      },
+      expandSelection: editor.commands.expandLink
+        ? () => editor.commands.expandLink()
+        : undefined,
+    },
     selectionKey: `${editor.state.selection.from}:${editor.state.selection.to}:${editor.state.selection.empty}`,
   }
 }
@@ -123,59 +101,7 @@ export function MinimalEditorInlineMenu() {
     MinimalEditorExtension,
     MinimalEditorInlineMenuState
   >(getMinimalEditorInlineMenuState)
-  const linkInputRef = useRef<HTMLInputElement | null>(null)
-  const [linkMenuOpen, setLinkMenuOpen] = useState(false)
-  const [linkValue, setLinkValue] = useState('')
-
-  useEffect(() => {
-    if (!linkMenuOpen) {
-      return
-    }
-
-    setLinkMenuOpen(false)
-  }, [menuState.selectionKey, linkMenuOpen])
-
-  useEffect(() => {
-    if (!linkMenuOpen) {
-      return
-    }
-
-    linkInputRef.current?.focus()
-    linkInputRef.current?.select()
-  }, [linkMenuOpen])
-
-  function handleLinkOpen() {
-    if (!menuState.link) {
-      return
-    }
-
-    menuState.link.expandSelection?.()
-    setLinkValue(menuState.link.currentLink)
-    setLinkMenuOpen((current) => !current)
-  }
-
-  function handleLinkSubmit(event?: FormEvent) {
-    event?.preventDefault()
-    if (!menuState.link) {
-      return
-    }
-
-    const href = linkValue.trim()
-    if (!href) {
-      editor.commands.removeLink()
-    } else {
-      editor.commands.addLink({ href })
-    }
-
-    setLinkMenuOpen(false)
-    editor.focus()
-  }
-
-  function handleLinkRemove() {
-    editor.commands.removeLink()
-    setLinkMenuOpen(false)
-    editor.focus()
-  }
+  const linkEditor = useLinkEditor(editor, menuState.selectionKey)
 
   return (
     <InlineMenu>
@@ -237,76 +163,17 @@ export function MinimalEditorInlineMenu() {
       {menuState.link ? (
         <InlineMenuGroup>
           <InlineMenuButton
+            ref={linkEditor.anchorRef}
             title="Link"
-            active={menuState.link.isActive || linkMenuOpen}
+            active={menuState.link.isActive || linkEditor.open}
             disabled={!menuState.link.canExec}
-            onClick={handleLinkOpen}
+            onClick={() => linkEditor.openEditor()}
           >
             <Link2 {...inlineMenuIconProps} />
           </InlineMenuButton>
         </InlineMenuGroup>
       ) : null}
-
-      {menuState.link && linkMenuOpen ? (
-        <InlineMenuPanel>
-          <form onSubmit={handleLinkSubmit}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <TextField
-                inputRef={linkInputRef}
-                value={linkValue}
-                size="small"
-                placeholder="Paste the link..."
-                onChange={(event) => setLinkValue(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Escape') {
-                    event.preventDefault()
-                    setLinkMenuOpen(false)
-                    editor.focus()
-                  }
-                }}
-                slotProps={{
-                  input: {
-                    onMouseDown: (event) => event.stopPropagation(),
-                  },
-                  htmlInput: {
-                    className: 'w-56',
-                  },
-                }}
-              />
-              {menuState.link.isActive ? (
-                <Button
-                  size="small"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={handleLinkRemove}
-                  className="normal-case"
-                >
-                  Remove
-                </Button>
-              ) : null}
-              <Button
-                size="small"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  setLinkMenuOpen(false)
-                  editor.focus()
-                }}
-                className="normal-case"
-              >
-                Cancel
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                type="submit"
-                onMouseDown={(event) => event.preventDefault()}
-                className="normal-case"
-              >
-                Save
-              </Button>
-            </Stack>
-          </form>
-        </InlineMenuPanel>
-      ) : null}
+      <LinkEditorPopover {...linkEditor.popoverProps} />
     </InlineMenu>
   )
 }
