@@ -3,6 +3,7 @@ import { defineDropCursor } from 'prosekit/extensions/drop-cursor'
 import { union } from 'prosekit/core'
 import {
   defineFlipGridExtension,
+  defineEmojiSyntaxExtension,
   defineHighlightExtension,
   defineSubscriptExtension,
   defineSuperscriptExtension,
@@ -22,6 +23,7 @@ export const minimalEditorExtension = union(
   defineTextStyleExtension(),
   defineTextAlignExtension(),
   defineFlipGridExtension(),
+  defineEmojiSyntaxExtension(),
   defineHighlightExtension(),
   defineSuperscriptExtension(),
   defineSubscriptExtension(),

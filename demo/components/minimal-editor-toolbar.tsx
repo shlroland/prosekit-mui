@@ -40,6 +40,7 @@ import { MinimalEditorFontSize } from './minimal-editor-font-size'
 import { MinimalEditorTextBackgroundColor } from './minimal-editor-text-background-color'
 import { MinimalEditorHeading } from './minimal-editor-heading'
 import { MinimalEditorList } from './minimal-editor-list'
+import { MinimalEditorEmojiPicker } from './minimal-editor-emoji-picker'
 import { MinimalEditorTextAlign } from './minimal-editor-text-align'
 import { MinimalEditorTextColor } from './minimal-editor-text-color'
 
@@ -543,6 +544,9 @@ export function MinimalEditorToolbar() {
       </EditorToolbarGroup>
       <EditorToolbarDivider />
       <EditorToolbarGroup>{toolbarGroups[1]?.map(renderToolbarButtonItem)}</EditorToolbarGroup>
+      <EditorToolbarGroup>
+        <MinimalEditorEmojiPicker />
+      </EditorToolbarGroup>
       <EditorToolbarDivider />
       <EditorToolbarGroup>
         <MinimalEditorHeading />
