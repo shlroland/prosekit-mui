@@ -138,7 +138,7 @@ export async function searchEmojis(
   const result = await SearchIndex.search(normalizedQuery, {
     maxResults,
     caller: 'prosekit-mui',
-  })
+  }) as EmojiMartEmojiRecord[]
 
   return result
     .map((entry: EmojiMartEmojiRecord) => toEmojiSearchItem(entry))

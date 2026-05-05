@@ -1,10 +1,10 @@
 import {
   defineCommands,
-  type EditorState,
   findParentNodeOfType,
   setNodeAttrs,
   setNodeAttrsBetween,
 } from 'prosekit/core'
+import type { EditorState, Transaction } from 'prosekit/pm/state'
 
 import {
   textAlignValues,
@@ -21,7 +21,7 @@ export function createSetTextAlignCommand(
   value: TextAlignValue,
   options: Required<TextAlignOptions>,
 ) {
-  return (state, dispatch) => {
+  return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
     const attrs = {
       textAlign: value === options.defaultAlignment ? null : value,
     }
@@ -41,7 +41,7 @@ export function createSetTextAlignCommand(
 }
 
 export function createUnsetTextAlignCommand(options: Required<TextAlignOptions>) {
-  return (state, dispatch) => {
+  return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
     const attrs = {
       textAlign: null,
     }
@@ -78,7 +78,7 @@ export function createToggleTextAlignCommand(
     return () => false
   }
 
-  return (state, dispatch) => {
+  return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
     const activeTextAlign = getActiveTextAlign(state, options.types)
 
     if (activeTextAlign === value) {
