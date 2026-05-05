@@ -7,6 +7,7 @@ import {
 import type { ReactNodeViewProps } from 'prosekit/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { cn } from '../../../utils/cn'
 import {
   applyFlipGridWidths,
   collectWidths,
@@ -38,15 +39,13 @@ export function FlipGridView({ node, contentRef, selected }: ReactNodeViewProps)
   return (
     <Box
       ref={wrapperRef}
-      className={selected ? 'flip-grid-root flip-grid-root-selected' : 'flip-grid-root'}
-      sx={{
-        display: 'block',
-        width: '100%',
-        marginBlock: 2.5,
-        padding: 1.25,
-        borderRadius: 1.5,
-        border: '1px solid',
-        borderColor: selected ? 'primary.main' : 'divider',
+      className={cn(
+        'my-2.5 block w-full rounded-md border px-3 py-3',
+        selected
+          ? 'border-[color:var(--mui-palette-primary-main)]'
+          : 'border-[color:var(--mui-palette-divider)]',
+      )}
+      style={{
         background:
           'linear-gradient(180deg, rgba(252,250,245,0.98) 0%, rgba(248,245,238,0.96) 100%)',
         boxShadow: selected
@@ -132,7 +131,7 @@ export function FlipGridColumnView({
       return false
     }
 
-    const parentPos = $pos.start(found.depth) - 1
+    const parentPos = $pos.before(found.depth)
     const tr = state.tr
     const { changed } = applyFlipGridWidths({
       tr,
@@ -220,18 +219,15 @@ export function FlipGridColumnView({
   return (
     <Box
       ref={wrapperRef}
-      className={selected ? 'flip-grid-column flip-grid-column-selected' : 'flip-grid-column'}
+      className={cn(
+        'flip-grid-column relative h-full w-full min-w-0 rounded-sm border px-4 py-4',
+        selected
+          ? 'border-[color:var(--mui-palette-primary-main)]'
+          : 'border-[rgba(23,23,23,0.12)]',
+      )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      sx={{
-        width: '100%',
-        minWidth: 0,
-        height: '100%',
-        position: 'relative',
-        padding: 1.75,
-        borderRadius: 1,
-        border: '1px solid',
-        borderColor: selected ? 'primary.main' : 'rgba(23, 23, 23, 0.12)',
+      style={{
         backgroundColor: 'rgba(255,255,255,0.94)',
         boxShadow: selected
           ? '0 0 0 1px rgba(25,118,210,0.18)'
@@ -242,32 +238,14 @@ export function FlipGridColumnView({
         <Paper
           data-flip-grid-controls="true"
           elevation={0}
-          sx={{
-            position: 'absolute',
-            top: -14,
-            left: '50%',
-            zIndex: 2,
-            display: 'flex',
-            transform: 'translateX(-50%)',
-            borderRadius: 1.5,
-            border: '1px solid',
-            borderColor: 'divider',
-            backgroundColor: 'rgba(255,255,255,0.98)',
-            boxShadow: '0 10px 24px rgba(23,23,23,0.08)',
-            px: 0.25,
-            py: 0.25,
-          }}
+          className="absolute left-1/2 top-[-14px] z-[2] flex -translate-x-1/2 rounded-md border border-[color:var(--mui-palette-divider)] bg-[rgba(255,255,255,0.98)] px-1 py-1 shadow-[0_10px_24px_rgba(23,23,23,0.08)]"
         >
           <Stack direction="row" alignItems="center">
             <Tooltip title="左侧插入" arrow>
               <IconButton
                 size="small"
                 onClick={() => handleInsert('left')}
-                sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 1,
-                }}
+                className="h-7 w-7 rounded-sm"
               >
                 <PanelLeftOpen size={15} strokeWidth={1.9} />
               </IconButton>
@@ -276,11 +254,7 @@ export function FlipGridColumnView({
               <IconButton
                 size="small"
                 onClick={() => handleInsert('right')}
-                sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 1,
-                }}
+                className="h-7 w-7 rounded-sm"
               >
                 <PanelRightOpen size={15} strokeWidth={1.9} />
               </IconButton>
@@ -288,21 +262,13 @@ export function FlipGridColumnView({
             <Divider
               orientation="vertical"
               flexItem
-              sx={{
-                mx: 0.25,
-                my: 0.75,
-                borderColor: 'divider',
-              }}
+              className="mx-1 my-1 border-[color:var(--mui-palette-divider)]"
             />
             <Tooltip title={widths.length > 2 ? '删除当前栏' : '移除分栏'} arrow>
               <IconButton
                 size="small"
                 onClick={() => handleDelete()}
-                sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 1,
-                }}
+                className="h-7 w-7 rounded-sm"
               >
                 <Trash2 size={15} strokeWidth={1.9} />
               </IconButton>
@@ -310,7 +276,7 @@ export function FlipGridColumnView({
           </Stack>
         </Paper>
       ) : null}
-      <Box ref={contentRef} sx={{ minHeight: 24, width: '100%' }} />
+      <Box ref={contentRef} className="min-h-6 w-full" />
     </Box>
   )
 }

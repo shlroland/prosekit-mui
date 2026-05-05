@@ -145,22 +145,33 @@ export function applyFlipGridWidths({
     columns.splice(removeIndex, 1)
   }
 
+  const fallbackWidths =
+    columns.length > 0
+      ? new Array(columns.length + (typeof insertAt === 'number' ? 1 : 0)).fill(
+          100 / (columns.length + (typeof insertAt === 'number' ? 1 : 0)),
+        )
+      : []
+  const normalizedWidths = normalizeWithMin(
+    nextWidths.length === fallbackWidths.length ? nextWidths : fallbackWidths,
+    MIN_WIDTH,
+  )
+
   if (typeof insertAt === 'number') {
     const newColumn = columnType.create(
-      { width: normalizedWidths[insertAt] },
+      { width: normalizedWidths[insertAt] ?? 100 },
       paragraphType.createAndFill(),
     )
     columns.splice(insertAt, 0, newColumn)
   }
 
-  if (columns.length === 1) {
-    const remainingColumn = columns[0]
+  if (columns.length === 0) {
+    const fallbackBlock = paragraphType.createAndFill()
 
-    if (!remainingColumn) {
+    if (!fallbackBlock) {
       return { changed: false }
     }
 
-    tr.replaceWith(parentPos, parentPos + parentNode.nodeSize, remainingColumn.content)
+    tr.replaceWith(parentPos, parentPos + parentNode.nodeSize, fallbackBlock)
     tr.setSelection(
       TextSelection.near(
         tr.doc.resolve(Math.min(Math.max(0, parentPos + 1), tr.doc.content.size)),
@@ -169,9 +180,7 @@ export function applyFlipGridWidths({
     return { changed: tr.docChanged }
   }
 
-  const normalizedWidths = normalizeWithMin(nextWidths, MIN_WIDTH)
-
-  if (normalizedWidths.length < 2) {
+  if (normalizedWidths.length < 1) {
     return { changed: false }
   }
 
@@ -183,7 +192,7 @@ export function applyFlipGridWidths({
     columnType.create(
       {
         ...column.attrs,
-        width: normalizedWidths[index],
+        width: normalizedWidths[index] ?? 100,
       },
       column.content,
       column.marks,
