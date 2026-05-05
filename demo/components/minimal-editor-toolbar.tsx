@@ -15,6 +15,8 @@ import {
   Plus,
   Quote,
   Redo2,
+  Rows2,
+  Rows3,
   SquareCode,
   Strikethrough,
   Subscript,
@@ -57,7 +59,11 @@ type ToolbarButtonItem = {
 }
 
 type ToolbarGroup = ToolbarButtonItem[]
-type InsertOptionKey = 'hard-break' | 'horizontal-rule'
+type InsertOptionKey =
+  | 'hard-break'
+  | 'horizontal-rule'
+  | 'flip-grid-2'
+  | 'flip-grid-3'
 
 type InsertMenuState = {
   selectedKey: InsertOptionKey
@@ -75,6 +81,16 @@ const insertOptions = [
     key: 'horizontal-rule',
     label: '分割线',
     icon: <Minus {...toolbarIconProps} />,
+  },
+  {
+    key: 'flip-grid-2',
+    label: '双栏布局',
+    icon: <Rows2 {...toolbarIconProps} />,
+  },
+  {
+    key: 'flip-grid-3',
+    label: '三栏布局',
+    icon: <Rows3 {...toolbarIconProps} />,
   },
 ] satisfies {
   key: InsertOptionKey
@@ -240,6 +256,9 @@ function getInsertMenuState(editor: Editor<MinimalEditorExtension>): InsertMenuS
       (editor.commands.insertHardBreak
         ? editor.commands.insertHardBreak.canExec()
         : false) ||
+      (editor.commands.setFlipGrid
+        ? editor.commands.setFlipGrid.canExec(2) || editor.commands.setFlipGrid.canExec(3)
+        : false) ||
       (editor.commands.insertHorizontalRule
         ? editor.commands.insertHorizontalRule.canExec()
         : false),
@@ -252,6 +271,16 @@ function applyInsertOption(
 ) {
   if (selectedKey === 'hard-break') {
     editor.commands.insertHardBreak()
+    return
+  }
+
+  if (selectedKey === 'flip-grid-2') {
+    editor.commands.setFlipGrid?.(2)
+    return
+  }
+
+  if (selectedKey === 'flip-grid-3') {
+    editor.commands.setFlipGrid?.(3)
     return
   }
 
