@@ -1,6 +1,6 @@
 ---
 import '../styles/tailwind.css'
-import { MinimalEditorPage } from '../components/minimal-editor-page'
+import { ProseKitAstrobookDemo } from '../components/prosekit-astrobook-demo'
 ---
 
 <html lang="en">
@@ -11,7 +11,7 @@ import { MinimalEditorPage } from '../components/minimal-editor-page'
   </head>
   <body>
     <main class="mx-auto w-[min(1100px,calc(100%-2rem))] py-16">
-      <MinimalEditorPage client:load />
+      <ProseKitAstrobookDemo client:only="react" />
     </main>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import 'prosekit/basic/typography.css'
 
-import { MinimalEditorDemo } from '../components/minimal-editor-demo'
+import { ProseKitAstrobookDemo } from '../components/prosekit-astrobook-demo'
 import { ClientOnlyStoryFrame } from './client-only-story-frame'
 
 function MinimalProsekitEditorStory() {
@@ -11,7 +11,7 @@ function MinimalProsekitEditorStory() {
       copy="This is a demo composition built from the abstract provider, shell, toolbar, toolbar item, and content primitives exported by src/."
       loadingLabel="Loading editor playground..."
     >
-      <MinimalEditorDemo />
+      <ProseKitAstrobookDemo />
     </ClientOnlyStoryFrame>
   )
 }
