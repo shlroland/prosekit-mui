@@ -1,0 +1,17 @@
+import { SvgIcon } from "@mui/material";
+import type { SvgIconProps } from "@mui/material";
+import * as React from "react";
+
+export const TextIcon = (props: SvgIconProps) => {
+  return (
+    <SvgIcon
+      viewBox='0 0 24 24'
+      version='1.1'
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path d="M13 6V21H11V6H5V4H19V6H13Z"></path>
+    </SvgIcon>
+  );
+};
+TextIcon.displayName = 'icon-text';

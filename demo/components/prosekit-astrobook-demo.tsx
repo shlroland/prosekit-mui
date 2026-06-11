@@ -18,40 +18,37 @@ import {
   Typography,
 } from '@mui/material'
 import {
-  AlignCenter,
-  AlignJustify,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  Code2,
-  Highlighter,
-  Italic,
-  Link2,
-  List,
-  ListChecks,
-  ListOrdered,
-  Minus,
-  Quote,
-  Redo2,
-  Strikethrough,
-  Subscript,
-  Superscript,
-  Table2,
-  Underline,
-  Undo2,
-} from 'lucide-react'
-import type { Editor, NodeJSON } from 'prosekit/core'
-import { useEditor, useEditorDerivedValue } from 'prosekit/react'
-import type { ReactNode } from 'react'
-
-import {
+  AlignCenterIcon,
+  AlignJustifyIcon,
+  AlignLeftIcon,
+  AlignRightIcon,
+  ArrowGoBackLineIcon,
+  ArrowGoForwardLineIcon,
+  BoldIcon,
+  CodeLineIcon,
   EditorContent,
   EditorShell,
+  ItalicIcon,
+  LinkIcon,
+  ListCheck3Icon,
+  ListOrdered2Icon,
+  ListUnorderedIcon,
+  MarkPenLineIcon,
   ProseKitProvider,
+  QuoteTextIcon,
+  SeparatorIcon,
+  StrikethroughIcon,
+  SubscriptIcon,
+  SuperscriptIcon,
+  Table2Icon,
   ToolbarItem,
+  UnderlineIcon,
   defineRichTextExtension,
   isLinkActive,
 } from '../../src'
+import type { Editor, NodeJSON } from 'prosekit/core'
+import { useEditor, useEditorDerivedValue } from 'prosekit/react'
+import type { ReactNode } from 'react'
 
 const demoContent: NodeJSON = {
   type: 'doc',
@@ -77,7 +74,7 @@ const extension = defineRichTextExtension({
 
 const iconProps = {
   className: 'toolbar-icon-svg',
-  strokeWidth: 1.9,
+  sx: { fontSize: '1rem' },
 }
 
 type ToolbarState = {
@@ -179,7 +176,7 @@ function ProseKitAstrobookToolbar() {
 
         <DemoToolbarButton
           tip="撤销"
-          icon={<Undo2 {...iconProps} />}
+          icon={<ArrowGoBackLineIcon {...iconProps} />}
           onClick={() => {
             focus()
             editor.commands.undo()
@@ -187,7 +184,7 @@ function ProseKitAstrobookToolbar() {
         />
         <DemoToolbarButton
           tip="重做"
-          icon={<Redo2 {...iconProps} />}
+          icon={<ArrowGoForwardLineIcon {...iconProps} />}
           onClick={() => {
             focus()
             editor.commands.redo()
@@ -196,23 +193,23 @@ function ProseKitAstrobookToolbar() {
 
         <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
 
-        <DemoToolbarButton tip="加粗" active={state.bold} icon={<Bold {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBold() }} />
-        <DemoToolbarButton tip="斜体" active={state.italic} icon={<Italic {...iconProps} />} onClick={() => { focus(); editor.commands.toggleItalic() }} />
-        <DemoToolbarButton tip="下划线" active={state.underline} icon={<Underline {...iconProps} />} onClick={() => { focus(); editor.commands.toggleUnderline() }} />
-        <DemoToolbarButton tip="删除线" active={state.strike} icon={<Strikethrough {...iconProps} />} onClick={() => { focus(); editor.commands.toggleStrike() }} />
-        <DemoToolbarButton tip="行内代码" active={state.code} icon={<Code2 {...iconProps} />} onClick={() => { focus(); editor.commands.toggleCode() }} />
-        <DemoToolbarButton tip="高亮" active={state.highlight} icon={<Highlighter {...iconProps} />} onClick={() => { focus(); editor.commands.toggleHighlight() }} />
-        <DemoToolbarButton tip="上标" active={state.superscript} icon={<Superscript {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
-        <DemoToolbarButton tip="下标" active={state.subscript} icon={<Subscript {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
+        <DemoToolbarButton tip="加粗" active={state.bold} icon={<BoldIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBold() }} />
+        <DemoToolbarButton tip="斜体" active={state.italic} icon={<ItalicIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleItalic() }} />
+        <DemoToolbarButton tip="下划线" active={state.underline} icon={<UnderlineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleUnderline() }} />
+        <DemoToolbarButton tip="删除线" active={state.strike} icon={<StrikethroughIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleStrike() }} />
+        <DemoToolbarButton tip="行内代码" active={state.code} icon={<CodeLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleCode() }} />
+        <DemoToolbarButton tip="高亮" active={state.highlight} icon={<MarkPenLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleHighlight() }} />
+        <DemoToolbarButton tip="上标" active={state.superscript} icon={<SuperscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
+        <DemoToolbarButton tip="下标" active={state.subscript} icon={<SubscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
 
         <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
 
         <ToggleButtonGroup size="small" exclusive aria-label="text alignment">
           {[
-            ['left', <AlignLeft key="left" {...iconProps} />],
-            ['center', <AlignCenter key="center" {...iconProps} />],
-            ['right', <AlignRight key="right" {...iconProps} />],
-            ['justify', <AlignJustify key="justify" {...iconProps} />],
+            ['left', <AlignLeftIcon key="left" {...iconProps} />],
+            ['center', <AlignCenterIcon key="center" {...iconProps} />],
+            ['right', <AlignRightIcon key="right" {...iconProps} />],
+            ['justify', <AlignJustifyIcon key="justify" {...iconProps} />],
           ].map(([value, icon]) => (
             <ToggleButton
               key={value as string}
@@ -232,7 +229,7 @@ function ProseKitAstrobookToolbar() {
 
         <DemoToolbarButton
           tip="无序列表"
-          icon={<List {...iconProps} />}
+          icon={<ListUnorderedIcon {...iconProps} />}
           onClick={() => {
             focus()
             editor.commands.toggleList({ kind: 'bullet' })
@@ -240,7 +237,7 @@ function ProseKitAstrobookToolbar() {
         />
         <DemoToolbarButton
           tip="有序列表"
-          icon={<ListOrdered {...iconProps} />}
+          icon={<ListOrdered2Icon {...iconProps} />}
           onClick={() => {
             focus()
             editor.commands.toggleList({ kind: 'ordered' })
@@ -248,19 +245,19 @@ function ProseKitAstrobookToolbar() {
         />
         <DemoToolbarButton
           tip="任务列表"
-          icon={<ListChecks {...iconProps} />}
+          icon={<ListCheck3Icon {...iconProps} />}
           onClick={() => {
             focus()
             editor.commands.toggleList({ kind: 'task' })
           }}
         />
-        <DemoToolbarButton tip="引用" active={state.blockquote} icon={<Quote {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
-        <DemoToolbarButton tip="分割线" icon={<Minus {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
-        <DemoToolbarButton tip="表格" icon={<Table2 {...iconProps} />} onClick={() => { focus(); editor.commands.insertTable({ row: 3, col: 4 }) }} />
+        <DemoToolbarButton tip="引用" active={state.blockquote} icon={<QuoteTextIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
+        <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
+        <DemoToolbarButton tip="表格" icon={<Table2Icon {...iconProps} />} onClick={() => { focus(); editor.commands.insertTable({ row: 3, col: 4 }) }} />
         <DemoToolbarButton
           tip="链接节点"
           active={state.link}
-          icon={<Link2 {...iconProps} />}
+          icon={<LinkIcon {...iconProps} />}
           onClick={() => {
             focus()
             editor.commands.setInlineLink({
