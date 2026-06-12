@@ -28,6 +28,7 @@ import {
   CodeLineIcon,
   EditorContent,
   EditorShell,
+  FlipGridIcon,
   ItalicIcon,
   LinkIcon,
   LinkEditorPopover,
@@ -105,6 +106,34 @@ const demoContent: NodeJSON = {
         type: 'block',
         download: null,
       },
+    },
+    {
+      type: 'flipGrid',
+      attrs: { gap: '16px' },
+      content: [
+        {
+          type: 'flipGridColumn',
+          attrs: { width: 50 },
+          content: [
+            {
+              type: 'paragraph',
+              attrs: { textAlign: null },
+              content: [{ type: 'text', text: '第一栏内容，可以拖拽中间分隔线调整宽度。' }],
+            },
+          ],
+        },
+        {
+          type: 'flipGridColumn',
+          attrs: { width: 50 },
+          content: [
+            {
+              type: 'paragraph',
+              attrs: { textAlign: null },
+              content: [{ type: 'text', text: '第二栏内容，hover 栏位可以左右插入新栏。' }],
+            },
+          ],
+        },
+      ],
     },
   ],
 }
@@ -316,6 +345,7 @@ function ProseKitAstrobookToolbar() {
         <DemoToolbarButton tip="引用" active={state.blockquote} icon={<QuoteTextIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
         <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
         <DemoToolbarButton tip="表格" icon={<Table2Icon {...iconProps} />} onClick={() => { focus(); editor.commands.insertTable({ row: 3, col: 4 }) }} />
+        <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setFlipGrid(2) }} />
         <LinkEditorPopover
           triggerStyle={{ display: 'inline-flex' }}
           open={linkOpen}

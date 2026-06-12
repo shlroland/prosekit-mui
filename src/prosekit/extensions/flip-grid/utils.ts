@@ -92,6 +92,12 @@ export function normalizeWithMin(widths: number[], minWidth = MIN_WIDTH) {
 }
 
 export function findChildIndex(parent: ProseMirrorNode, child: ProseMirrorNode) {
+  const identityIndex = parent.content.content.findIndex((current) => current === child)
+
+  if (identityIndex >= 0) {
+    return identityIndex
+  }
+
   return parent.content.content.findIndex((current) => current.eq(child))
 }
 
@@ -155,6 +161,41 @@ export function applyFlipGridWidths({
     nextWidths.length === fallbackWidths.length ? nextWidths : fallbackWidths,
     MIN_WIDTH,
   )
+
+  const onlyResize =
+    normalizedWidths.length === parentNode.childCount
+    && typeof insertAt === 'undefined'
+    && typeof removeIndex === 'undefined'
+
+  if (onlyResize) {
+    let offset = parentPos + 1
+    const columnPositions: number[] = []
+
+    for (let index = 0; index < parentNode.childCount; index += 1) {
+      const column = parentNode.child(index)
+      const current = tr.doc.nodeAt(offset)
+
+      if (current?.type !== column.type) {
+        columnPositions.length = 0
+        break
+      }
+
+      columnPositions.push(offset)
+      offset += column.nodeSize
+    }
+
+    if (columnPositions.length === parentNode.childCount) {
+      for (let index = 0; index < parentNode.childCount; index += 1) {
+        const column = parentNode.child(index)
+        tr.setNodeMarkup(columnPositions[index] ?? 0, undefined, {
+          ...column.attrs,
+          width: normalizedWidths[index] ?? 100,
+        })
+      }
+
+      return { changed: tr.docChanged }
+    }
+  }
 
   if (typeof insertAt === 'number') {
     const newColumn = columnType.create(
