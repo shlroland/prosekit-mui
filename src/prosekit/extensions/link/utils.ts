@@ -1,4 +1,4 @@
-import type { LinkAttrs } from './types'
+import type { InlineLinkDisplayType, LinkAttrs, LinkDisplayType, LinkTarget } from './types'
 import { LINK_MARK_RE } from './link-regex'
 
 const ALLOWED_PROTOCOLS = new Set([
@@ -47,19 +47,42 @@ export function isAllowedUri(href: string | null | undefined): boolean {
   }
 }
 
+export function normalizeLinkTarget(value: unknown): LinkTarget {
+  return value === '_self' ? '_self' : TARGET
+}
+
+export function normalizeInlineLinkType(value: unknown): InlineLinkDisplayType {
+  return value === 'text' ? 'text' : 'icon'
+}
+
+export function normalizeLinkType(value: unknown): LinkDisplayType {
+  if (value === 'block') {
+    return 'block'
+  }
+
+  return normalizeInlineLinkType(value)
+}
+
+export function getLinkRel(target: LinkTarget, rel: string | null | undefined) {
+  return rel ?? (target === '_blank' ? 'noopener noreferrer' : null)
+}
+
 export function toLinkAttrs(rawHref: string, attrs: Partial<LinkAttrs> = {}): LinkAttrs | null {
   const href = normalizeCandidateHref(rawHref)
   if (!isAllowedUri(href)) {
     return null
   }
 
+  const target = normalizeLinkTarget(attrs.target)
+  const type = normalizeLinkType(attrs.type ?? TYPE)
+
   return {
     href,
-    target: attrs.target ?? TARGET,
-    rel: attrs.rel ?? null,
+    target,
+    rel: getLinkRel(target, attrs.rel),
     class: attrs.class ?? null,
     title: attrs.title ?? null,
-    type: attrs.type ?? TYPE,
+    type,
     download: attrs.download ?? null,
   }
 }

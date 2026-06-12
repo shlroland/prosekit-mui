@@ -1,7 +1,7 @@
 import { defineNodeSpec, union } from 'prosekit/core'
 
 import type { LinkAttrs, LinkSpecExtension } from './types'
-import { getLinkTitle, getSafeHref, toLinkAttrs } from './utils'
+import { getLinkRel, getLinkTitle, getSafeHref, normalizeInlineLinkType, toLinkAttrs } from './utils'
 
 export function defineLinkSpec(): LinkSpecExtension {
   return union(
@@ -41,7 +41,7 @@ export function defineLinkSpec(): LinkSpecExtension {
               rel: dom.getAttribute('rel'),
               class: dom.getAttribute('class'),
               title: dom.textContent || dom.getAttribute('title'),
-              type: dom.getAttribute('type') || 'icon',
+              type: normalizeInlineLinkType(dom.getAttribute('type')),
               download: dom.getAttribute('download'),
             })
             return attrs ?? false
@@ -54,10 +54,10 @@ export function defineLinkSpec(): LinkSpecExtension {
         return ['a', {
           href: getSafeHref(attrs.href),
           target: attrs.target,
-          rel: attrs.rel,
+          rel: getLinkRel(attrs.target ?? '_blank', attrs.rel),
           class: attrs.class,
           title: attrs.title,
-          type: attrs.type,
+          type: normalizeInlineLinkType(attrs.type),
           download: attrs.download,
         }, label]
       },
@@ -103,7 +103,7 @@ export function defineLinkSpec(): LinkSpecExtension {
         return ['a', {
           href: getSafeHref(attrs.href),
           target: attrs.target,
-          rel: attrs.rel,
+          rel: getLinkRel(attrs.target ?? '_blank', attrs.rel),
           class: attrs.class,
           title: attrs.title,
           type: 'block',

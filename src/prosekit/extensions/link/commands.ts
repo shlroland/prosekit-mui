@@ -4,7 +4,7 @@ import { NodeSelection, TextSelection } from 'prosekit/pm/state'
 
 import { getActiveLinkNode } from './node-utils'
 import type { LinkAttrs, LinkCommandsExtension } from './types'
-import { getLinkTitle, toLinkAttrs } from './utils'
+import { getLinkTitle, normalizeInlineLinkType, toLinkAttrs } from './utils'
 
 function buildEmptyInlineAttrs(state: EditorState, attrs: LinkAttrs): LinkAttrs {
   const active = getActiveLinkNode(state)
@@ -22,7 +22,7 @@ function buildEmptyInlineAttrs(state: EditorState, attrs: LinkAttrs): LinkAttrs 
     rel: attrs.rel ?? null,
     class: attrs.class ?? null,
     title,
-    type: attrs.type === 'block' ? 'icon' : (attrs.type ?? 'icon'),
+    type: normalizeInlineLinkType(attrs.type),
     download: attrs.download ?? null,
   }
 }
@@ -109,7 +109,7 @@ function normalizeInlineAttrs(state: EditorState, attrs: LinkAttrs) {
     ...(active?.node.attrs as Partial<LinkAttrs> | undefined),
     ...attrs,
     title: attrs.title ?? fallbackTitle,
-    type: attrs.type === 'block' ? 'icon' : (attrs.type ?? 'icon'),
+    type: normalizeInlineLinkType(attrs.type),
   })
 }
 
@@ -130,6 +130,49 @@ function normalizeBlockAttrs(state: EditorState, attrs: LinkAttrs) {
     title: attrs.title ?? fallbackTitle,
     type: 'block',
   })
+}
+
+function updateCurrentLink(attrs: Partial<LinkAttrs>): Command {
+  return (state, dispatch) => {
+    const active = getActiveLinkNode(state)
+    if (!active) {
+      return false
+    }
+
+    const nextRawAttrs = {
+      ...(active.node.attrs as Partial<LinkAttrs>),
+      ...attrs,
+      type: active.type === 'blockLink' ? 'block' : normalizeInlineLinkType(attrs.type ?? active.node.attrs.type),
+    }
+
+    const nextAttrs = nextRawAttrs.href
+      ? toLinkAttrs(nextRawAttrs.href, nextRawAttrs)
+      : null
+
+    if (!nextAttrs) {
+      return false
+    }
+
+    if (!dispatch) {
+      return true
+    }
+
+    const nextTypeName = nextAttrs.type === 'block' ? 'blockLink' : 'inlineLink'
+    const nextType = state.schema.nodes[nextTypeName]
+    if (!nextType) {
+      return false
+    }
+
+    const node = nextType.create({
+      ...nextAttrs,
+      type: nextTypeName === 'blockLink' ? 'block' : normalizeInlineLinkType(nextAttrs.type),
+    })
+
+    const tr = state.tr.replaceWith(active.pos, active.pos + active.node.nodeSize, node)
+    tr.setSelection(NodeSelection.create(tr.doc, active.pos))
+    dispatch(tr.scrollIntoView())
+    return true
+  }
 }
 
 function removeCurrentLink(): Command {
@@ -206,6 +249,18 @@ export function defineLinkCommands(): LinkCommandsExtension {
 
       return replaceSelectionWithNode('blockLink', nextAttrs)(state, dispatch)
     },
+    setLink: (attrs: LinkAttrs) => (state, dispatch) => {
+      if (attrs.type === 'block') {
+        const nextAttrs = normalizeBlockAttrs(state, attrs)
+        return nextAttrs ? replaceSelectionWithNode('blockLink', nextAttrs)(state, dispatch) : false
+      }
+
+      const nextAttrs = normalizeInlineAttrs(state, attrs)
+      return nextAttrs ? replaceSelectionWithNode('inlineLink', nextAttrs)(state, dispatch) : false
+    },
+    updateLink: (attrs: Partial<LinkAttrs>) => (state, dispatch) => {
+      return updateCurrentLink(attrs)(state, dispatch)
+    },
     addLink: (attrs: LinkAttrs) => (state, dispatch) => {
       const nextAttrs = normalizeInlineAttrs(state, attrs)
       if (!nextAttrs) {
@@ -217,9 +272,18 @@ export function defineLinkCommands(): LinkCommandsExtension {
     removeLink: () => (state, dispatch) => {
       return removeCurrentLink()(state, dispatch)
     },
-    toggleLink: (attrs: LinkAttrs) => (state, dispatch) => {
+    toggleLink: (attrs?: LinkAttrs) => (state, dispatch) => {
       if (getActiveLinkNode(state)) {
         return removeCurrentLink()(state, dispatch)
+      }
+
+      if (!attrs) {
+        return false
+      }
+
+      if (attrs.type === 'block') {
+        const nextAttrs = normalizeBlockAttrs(state, attrs)
+        return nextAttrs ? replaceSelectionWithNode('blockLink', nextAttrs)(state, dispatch) : false
       }
 
       const nextAttrs = normalizeInlineAttrs(state, attrs)
