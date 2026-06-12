@@ -1,24 +1,68 @@
-import { Avatar, Box, Tooltip } from '@mui/material'
-import { ExternalLink, Globe } from 'lucide-react'
+import { Avatar, Box } from '@mui/material'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { NodeSelection } from 'prosekit/pm/state'
 import type { ReactNodeViewProps } from 'prosekit/react'
+import { PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTrigger } from 'prosekit/react/popover'
 
+import { ChromeIcon, LinkIcon } from '../../../icons'
 import { LinkActionBar } from '../../components/link-action-bar'
-import { LinkEditorPopover } from '../../components/link-editor-popover'
-import type { LinkAttrs } from './types'
-import { getLinkTitle, toLinkAttrs } from './utils'
+import { LinkEditorPanel } from '../../components/link-editor-popover'
+import type { LinkAttrs, LinkDisplayType, LinkTarget } from './types'
+import { getLinkRel, getLinkTitle, normalizeInlineLinkType, normalizeLinkTarget, toLinkAttrs } from './utils'
 import './view.css'
 
 function getNodeAttrs(node: ReactNodeViewProps['node']): LinkAttrs {
   return {
     href: typeof node.attrs.href === 'string' ? node.attrs.href : '',
-    target: typeof node.attrs.target === 'string' ? node.attrs.target : '_blank',
+    target: normalizeLinkTarget(node.attrs.target),
     rel: typeof node.attrs.rel === 'string' ? node.attrs.rel : null,
     class: typeof node.attrs.class === 'string' ? node.attrs.class : null,
     title: typeof node.attrs.title === 'string' ? node.attrs.title : null,
-    type: typeof node.attrs.type === 'string' ? node.attrs.type : 'icon',
+    type: node.type.name === 'blockLink' ? 'block' : normalizeInlineLinkType(node.attrs.type),
     download: typeof node.attrs.download === 'string' ? node.attrs.download : null,
   }
+}
+
+function getDisplayType(nodeName: string, attrs: LinkAttrs): LinkDisplayType {
+  return nodeName === 'blockLink' ? 'block' : normalizeInlineLinkType(attrs.type)
+}
+
+function LinkFavicon({
+  src,
+  isBlock,
+}: {
+  src: string
+  isBlock: boolean
+}) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null)
+  const showImage = Boolean(src) && failedSrc !== src
+
+  return (
+    <Avatar className={`prosekit-link-node-avatar ${isBlock ? 'block' : ''}`}>
+      {showImage ? (
+        <Box
+          component="img"
+          src={src}
+          alt=""
+          onError={() => setFailedSrc(src)}
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      ) : (
+        <ChromeIcon
+          sx={{
+            fontSize: isBlock ? '2rem' : '1rem',
+            color: 'primary.main',
+            cursor: 'grab',
+            ':active': { cursor: 'grabbing' },
+          }}
+        />
+      )}
+    </Avatar>
+  )
 }
 
 export function LinkView({
@@ -27,20 +71,18 @@ export function LinkView({
   getPos,
   view,
 }: ReactNodeViewProps) {
-  const anchorRef = useRef<HTMLDivElement | null>(null)
   const [editOpen, setEditOpen] = useState(false)
+  const [actionsOpen, setActionsOpen] = useState(false)
+  const actionsCloseTimerRef = useRef<number | null>(null)
   const attrs = useMemo(() => getNodeAttrs(node), [node])
-  const [href, setHref] = useState(attrs.href)
-  const [title, setTitle] = useState(attrs.title ?? '')
-  const [target, setTarget] = useState(attrs.target ?? '_blank')
-  const [type, setType] = useState(attrs.type ?? 'icon')
 
   useEffect(() => {
-    setHref(attrs.href)
-    setTitle(attrs.title ?? '')
-    setTarget(attrs.target ?? '_blank')
-    setType(attrs.type ?? 'icon')
-  }, [attrs.href, attrs.target, attrs.title, attrs.type])
+    return () => {
+      if (actionsCloseTimerRef.current !== null) {
+        window.clearTimeout(actionsCloseTimerRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (view.editable && !attrs.href && !editOpen) {
@@ -49,7 +91,8 @@ export function LinkView({
   }, [attrs.href, editOpen, view.editable])
 
   const isEditable = view.editable
-  const isBlock = node.type.name === 'blockLink' || type === 'block'
+  const isBlock = node.type.name === 'blockLink'
+  const displayType = getDisplayType(node.type.name, attrs)
   const label = attrs.title || getLinkTitle(attrs.href)
   const favicon = useMemo(() => {
     try {
@@ -72,6 +115,7 @@ export function LinkView({
   function handleEditOpen(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault()
     event.stopPropagation()
+    setActionsOpen(false)
     setEditOpen(true)
   }
 
@@ -113,22 +157,53 @@ export function LinkView({
       return
     }
 
-    const nextNode = targetNodeType.create(nextAttrs)
-    const tr = view.state.tr.replaceWith(pos, pos + node.nodeSize, nextNode)
+    const nextNode = targetNodeType.create({
+      ...nextAttrs,
+      type: targetType === 'blockLink' ? 'block' : normalizeInlineLinkType(nextAttrs.type),
+    })
+    const tr = view.state.tr
+    if (targetType === 'inlineLink' && node.type.name === 'blockLink') {
+      const paragraphType = view.state.schema.nodes.paragraph
+      const paragraph = paragraphType?.createAndFill(null, nextNode)
+      if (!paragraph) {
+        return
+      }
+      tr.replaceWith(pos, pos + node.nodeSize, paragraph)
+      tr.setSelection(NodeSelection.create(tr.doc, pos + 1))
+    } else if (targetType === 'blockLink' && node.type.name === 'inlineLink') {
+      tr.replaceRangeWith(pos, pos + node.nodeSize, nextNode)
+      tr.setSelection(NodeSelection.create(tr.doc, pos))
+    } else {
+      tr.replaceWith(pos, pos + node.nodeSize, nextNode)
+      tr.setSelection(NodeSelection.create(tr.doc, pos))
+    }
     view.dispatch(tr)
     view.focus()
+  }
+
+  function updateLinkNode(nextAttrs: LinkAttrs) {
+    if (nextAttrs.type === 'block') {
+      replaceNode('blockLink', { ...nextAttrs, type: 'block' })
+      return
+    }
+
+    replaceNode('inlineLink', {
+      ...nextAttrs,
+      type: normalizeInlineLinkType(nextAttrs.type),
+    })
   }
 
   function handleSaveWithValue(nextValue: {
     href: string
     title: string
-    type: 'text' | 'icon' | 'block'
-    target: '_blank' | '_self'
+    type: LinkDisplayType
+    target: LinkTarget
   }) {
     const nextAttrs = toLinkAttrs(nextValue.href, {
       ...attrs,
       title: nextValue.title || null,
       target: nextValue.target,
+      rel: getLinkRel(nextValue.target, null),
       type: nextValue.type,
     })
 
@@ -136,37 +211,59 @@ export function LinkView({
       return
     }
 
-    if (nextValue.type === 'block') {
-      replaceNode('blockLink', { ...nextAttrs, type: 'block' })
-    } else if (node.type.name === 'blockLink') {
-      replaceNode('inlineLink', { ...nextAttrs, type: nextValue.type })
-    } else {
-      replaceNode('inlineLink', {
-        ...nextAttrs,
-        type: nextValue.type,
-      })
-    }
+    updateLinkNode(nextAttrs)
     setEditOpen(false)
+  }
+
+  function handleChangeDisplay(nextType: LinkDisplayType, event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const nextAttrs = toLinkAttrs(attrs.href, {
+      ...attrs,
+      type: nextType,
+    })
+    if (!nextAttrs) {
+      return
+    }
+
+    updateLinkNode({
+      ...nextAttrs,
+      type: nextType,
+    })
+  }
+
+  function keepActionsOpen() {
+    if (actionsCloseTimerRef.current !== null) {
+      window.clearTimeout(actionsCloseTimerRef.current)
+      actionsCloseTimerRef.current = null
+    }
+    setActionsOpen(true)
+  }
+
+  function scheduleActionsClose() {
+    if (actionsCloseTimerRef.current !== null) {
+      window.clearTimeout(actionsCloseTimerRef.current)
+    }
+    actionsCloseTimerRef.current = window.setTimeout(() => {
+      setActionsOpen(false)
+      actionsCloseTimerRef.current = null
+    }, 500)
   }
 
   const actionBar = (
     <LinkActionBar
       href={attrs.href}
-      isBlock={isBlock}
+      type={displayType}
       onEdit={handleEditOpen}
       onCopy={handleCopy}
       onRemove={handleRemove}
-      onToggleDisplay={(event) => {
-        event.preventDefault()
-        event.stopPropagation()
-        setType((current) => current === 'block' ? 'icon' : 'block')
-      }}
+      onChangeDisplay={handleChangeDisplay}
     />
   )
 
   const content = (
     <Box
-      ref={anchorRef}
       component={isBlock ? 'div' : 'span'}
       className={`prosekit-link-node ${isBlock ? 'block' : ''} ${selected ? 'ProseMirror-selectednode' : ''}`}
       data-drag-handle={isBlock ? 'true' : undefined}
@@ -191,93 +288,99 @@ export function LinkView({
             width: isBlock ? '100%' : 'auto',
           }}
         >
-          <Globe className="prosekit-link-node-icon" />
-          <Box component="span">{title ? `添加“${title}”链接` : '添加链接'}</Box>
+          <LinkIcon sx={{ fontSize: '1rem', flexShrink: 0 }} />
+          <Box component="span">{attrs.title ? `添加“${attrs.title}”链接` : '添加链接'}</Box>
         </Box>
       ) : (
-      <Box
-        component="a"
-        href={attrs.href}
-        target={attrs.target ?? '_blank'}
-        rel={attrs.rel ?? undefined}
-        className={`prosekit-link-node-anchor ${isBlock ? 'block' : ''}`}
-        title={attrs.title ?? undefined}
-        download={attrs.download ?? undefined}
-      >
-        <Avatar
-          src={favicon}
-          className={`prosekit-link-node-avatar ${isBlock ? 'block' : ''}`}
+        <Box
+          component="a"
+          href={attrs.href}
+          target={attrs.target ?? '_blank'}
+          rel={getLinkRel(attrs.target ?? '_blank', attrs.rel) ?? undefined}
+          className={`prosekit-link-node-anchor ${isBlock ? 'block' : ''}`}
+          title={attrs.title ?? undefined}
+          download={attrs.download ?? undefined}
         >
-          <Globe className="prosekit-link-node-icon" />
-        </Avatar>
-        <Box component="span" className="prosekit-link-node-content">
-          {isBlock ? (
-            <Box component="span" className="prosekit-link-node-meta">
-              <Box component="span" className="prosekit-link-node-title">
-                {label}
+          {isBlock || displayType === 'icon' ? (
+            <LinkFavicon src={favicon} isBlock={isBlock} />
+          ) : null}
+          <Box component="span" className="prosekit-link-node-content">
+            {isBlock ? (
+              <Box component="span" className="prosekit-link-node-meta">
+                <Box component="span" className="prosekit-link-node-title">
+                  {label}
+                </Box>
+                <Box component="span" className="prosekit-link-node-href">
+                  {attrs.href}
+                </Box>
               </Box>
-              <Box component="span" className="prosekit-link-node-href">
-                {attrs.href}
-              </Box>
-            </Box>
-          ) : (
-            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'baseline', gap: 0.5 }}>
-              {attrs.type !== 'text' ? <ExternalLink className="prosekit-link-node-icon" /> : null}
+            ) : (
               <Box component="span">{label}</Box>
-            </Box>
-          )}
+            )}
+          </Box>
         </Box>
-      </Box>
       )}
     </Box>
   )
 
-  return (
-    <>
-      {isEditable && attrs.href ? (
-        <Tooltip
-          arrow
-          title={actionBar}
-          placement="top"
-          slotProps={{
-            tooltip: {
-              className: 'prosekit-link-node-popup',
-            },
-            arrow: {
-              className: 'prosekit-link-node-arrow',
-            },
-          }}
+  const popoverTriggerStyle = {
+    display: isBlock ? 'block' : 'inline-flex',
+    maxWidth: '100%',
+    width: isBlock ? '100%' : undefined,
+  }
+
+  const contentWithPopover = isEditable ? (
+    <PopoverRoot style={{ display: 'contents' }} open={editOpen || actionsOpen}>
+      <PopoverTrigger
+        style={popoverTriggerStyle}
+        onMouseEnter={keepActionsOpen}
+        onMouseLeave={scheduleActionsClose}
+      >
+        {content}
+      </PopoverTrigger>
+      <PopoverPositioner
+        className="prosekit-link-popover-positioner"
+        placement={editOpen ? 'bottom' : 'top'}
+        offset={6}
+        hoist
+        strategy="fixed"
+      >
+        <PopoverPopup
+          className={editOpen ? 'prosekit-link-editor-popover' : 'prosekit-link-node-popup'}
+          onMouseEnter={keepActionsOpen}
+          onMouseLeave={scheduleActionsClose}
         >
-          {content}
-        </Tooltip>
-      ) : content}
-      {isEditable ? (
-        <LinkEditorPopover
-          open={editOpen}
-          anchorEl={anchorRef.current}
-          initialHref={href}
-          initialTitle={title}
-          initialType={type as 'text' | 'icon' | 'block'}
-          initialTarget={target as '_blank' | '_self'}
-          showAdvancedOptions
-          onClose={handleEditClose}
-          onSubmit={(value) => {
-            setHref(value.href)
-            setTitle(value.title)
-            setType(value.type)
-            setTarget(value.target)
-            handleSaveWithValue(value)
-          }}
-          onRemove={() => {
-            const fakeEvent = {
-              preventDefault() {},
-              stopPropagation() {},
-            } as React.MouseEvent<HTMLButtonElement>
-            handleRemove(fakeEvent)
-            handleEditClose()
-          }}
-        />
-      ) : null}
-    </>
+          {editOpen ? (
+            <LinkEditorPanel
+              open={editOpen}
+              initialHref={attrs.href}
+              initialTitle={attrs.title ?? ''}
+              initialType={displayType}
+              initialTarget={attrs.target ?? '_blank'}
+              showAdvancedOptions
+              submitLabel={attrs.href ? '修改链接' : '插入链接'}
+              onClose={handleEditClose}
+              onSubmit={(value) => {
+                handleSaveWithValue(value)
+              }}
+              onRemove={() => {
+                const fakeEvent = {
+                  preventDefault() {},
+                  stopPropagation() {},
+                } as React.MouseEvent<HTMLButtonElement>
+                handleRemove(fakeEvent)
+                handleEditClose()
+              }}
+            />
+          ) : (
+            actionBar
+          )}
+        </PopoverPopup>
+      </PopoverPositioner>
+    </PopoverRoot>
+  ) : (
+    content
   )
+
+  return contentWithPopover
 }

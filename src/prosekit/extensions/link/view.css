@@ -12,28 +12,31 @@
 
 .prosekit-link-node-anchor {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.25rem;
   max-width: 100%;
-  color: inherit;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.14em;
+  color: var(--mui-palette-primary-main);
+  text-decoration: none;
+  border-radius: var(--mui-shape-borderRadius);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .prosekit-link-node-anchor:hover {
-  text-decoration-thickness: 2px;
+  text-decoration: underline;
 }
 
 .prosekit-link-node-anchor.block {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: 1rem;
   width: 100%;
-  padding: 0.9rem 1rem;
+  padding: 1rem;
   border: 1px solid var(--mui-palette-divider);
-  border-radius: 12px;
+  border-radius: var(--mui-shape-borderRadius);
+  color: inherit;
   text-decoration: none;
+  text-align: left;
+  cursor: pointer;
 }
 
 .prosekit-link-node-anchor.block:hover {
@@ -59,8 +62,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.92rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 700;
 }
 
 .prosekit-link-node-href {
@@ -88,6 +91,7 @@
   border-radius: 999px;
   background: #fff;
   overflow: hidden;
+  align-self: center;
 }
 
 .prosekit-link-node-avatar.block {
@@ -95,10 +99,43 @@
   height: 2rem;
 }
 
-.prosekit-link-node-popup {
-  font-size: 0.75rem;
+.prosekit-link-popover-positioner {
+  position: fixed;
+  width: max-content;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: max-content;
+  max-height: none;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: normal;
 }
 
-.prosekit-link-node-arrow {
-  color: inherit;
+.prosekit-link-node-popup {
+  display: block;
+  width: max-content;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid rgb(15 23 42 / 24%);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 24px 64px rgb(15 23 42 / 24%), 0 8px 20px rgb(15 23 42 / 16%), 0 0 0 1px rgb(255 255 255 / 80%) inset;
+  font-size: 0.75rem;
+  z-index: 1300;
+}
+
+.prosekit-link-editor-popover {
+  display: block;
+  width: max-content;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid rgb(15 23 42 / 24%);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 28px 72px rgb(15 23 42 / 26%), 0 10px 24px rgb(15 23 42 / 16%), 0 0 0 1px rgb(255 255 255 / 80%) inset;
+  z-index: 1300;
 }

@@ -30,6 +30,7 @@ import {
   EditorShell,
   ItalicIcon,
   LinkIcon,
+  LinkEditorPopover,
   ListCheck3Icon,
   ListOrdered2Icon,
   ListUnorderedIcon,
@@ -44,11 +45,13 @@ import {
   ToolbarItem,
   UnderlineIcon,
   defineRichTextExtension,
+  getCurrentLinkAttrs,
   isLinkActive,
 } from '../../src'
+import type { LinkAttrs } from '../../src'
 import type { Editor, NodeJSON } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
-import type { ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 
 const demoContent: NodeJSON = {
   type: 'doc',
@@ -62,8 +65,46 @@ const demoContent: NodeJSON = {
       type: 'paragraph',
       attrs: { textAlign: null },
       content: [
-        { type: 'text', text: 'This Astrobook story uses ProseKit built-in formatting extensions and keeps only project-specific node extensions such as node links, tooltip, flip grid, and trailing node.' },
+        { type: 'text', text: 'Select text and use the link button to insert an inline or block link. Existing examples: ' },
+        {
+          type: 'inlineLink',
+          attrs: {
+            href: 'https://prosekit.dev',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            class: null,
+            title: 'ProseKit',
+            type: 'icon',
+            download: null,
+          },
+        },
+        { type: 'text', text: ' and ' },
+        {
+          type: 'inlineLink',
+          attrs: {
+            href: 'https://mui.com',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            class: null,
+            title: 'Material UI',
+            type: 'text',
+            download: null,
+          },
+        },
+        { type: 'text', text: '.' },
       ],
+    },
+    {
+      type: 'blockLink',
+      attrs: {
+        href: 'https://github.com/prosekit/prosekit',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: null,
+        title: 'ProseKit GitHub repository',
+        type: 'block',
+        download: null,
+      },
     },
   ],
 }
@@ -107,6 +148,10 @@ function getToolbarState(editor: Editor<any>): ToolbarState {
   }
 }
 
+function getToolbarStateSnapshot(editor: Editor<any>): string {
+  return JSON.stringify(getToolbarState(editor))
+}
+
 function DemoToolbarButton({
   tip,
   active,
@@ -133,10 +178,27 @@ function DemoToolbarButton({
 
 function ProseKitAstrobookToolbar() {
   const editor = useEditor<any>()
-  const state = useEditorDerivedValue<any, ToolbarState>(getToolbarState)
+  const stateSnapshot = useEditorDerivedValue<any, string>(getToolbarStateSnapshot)
+  const state = useMemo<ToolbarState>(() => {
+    return JSON.parse(stateSnapshot) as ToolbarState
+  }, [stateSnapshot])
+  const currentLinkSnapshot = useEditorDerivedValue<any, string>((currentEditor) => {
+    const attrs = getCurrentLinkAttrs(currentEditor.state)
+    return attrs ? JSON.stringify(attrs) : ''
+  })
+  const currentLink = useMemo<LinkAttrs | null>(() => {
+    return currentLinkSnapshot ? JSON.parse(currentLinkSnapshot) as LinkAttrs : null
+  }, [currentLinkSnapshot])
+  const [linkOpen, setLinkOpen] = useState(false)
 
   function focus() {
     editor.focus()
+  }
+
+  function getSelectedText() {
+    return editor.state.doc
+      .textBetween(editor.state.selection.from, editor.state.selection.to, ' ')
+      .trim()
   }
 
   return (
@@ -254,20 +316,44 @@ function ProseKitAstrobookToolbar() {
         <DemoToolbarButton tip="引用" active={state.blockquote} icon={<QuoteTextIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
         <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
         <DemoToolbarButton tip="表格" icon={<Table2Icon {...iconProps} />} onClick={() => { focus(); editor.commands.insertTable({ row: 3, col: 4 }) }} />
-        <DemoToolbarButton
-          tip="链接节点"
-          active={state.link}
-          icon={<LinkIcon {...iconProps} />}
-          onClick={() => {
+        <LinkEditorPopover
+          triggerStyle={{ display: 'inline-flex' }}
+          open={linkOpen}
+          initialHref={currentLink?.href ?? ''}
+          initialTitle={currentLink?.title ?? getSelectedText()}
+          initialType={currentLink?.type ?? 'icon'}
+          initialTarget={currentLink?.target ?? '_blank'}
+          showAdvancedOptions
+          submitLabel={currentLink ? '修改链接' : '插入链接'}
+          onClose={() => setLinkOpen(false)}
+          onRemove={currentLink ? () => {
             focus()
-            editor.commands.setInlineLink({
-              href: '',
-              title: editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to, ' ').trim(),
-              type: 'icon',
-              target: '_blank',
+            editor.commands.removeLink()
+            setLinkOpen(false)
+          } : undefined}
+          onSubmit={(value) => {
+            focus()
+            editor.commands.setLink({
+              href: value.href,
+              title: value.title || getSelectedText(),
+              type: value.type,
+              target: value.target,
             })
+            setLinkOpen(false)
           }}
-        />
+        >
+          <Box component="span" sx={{ display: 'inline-flex' }}>
+            <DemoToolbarButton
+              tip="链接节点"
+              active={state.link}
+              icon={<LinkIcon {...iconProps} />}
+              onClick={() => {
+                focus()
+                setLinkOpen(true)
+              }}
+            />
+          </Box>
+        </LinkEditorPopover>
       </Stack>
     </Paper>
   )
@@ -275,13 +361,16 @@ function ProseKitAstrobookToolbar() {
 
 function DemoInspector() {
   const editor = useEditor<any>()
-  const stats = useEditorDerivedValue<any, { text: string; chars: number }>((currentEditor) => {
+  const statsSnapshot = useEditorDerivedValue<any, string>((currentEditor) => {
     const text = currentEditor.state.doc.textBetween(0, currentEditor.state.doc.content.size, '\n')
-    return {
+    return JSON.stringify({
       text,
       chars: text.length,
-    }
+    })
   })
+  const stats = useMemo<{ text: string; chars: number }>(() => {
+    return JSON.parse(statsSnapshot) as { text: string; chars: number }
+  }, [statsSnapshot])
 
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>

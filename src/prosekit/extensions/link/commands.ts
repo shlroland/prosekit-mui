@@ -72,7 +72,23 @@ function replaceSelectionWithNode(type: 'inlineLink' | 'blockLink', attrs: LinkA
     const tr = state.tr
 
     if (active) {
-      tr.replaceWith(active.pos, active.pos + active.node.nodeSize, node)
+      if (type === 'inlineLink' && active.type === 'blockLink') {
+        const paragraphType = state.schema.nodes.paragraph
+        const paragraph = paragraphType?.createAndFill(null, node)
+        if (!paragraph) {
+          return false
+        }
+        tr.replaceWith(active.pos, active.pos + active.node.nodeSize, paragraph)
+        tr.setSelection(NodeSelection.create(tr.doc, active.pos + 1))
+        dispatch?.(tr.scrollIntoView())
+        return true
+      }
+
+      if (type === 'blockLink' && active.type === 'inlineLink') {
+        tr.replaceRangeWith(active.pos, active.pos + active.node.nodeSize, node)
+      } else {
+        tr.replaceWith(active.pos, active.pos + active.node.nodeSize, node)
+      }
       tr.setSelection(NodeSelection.create(tr.doc, active.pos))
       dispatch?.(tr.scrollIntoView())
       return true
@@ -168,8 +184,22 @@ function updateCurrentLink(attrs: Partial<LinkAttrs>): Command {
       type: nextTypeName === 'blockLink' ? 'block' : normalizeInlineLinkType(nextAttrs.type),
     })
 
-    const tr = state.tr.replaceWith(active.pos, active.pos + active.node.nodeSize, node)
-    tr.setSelection(NodeSelection.create(tr.doc, active.pos))
+    const tr = state.tr
+    if (nextTypeName === 'inlineLink' && active.type === 'blockLink') {
+      const paragraphType = state.schema.nodes.paragraph
+      const paragraph = paragraphType?.createAndFill(null, node)
+      if (!paragraph) {
+        return false
+      }
+      tr.replaceWith(active.pos, active.pos + active.node.nodeSize, paragraph)
+      tr.setSelection(NodeSelection.create(tr.doc, active.pos + 1))
+    } else if (nextTypeName === 'blockLink' && active.type === 'inlineLink') {
+      tr.replaceRangeWith(active.pos, active.pos + active.node.nodeSize, node)
+      tr.setSelection(NodeSelection.create(tr.doc, active.pos))
+    } else {
+      tr.replaceWith(active.pos, active.pos + active.node.nodeSize, node)
+      tr.setSelection(NodeSelection.create(tr.doc, active.pos))
+    }
     dispatch(tr.scrollIntoView())
     return true
   }
