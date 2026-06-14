@@ -1,6 +1,7 @@
-import { Box, Divider, IconButton, Paper, Stack, Tooltip } from '@mui/material'
+import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material'
 import type { ReactNodeViewProps } from 'prosekit/react'
 import type { Node as ProseMirrorNode } from 'prosekit/pm/model'
+import { PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTrigger } from 'prosekit/react/popover'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { DeleteLineIcon, FlipLeftLineIcon, FlipRightLineIcon } from '../../../icons'
@@ -13,6 +14,7 @@ import {
   normalizeWithMin,
 } from './utils'
 import { DEFAULT_GAP, MAX_COLUMNS, MIN_WIDTH } from './types'
+import './view.css'
 
 function clampPair(left: number, right: number, delta: number) {
   const nextLeft = Math.min(Math.max(left + delta, MIN_WIDTH), left + right - MIN_WIDTH)
@@ -337,8 +339,9 @@ export function FlipGridColumnView({
   getPos,
 }: ReactNodeViewProps) {
   const width = Math.max(MIN_WIDTH, Number(node.attrs.width) || 50)
-  const [hovered, setHovered] = useState(false)
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const toolbarCloseTimerRef = useRef<number | null>(null)
+  const [toolbarOpen, setToolbarOpen] = useState(false)
   const isEditable = view.editable
 
   const widths = useMemo(() => {
@@ -367,21 +370,44 @@ export function FlipGridColumnView({
   }, [getPos, node, view.state.doc])
 
   useEffect(() => {
+    return () => {
+      if (toolbarCloseTimerRef.current !== null) {
+        window.clearTimeout(toolbarCloseTimerRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     const wrapper = wrapperRef.current
 
     if (!wrapper) {
       return
     }
 
-    const targets = [wrapper, wrapper.parentElement].filter(
-      (element): element is HTMLElement => Boolean(element),
-    )
+    if (isEditable) {
+      const trigger = wrapper.parentElement
+      const outerWrapper = trigger?.parentElement
 
-    for (const target of targets) {
-      target.style.width = `${width}%`
-      target.style.flex = `0 0 ${width}%`
-      target.style.minWidth = '0'
+      wrapper.style.width = '100%'
+      wrapper.style.flex = '1 1 auto'
+      wrapper.style.minWidth = '0'
+      if (trigger) {
+        trigger.style.width = '100%'
+        trigger.style.flex = '1 1 auto'
+        trigger.style.minWidth = '0'
+      }
+      if (outerWrapper) {
+        outerWrapper.style.width = `${width}%`
+        outerWrapper.style.flex = `0 0 ${width}%`
+        outerWrapper.style.minWidth = '0'
+      }
+
+      return
     }
+
+    wrapper.style.width = `${width}%`
+    wrapper.style.flex = `0 0 ${width}%`
+    wrapper.style.minWidth = '0'
   }, [width])
 
   function applyWidths(
@@ -489,7 +515,82 @@ export function FlipGridColumnView({
     applyWidths(nextWidths, undefined, colIndex, targetFocus)
   }
 
-  return (
+  function keepToolbarOpen() {
+    if (toolbarCloseTimerRef.current !== null) {
+      window.clearTimeout(toolbarCloseTimerRef.current)
+      toolbarCloseTimerRef.current = null
+    }
+
+    setToolbarOpen(true)
+  }
+
+  function scheduleToolbarClose() {
+    if (toolbarCloseTimerRef.current !== null) {
+      window.clearTimeout(toolbarCloseTimerRef.current)
+    }
+
+    toolbarCloseTimerRef.current = window.setTimeout(() => {
+      setToolbarOpen(false)
+      toolbarCloseTimerRef.current = null
+    }, 300)
+  }
+
+  const toolbar = (
+    <Stack
+      data-flip-grid-controls="true"
+      direction="row"
+      alignItems="center"
+      sx={{
+        p: 0.5,
+        width: 'max-content',
+        minWidth: 'max-content',
+        bgcolor: '#fff',
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 1,
+        boxShadow: '0 12px 32px rgba(15, 23, 42, 0.18), 0 3px 10px rgba(15, 23, 42, 0.12)',
+      }}
+    >
+      <Tooltip title="左侧插入" arrow>
+        <IconButton
+          size="small"
+          onClick={() => handleInsert('left')}
+          className="h-7 w-7 rounded-sm"
+        >
+          <FlipLeftLineIcon sx={{ fontSize: '1rem' }} />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="右侧插入" arrow>
+        <IconButton
+          size="small"
+          onClick={() => handleInsert('right')}
+          className="h-7 w-7 rounded-sm"
+        >
+          <FlipRightLineIcon sx={{ fontSize: '1rem' }} />
+        </IconButton>
+      </Tooltip>
+      {widths.length > 2 ? (
+        <>
+          <Divider
+            orientation="vertical"
+            flexItem
+            className="mx-1 my-1 border-[color:var(--mui-palette-divider)]"
+          />
+          <Tooltip title="删除当前栏" arrow>
+            <IconButton
+              size="small"
+              onClick={() => handleDelete()}
+              className="h-7 w-7 rounded-sm"
+            >
+              <DeleteLineIcon sx={{ fontSize: '1rem' }} />
+            </IconButton>
+          </Tooltip>
+        </>
+      ) : null}
+    </Stack>
+  )
+
+  const column = (
     <Box
       ref={wrapperRef}
       className={cn(
@@ -498,62 +599,77 @@ export function FlipGridColumnView({
           ? 'border-[color:var(--mui-palette-primary-main)]'
           : 'border-[rgba(23,23,23,0.12)]',
       )}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={keepToolbarOpen}
+      onMouseLeave={scheduleToolbarClose}
       style={{
+        width: isEditable ? '100%' : `${width}%`,
+        flex: isEditable ? '1 1 auto' : `0 0 ${width}%`,
+        minWidth: 0,
         backgroundColor: 'rgba(255,255,255,0.94)',
         boxShadow: selected
           ? '0 0 0 1px rgba(25,118,210,0.18)'
           : 'inset 0 1px 0 rgba(255,255,255,0.65)',
       }}
     >
-      {isEditable && (hovered || selected) ? (
-        <Paper
-          data-flip-grid-controls="true"
-          elevation={0}
-          className="absolute left-1/2 top-[-14px] z-[2] flex -translate-x-1/2 rounded-md border border-[color:var(--mui-palette-divider)] bg-[rgba(255,255,255,0.98)] px-1 py-1 shadow-[0_10px_24px_rgba(23,23,23,0.08)]"
-        >
-          <Stack direction="row" alignItems="center">
-            <Tooltip title="左侧插入" arrow>
-              <IconButton
-                size="small"
-                onClick={() => handleInsert('left')}
-                className="h-7 w-7 rounded-sm"
-              >
-                <FlipLeftLineIcon sx={{ fontSize: '1rem' }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="右侧插入" arrow>
-              <IconButton
-                size="small"
-                onClick={() => handleInsert('right')}
-                className="h-7 w-7 rounded-sm"
-              >
-                <FlipRightLineIcon sx={{ fontSize: '1rem' }} />
-              </IconButton>
-            </Tooltip>
-            {widths.length > 2 ? (
-              <>
-                <Divider
-                  orientation="vertical"
-                  flexItem
-                  className="mx-1 my-1 border-[color:var(--mui-palette-divider)]"
-                />
-                <Tooltip title="删除当前栏" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete()}
-                    className="h-7 w-7 rounded-sm"
-                  >
-                    <DeleteLineIcon sx={{ fontSize: '1rem' }} />
-                  </IconButton>
-                </Tooltip>
-              </>
-            ) : null}
-          </Stack>
-        </Paper>
-      ) : null}
       <Box ref={contentRef} className="min-h-6 w-full" />
+    </Box>
+  )
+
+  if (!isEditable) {
+    return column
+  }
+
+  return (
+    <Box
+      className="prosekit-flip-grid-column-popover-wrapper"
+      data-flip-grid-column-popover-open={selected || toolbarOpen ? 'true' : 'false'}
+      style={{
+        width: `${width}%`,
+        flex: `0 0 ${width}%`,
+        height: '100%',
+        minWidth: 0,
+      }}
+    >
+      <PopoverRoot
+        className="prosekit-flip-grid-column-popover-root"
+        style={{ display: 'contents' }}
+        open={selected || toolbarOpen}
+      >
+        <PopoverTrigger
+          openOnHover
+          delay={0}
+          closeDelay={300}
+          onMouseEnter={keepToolbarOpen}
+          onMouseLeave={scheduleToolbarClose}
+          onOpenChange={(event) => {
+            setToolbarOpen(event.detail)
+          }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            minWidth: 0,
+          }}
+        >
+          {column}
+        </PopoverTrigger>
+        <PopoverPositioner
+          className="prosekit-flip-grid-column-popover-positioner"
+          data-flip-grid-column-popover="positioner"
+          placement="top"
+          offset={4}
+          strategy="fixed"
+        >
+          <PopoverPopup
+            className="prosekit-flip-grid-column-popover"
+            data-flip-grid-column-popover="popup"
+            onMouseEnter={keepToolbarOpen}
+            onMouseLeave={scheduleToolbarClose}
+          >
+            {toolbar}
+          </PopoverPopup>
+        </PopoverPositioner>
+      </PopoverRoot>
     </Box>
   )
 }
