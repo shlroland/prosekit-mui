@@ -1,7 +1,6 @@
 import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material'
 import type { ReactNodeViewProps } from 'prosekit/react'
 import type { Node as ProseMirrorNode } from 'prosekit/pm/model'
-import { PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTrigger } from 'prosekit/react/popover'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { DeleteLineIcon, FlipLeftLineIcon, FlipRightLineIcon } from '../../../icons'
@@ -14,7 +13,6 @@ import {
   normalizeWithMin,
 } from './utils'
 import { DEFAULT_GAP, MAX_COLUMNS, MIN_WIDTH } from './types'
-import './view.css'
 
 function clampPair(left: number, right: number, delta: number) {
   const nextLeft = Math.min(Math.max(left + delta, MIN_WIDTH), left + right - MIN_WIDTH)
@@ -384,27 +382,6 @@ export function FlipGridColumnView({
       return
     }
 
-    if (isEditable) {
-      const trigger = wrapper.parentElement
-      const outerWrapper = trigger?.parentElement
-
-      wrapper.style.width = '100%'
-      wrapper.style.flex = '1 1 auto'
-      wrapper.style.minWidth = '0'
-      if (trigger) {
-        trigger.style.width = '100%'
-        trigger.style.flex = '1 1 auto'
-        trigger.style.minWidth = '0'
-      }
-      if (outerWrapper) {
-        outerWrapper.style.width = `${width}%`
-        outerWrapper.style.flex = `0 0 ${width}%`
-        outerWrapper.style.minWidth = '0'
-      }
-
-      return
-    }
-
     wrapper.style.width = `${width}%`
     wrapper.style.flex = `0 0 ${width}%`
     wrapper.style.minWidth = '0'
@@ -516,6 +493,10 @@ export function FlipGridColumnView({
   }
 
   function keepToolbarOpen() {
+    if (!isEditable) {
+      return
+    }
+
     if (toolbarCloseTimerRef.current !== null) {
       window.clearTimeout(toolbarCloseTimerRef.current)
       toolbarCloseTimerRef.current = null
@@ -525,6 +506,10 @@ export function FlipGridColumnView({
   }
 
   function scheduleToolbarClose() {
+    if (!isEditable) {
+      return
+    }
+
     if (toolbarCloseTimerRef.current !== null) {
       window.clearTimeout(toolbarCloseTimerRef.current)
     }
@@ -540,7 +525,13 @@ export function FlipGridColumnView({
       data-flip-grid-controls="true"
       direction="row"
       alignItems="center"
+      onMouseEnter={keepToolbarOpen}
+      onMouseLeave={scheduleToolbarClose}
       sx={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        zIndex: 4,
         p: 0.5,
         width: 'max-content',
         minWidth: 'max-content',
@@ -611,65 +602,10 @@ export function FlipGridColumnView({
           : 'inset 0 1px 0 rgba(255,255,255,0.65)',
       }}
     >
+      {isEditable && (toolbarOpen || selected) ? toolbar : null}
       <Box ref={contentRef} className="min-h-6 w-full" />
     </Box>
   )
 
-  if (!isEditable) {
-    return column
-  }
-
-  return (
-    <Box
-      className="prosekit-flip-grid-column-popover-wrapper"
-      data-flip-grid-column-popover-open={selected || toolbarOpen ? 'true' : 'false'}
-      style={{
-        width: `${width}%`,
-        flex: `0 0 ${width}%`,
-        height: '100%',
-        minWidth: 0,
-      }}
-    >
-      <PopoverRoot
-        className="prosekit-flip-grid-column-popover-root"
-        style={{ display: 'contents' }}
-        open={selected || toolbarOpen}
-      >
-        <PopoverTrigger
-          openOnHover
-          delay={0}
-          closeDelay={300}
-          onMouseEnter={keepToolbarOpen}
-          onMouseLeave={scheduleToolbarClose}
-          onOpenChange={(event) => {
-            setToolbarOpen(event.detail)
-          }}
-          style={{
-            display: 'block',
-            width: '100%',
-            height: '100%',
-            minWidth: 0,
-          }}
-        >
-          {column}
-        </PopoverTrigger>
-        <PopoverPositioner
-          className="prosekit-flip-grid-column-popover-positioner"
-          data-flip-grid-column-popover="positioner"
-          placement="top"
-          offset={4}
-          strategy="fixed"
-        >
-          <PopoverPopup
-            className="prosekit-flip-grid-column-popover"
-            data-flip-grid-column-popover="popup"
-            onMouseEnter={keepToolbarOpen}
-            onMouseLeave={scheduleToolbarClose}
-          >
-            {toolbar}
-          </PopoverPopup>
-        </PopoverPositioner>
-      </PopoverRoot>
-    </Box>
-  )
+  return column
 }
