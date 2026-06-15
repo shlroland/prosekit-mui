@@ -8,6 +8,8 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 
+import './toolbar.css'
+
 export type TableSize = {
   rows: number
   columns: number
@@ -54,29 +56,25 @@ export function TableSizePicker({
       open={open}
       anchorEl={anchorEl}
       placement="bottom-start"
-      sx={{ zIndex: (theme) => theme.zIndex.modal }}
+      className="table-size-picker-popper"
     >
       <ClickAwayListener onClickAway={onClose}>
         <Paper
           elevation={8}
-          sx={{
-            mt: 0.75,
-            p: 1.25,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 1,
-            bgcolor: 'background.paper',
-          }}
+          className="table-size-picker-surface"
         >
           <Stack spacing={1}>
-            <Typography variant="caption" color="text.secondary" fontWeight={700}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              className="table-size-picker-label"
+            >
               {activeRows} x {activeColumns}
             </Typography>
             <Box
-              sx={{
-                display: 'grid',
+              className="table-size-picker-grid"
+              style={{
                 gridTemplateColumns: `repeat(${columns}, 18px)`,
-                gap: 0.5,
               }}
             >
               {Array.from({ length: rows * columns }, (_, index) => {
@@ -93,21 +91,8 @@ export function TableSizePicker({
                     onMouseEnter={() => setHoveredSize({ rows: row, columns: column })}
                     onFocus={() => setHoveredSize({ rows: row, columns: column })}
                     onClick={() => handleSelect({ rows: row, columns: column })}
-                    sx={{
-                      width: 18,
-                      height: 18,
-                      p: 0,
-                      border: '1px solid',
-                      borderColor: active ? 'primary.main' : 'divider',
-                      borderRadius: 0.5,
-                      bgcolor: active ? 'primary.light' : 'background.default',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      transition: 'background-color 120ms ease, border-color 120ms ease',
-                      '&:focus-visible': {
-                        boxShadow: (theme) => `0 0 0 2px ${theme.palette.primary.main}`,
-                      },
-                    }}
+                    className="table-size-picker-cell"
+                    data-active={active ? 'true' : undefined}
                   />
                 )
               })}

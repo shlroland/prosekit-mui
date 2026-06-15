@@ -7,9 +7,10 @@ import {
   MenuItem,
   Tooltip,
 } from '@mui/material'
-import { alpha } from '@mui/material/styles'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+
+import './toolbar.css'
 
 import {
   DeleteColumnIcon,
@@ -219,8 +220,6 @@ export function TableCellFloatingToolbar() {
     toolbarState.selectionFrom,
     toolbarState.selectionTo,
   ])
-  const iconProps = { sx: { fontSize: '1rem' } }
-
   useEffect(() => {
     if (!toolbarState.open) {
       setMenuAnchor(null)
@@ -237,70 +236,70 @@ export function TableCellFloatingToolbar() {
       {
         key: 'add-column-before',
         label: '左侧插入列',
-        icon: <InsertColumnLeftIcon {...iconProps} />,
+        icon: <InsertColumnLeftIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canAddColumnBefore,
         onClick: () => runCommand('addTableColumnBefore'),
       },
       {
         key: 'add-column-after',
         label: '右侧插入列',
-        icon: <InsertColumnRightIcon {...iconProps} />,
+        icon: <InsertColumnRightIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canAddColumnAfter,
         onClick: () => runCommand('addTableColumnAfter'),
       },
       {
         key: 'delete-column',
         label: '删除当前列',
-        icon: <DeleteColumnIcon {...iconProps} />,
+        icon: <DeleteColumnIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canDeleteColumn,
         onClick: () => runCommand('deleteTableColumn'),
       },
       {
         key: 'add-row-above',
         label: '上方插入行',
-        icon: <InsertRowTopIcon {...iconProps} />,
+        icon: <InsertRowTopIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canAddRowAbove,
         onClick: () => runCommand('addTableRowAbove'),
       },
       {
         key: 'add-row-below',
         label: '下方插入行',
-        icon: <InsertRowBottomIcon {...iconProps} />,
+        icon: <InsertRowBottomIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canAddRowBelow,
         onClick: () => runCommand('addTableRowBelow'),
       },
       {
         key: 'delete-row',
         label: '删除当前行',
-        icon: <DeleteRowIcon {...iconProps} />,
+        icon: <DeleteRowIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canDeleteRow,
         onClick: () => runCommand('deleteTableRow'),
       },
       {
         key: 'merge-cells',
         label: '合并单元格',
-        icon: <MergeCellsHorizontalIcon {...iconProps} />,
+        icon: <MergeCellsHorizontalIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canMerge,
         onClick: () => runCommand('mergeTableCells'),
       },
       {
         key: 'split-cell',
         label: '拆分单元格',
-        icon: <SplitCellsHorizontalIcon {...iconProps} />,
+        icon: <SplitCellsHorizontalIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canSplit,
         onClick: () => runCommand('splitTableCell'),
       },
       {
         key: 'clear-cells',
         label: '清空选中单元格',
-        icon: <DeleteLineIcon {...iconProps} />,
+        icon: <DeleteLineIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canDelete,
         onClick: () => runCommand('deleteCellSelection'),
       },
       {
         key: 'delete-table',
         label: '删除表格',
-        icon: <DeleteLineIcon {...iconProps} />,
+        icon: <DeleteLineIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canDeleteTable,
         onClick: () => runCommand('deleteTable'),
       },
@@ -315,24 +314,18 @@ export function TableCellFloatingToolbar() {
     <>
       {!toolbarState.hasSelectedCells ? (
         <Box
-          sx={(theme) => ({
-            position: 'fixed',
-            pointerEvents: 'none',
-            zIndex: theme.zIndex.modal + 2,
+          className="table-cell-focus-overlay"
+          style={{
             top: cellRect.top - 1,
             left: cellRect.left - 1,
             width: cellRect.width + 2,
             height: cellRect.height + 2,
-            border: `2px solid ${theme.palette.primary.main}`,
-            borderRadius: 0.75,
-            boxShadow: `0 0 0 1px ${alpha(theme.palette.common.white, 0.85)}`,
-          })}
+          }}
         />
       ) : null}
       <Box
-        sx={{
-          position: 'fixed',
-          zIndex: (theme) => theme.zIndex.modal + 3,
+        className="table-cell-menu-anchor"
+        style={{
           top: cellRect.top + 6,
           left: cellRect.left + cellRect.width - 30,
         }}
@@ -344,21 +337,9 @@ export function TableCellFloatingToolbar() {
               aria-label="单元格操作"
               onMouseDown={(event) => event.preventDefault()}
               onClick={(event) => setMenuAnchor(event.currentTarget)}
-              sx={(theme) => ({
-                width: 24,
-                height: 24,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.28)}`,
-                borderRadius: 0.75,
-                bgcolor: 'background.paper',
-                color: 'text.secondary',
-                boxShadow: theme.shadows[2],
-                '&:hover': {
-                  bgcolor: alpha(theme.palette.primary.main, 0.08),
-                  color: 'text.primary',
-                },
-              })}
+              className="table-cell-menu-trigger"
             >
-              <MoreLineIcon sx={{ fontSize: 16 }} />
+              <MoreLineIcon className="table-cell-menu-trigger-icon" />
             </IconButton>
           </span>
         </Tooltip>
@@ -372,13 +353,7 @@ export function TableCellFloatingToolbar() {
         slotProps={{
           paper: {
             elevation: 8,
-            sx: {
-              mt: 0.75,
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1,
-              minWidth: 184,
-            },
+            className: 'table-cell-menu-paper',
           },
         }}
       >
