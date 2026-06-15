@@ -10,8 +10,10 @@ import { defineTextAlign } from 'prosekit/extensions/text-align'
 import { defineTextColor } from 'prosekit/extensions/text-color'
 
 import { defineAlertPanelExtension } from '../alert-panel'
+import { defineAttachmentExtension } from '../attachment'
 import { defineBasicExtension } from '../basic'
 import { defineFlipGridExtension } from '../flip-grid'
+import { defineMediaExtension } from '../media'
 import { defineTooltipExtension } from '../tooltip'
 import { defineTrailingNode } from '../trailing-node'
 
@@ -42,6 +44,8 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineSuperscript(),
     defineSubscript(),
     defineAlertPanelExtension(),
+    defineAttachmentExtension(),
+    defineMediaExtension(),
     defineFlipGridExtension(),
     defineTooltipExtension(),
   )

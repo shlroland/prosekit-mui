@@ -25,6 +25,7 @@ import {
   AlertBlockToolbar,
   ArrowGoBackLineIcon,
   ArrowGoForwardLineIcon,
+  AttachmentLineIcon,
   BoldIcon,
   CodeLineIcon,
   CollapseIcon,
@@ -32,6 +33,7 @@ import {
   EditorShell,
   ErrorWarningFillIcon,
   FlipGridIcon,
+  ImageAddLineIcon,
   Information2LineIcon,
   ItalicIcon,
   LinkIcon,
@@ -40,6 +42,8 @@ import {
   ListOrdered2Icon,
   ListUnorderedIcon,
   MarkPenLineIcon,
+  MovieLineIcon,
+  Music2LineIcon,
   ProseKitProvider,
   QuoteTextIcon,
   SeparatorIcon,
@@ -112,6 +116,35 @@ const demoContent: NodeJSON = {
         title: 'ProseKit GitHub repository',
         type: 'block',
         download: null,
+      },
+    },
+    {
+      type: 'image',
+      attrs: {
+        src: 'https://picsum.photos/seed/prosekit-mui/960/360',
+        width: null,
+        height: null,
+      },
+    },
+    {
+      type: 'attachment',
+      attrs: {
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        title: '示例附件.pdf',
+        size: '13 KB',
+      },
+    },
+    {
+      type: 'video',
+      attrs: {
+        src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+        width: '100%',
+      },
+    },
+    {
+      type: 'audio',
+      attrs: {
+        src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3',
       },
     },
     {
@@ -514,6 +547,10 @@ function ProseKitAstrobookToolbar() {
             editor.commands.insertTable({ row: rows, col: columns })
           }}
         />
+        <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertImage({ src: '' }) }} />
+        <DemoToolbarButton tip="附件" icon={<AttachmentLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAttachment() }} />
+        <DemoToolbarButton tip="视频" icon={<MovieLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertVideo({ src: '', width: '100%' }) }} />
+        <DemoToolbarButton tip="音频" icon={<Music2LineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAudio({ src: '' }) }} />
         <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setFlipGrid(2) }} />
         <LinkEditorPopover
           triggerStyle={{ display: 'inline-flex' }}
