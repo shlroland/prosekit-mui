@@ -13,6 +13,9 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import './toolbar.css'
 
 import {
+  AlignBottomIcon,
+  AlignTopIcon,
+  AlignVerticallyIcon,
   DeleteColumnIcon,
   DeleteLineIcon,
   DeleteRowIcon,
@@ -35,7 +38,10 @@ type TableCellCommandName =
   | 'deleteTableColumn'
   | 'deleteTableRow'
   | 'mergeTableCells'
+  | 'setTableCellVerticalAlign'
   | 'splitTableCell'
+
+type TableCellVerticalAlign = 'top' | 'middle' | 'bottom'
 
 type RectLike = {
   bottom: number
@@ -54,6 +60,17 @@ type TableMenuAction = {
   key: string
   label: string
   onClick: () => void
+  selected?: boolean
+}
+
+const tableCellNodeNames = new Set(['tableCell', 'tableHeaderCell'])
+
+function normalizeVerticalAlign(value: unknown): TableCellVerticalAlign | null {
+  if (value === 'top' || value === 'middle' || value === 'bottom') {
+    return value
+  }
+
+  return null
 }
 
 function isInTableSelection(editor: any): boolean {
@@ -61,7 +78,7 @@ function isInTableSelection(editor: any): boolean {
 
   for (let depth = $from.depth; depth > 0; depth -= 1) {
     const nodeTypeName = $from.node(depth).type.name
-    if (nodeTypeName === 'tableCell' || nodeTypeName === 'tableHeader') {
+    if (tableCellNodeNames.has(nodeTypeName)) {
       return true
     }
   }
@@ -84,6 +101,34 @@ function findSelectionCellElement(editor: any): HTMLTableCellElement | null {
     : node.parentElement
 
   return element?.closest('td, th') as HTMLTableCellElement | null
+}
+
+function getSelectionCellVerticalAlign(editor: any): TableCellVerticalAlign | null {
+  const { state } = editor
+  const { from, to, $from } = state.selection
+  let selectedAlign: TableCellVerticalAlign | null = null
+
+  state.doc.nodesBetween(from, to, (node: any) => {
+    if (tableCellNodeNames.has(node.type.name)) {
+      selectedAlign = normalizeVerticalAlign(node.attrs.verticalAlign)
+      return false
+    }
+
+    return selectedAlign === null
+  })
+
+  if (selectedAlign !== null) {
+    return selectedAlign
+  }
+
+  for (let depth = $from.depth; depth > 0; depth -= 1) {
+    const node = $from.node(depth)
+    if (tableCellNodeNames.has(node.type.name)) {
+      return normalizeVerticalAlign(node.attrs.verticalAlign)
+    }
+  }
+
+  return null
 }
 
 function getUnionRect(elements: Element[]): RectLike | null {
@@ -145,6 +190,7 @@ function getTableCellToolbarSnapshot(editor: any): string {
       canMerge: false,
       canSplit: false,
       hasSelectedCells: false,
+      verticalAlign: null,
     })
   }
 
@@ -166,6 +212,7 @@ function getTableCellToolbarSnapshot(editor: any): string {
     canMerge: editor.commands.mergeTableCells?.canExec?.() ?? false,
     canSplit: editor.commands.splitTableCell?.canExec?.() ?? false,
     hasSelectedCells: hasSelectedCellElements(editor),
+    verticalAlign: getSelectionCellVerticalAlign(editor),
   })
 }
 
@@ -189,6 +236,7 @@ export function TableCellFloatingToolbar() {
       open: boolean
       selectionFrom: number
       selectionTo: number
+      verticalAlign: TableCellVerticalAlign | null
     }
   }, [snapshot])
   const cellRect = useMemo<RectLike | null>(() => {
@@ -226,9 +274,9 @@ export function TableCellFloatingToolbar() {
     }
   }, [toolbarState.open])
 
-  function runCommand(name: TableCellCommandName) {
+  function runCommand(name: TableCellCommandName, value?: TableCellVerticalAlign) {
     editor.focus()
-    editor.commands[name]?.()
+    editor.commands[name]?.(value)
   }
 
   const actions = useMemo<TableMenuAction[]>(() => {
@@ -288,6 +336,27 @@ export function TableCellFloatingToolbar() {
         icon: <SplitCellsHorizontalIcon className="table-cell-menu-icon" />,
         disabled: !toolbarState.canSplit,
         onClick: () => runCommand('splitTableCell'),
+      },
+      {
+        key: 'vertical-align-top',
+        label: '顶端对齐',
+        icon: <AlignTopIcon className="table-cell-menu-icon" />,
+        selected: toolbarState.verticalAlign === 'top',
+        onClick: () => runCommand('setTableCellVerticalAlign', 'top'),
+      },
+      {
+        key: 'vertical-align-middle',
+        label: '垂直居中',
+        icon: <AlignVerticallyIcon className="table-cell-menu-icon" />,
+        selected: toolbarState.verticalAlign === 'middle',
+        onClick: () => runCommand('setTableCellVerticalAlign', 'middle'),
+      },
+      {
+        key: 'vertical-align-bottom',
+        label: '底端对齐',
+        icon: <AlignBottomIcon className="table-cell-menu-icon" />,
+        selected: toolbarState.verticalAlign === 'bottom',
+        onClick: () => runCommand('setTableCellVerticalAlign', 'bottom'),
       },
       {
         key: 'clear-cells',
@@ -361,6 +430,7 @@ export function TableCellFloatingToolbar() {
           <MenuItem
             key={action.key}
             disabled={action.disabled}
+            selected={action.selected}
             onClick={() => {
               action.onClick()
               setMenuAnchor(null)

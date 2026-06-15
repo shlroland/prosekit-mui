@@ -14,6 +14,7 @@ import { defineAttachmentExtension } from '../attachment'
 import { defineBasicExtension } from '../basic'
 import { defineFlipGridExtension } from '../flip-grid'
 import { defineMediaExtension } from '../media'
+import { defineTableCellVerticalAlignExtension } from '../table-cell-vertical-align'
 import { defineTooltipExtension } from '../tooltip'
 import { defineTrailingNode } from '../trailing-node'
 
@@ -46,6 +47,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineAlertPanelExtension(),
     defineAttachmentExtension(),
     defineMediaExtension(),
+    defineTableCellVerticalAlignExtension(),
     defineFlipGridExtension(),
     defineTooltipExtension(),
   )
