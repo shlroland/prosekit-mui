@@ -43,6 +43,9 @@ import {
   SubscriptIcon,
   SuperscriptIcon,
   Table2Icon,
+  TableCellFloatingToolbar,
+  TableFloatingToolbar,
+  TableSizePicker,
   ToolbarItem,
   UnderlineIcon,
   defineRichTextExtension,
@@ -106,6 +109,125 @@ const demoContent: NodeJSON = {
         type: 'block',
         download: null,
       },
+    },
+    {
+      type: 'table',
+      content: [
+        {
+          type: 'tableRow',
+          content: [
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '功能' }],
+                },
+              ],
+            },
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '状态' }],
+                },
+              ],
+            },
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '备注' }],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'tableRow',
+          content: [
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '插入行列' }],
+                },
+              ],
+            },
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '待验证' }],
+                },
+              ],
+            },
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '点击单元格后出现表格浮动工具栏。' }],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'tableRow',
+          content: [
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '合并拆分' }],
+                },
+              ],
+            },
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '待验证' }],
+                },
+              ],
+            },
+            {
+              type: 'tableCell',
+              attrs: { colspan: 1, rowspan: 1, colwidth: null },
+              content: [
+                {
+                  type: 'paragraph',
+                  attrs: { textAlign: null },
+                  content: [{ type: 'text', text: '选择多个单元格后测试合并。' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
     },
     {
       type: 'flipGrid',
@@ -219,6 +341,8 @@ function ProseKitAstrobookToolbar() {
     return currentLinkSnapshot ? JSON.parse(currentLinkSnapshot) as LinkAttrs : null
   }, [currentLinkSnapshot])
   const [linkOpen, setLinkOpen] = useState(false)
+  const [tablePickerAnchor, setTablePickerAnchor] = useState<HTMLElement | null>(null)
+  const tablePickerOpen = Boolean(tablePickerAnchor)
 
   function focus() {
     editor.focus()
@@ -344,7 +468,23 @@ function ProseKitAstrobookToolbar() {
         />
         <DemoToolbarButton tip="引用" active={state.blockquote} icon={<QuoteTextIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
         <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
-        <DemoToolbarButton tip="表格" icon={<Table2Icon {...iconProps} />} onClick={() => { focus(); editor.commands.insertTable({ row: 3, col: 4 }) }} />
+        <ToolbarItem
+          tip="表格"
+          icon={<Table2Icon {...iconProps} />}
+          className={tablePickerOpen ? 'tool-active' : undefined}
+          onClick={(event) => {
+            setTablePickerAnchor((current) => current ? null : event.currentTarget)
+          }}
+        />
+        <TableSizePicker
+          anchorEl={tablePickerAnchor}
+          open={tablePickerOpen}
+          onClose={() => setTablePickerAnchor(null)}
+          onSelect={({ rows, columns }) => {
+            focus()
+            editor.commands.insertTable({ row: rows, col: columns })
+          }}
+        />
         <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setFlipGrid(2) }} />
         <LinkEditorPopover
           triggerStyle={{ display: 'inline-flex' }}
@@ -428,6 +568,8 @@ export function ProseKitAstrobookDemo() {
         content={<EditorContent className="prosekit-astrobook-editor-content" />}
         footer={<DemoInspector />}
       />
+      <TableFloatingToolbar />
+      <TableCellFloatingToolbar />
       <Box sx={{ mt: 2 }}>
         <Typography variant="body2" color="text.secondary">
           This demo intentionally uses ProseKit built-in extensions for repeated
