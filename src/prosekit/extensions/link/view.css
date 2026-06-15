@@ -1,3 +1,5 @@
+@reference "../../../../demo/styles/tailwind.css";
+
 .prosekit-link-node {
   display: inline-flex;
   align-items: center;
@@ -8,6 +10,27 @@
 
 .prosekit-link-node.block {
   display: block;
+}
+
+@layer components {
+  .prosekit-block-link-shell {
+    @apply relative block;
+  }
+
+  .prosekit-block-link-actions,
+  .prosekit-block-link-editor {
+    @apply absolute left-0 top-[-0.375rem] z-[1305] w-max max-w-[min(420px,calc(100vw-2rem))] -translate-y-full;
+  }
+
+  .prosekit-block-link-actions {
+    @apply rounded-lg border bg-white text-xs shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)];
+    border-color: rgb(15 23 42 / 24%);
+  }
+
+  .prosekit-block-link-editor {
+    @apply rounded-lg border bg-white shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)];
+    border-color: rgb(15 23 42 / 24%);
+  }
 }
 
 .prosekit-link-node-anchor {
@@ -101,6 +124,7 @@
 
 .prosekit-link-popover-positioner {
   position: fixed;
+  z-index: 1305;
   width: max-content;
   height: auto;
   min-width: 0;

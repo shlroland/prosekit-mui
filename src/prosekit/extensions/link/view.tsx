@@ -262,11 +262,23 @@ export function LinkView({
     />
   )
 
+  const contentHoverProps = isEditable
+    ? {
+        onMouseEnter: keepActionsOpen,
+        onMouseLeave: scheduleActionsClose,
+        onPointerEnter: keepActionsOpen,
+        onPointerLeave: scheduleActionsClose,
+        onFocus: keepActionsOpen,
+        onBlur: scheduleActionsClose,
+      }
+    : {}
+
   const content = (
     <Box
       component={isBlock ? 'div' : 'span'}
       className={`prosekit-link-node ${isBlock ? 'block' : ''} ${selected ? 'ProseMirror-selectednode' : ''}`}
       data-drag-handle={isBlock ? 'true' : undefined}
+      {...contentHoverProps}
     >
       {!attrs.href && isEditable ? (
         <Box
@@ -322,6 +334,66 @@ export function LinkView({
       )}
     </Box>
   )
+
+  if (isEditable && isBlock) {
+    return (
+      <Box
+        className="prosekit-block-link-shell"
+        onMouseEnter={keepActionsOpen}
+        onMouseLeave={scheduleActionsClose}
+        onPointerEnter={keepActionsOpen}
+        onPointerLeave={scheduleActionsClose}
+        onFocus={keepActionsOpen}
+        onBlur={scheduleActionsClose}
+      >
+        {content}
+        {actionsOpen && !editOpen ? (
+          <Box
+            className="prosekit-block-link-actions"
+            contentEditable={false}
+            onMouseEnter={keepActionsOpen}
+            onMouseLeave={scheduleActionsClose}
+            onPointerEnter={keepActionsOpen}
+            onPointerLeave={scheduleActionsClose}
+          >
+            {actionBar}
+          </Box>
+        ) : null}
+        {editOpen ? (
+          <Box
+            className="prosekit-block-link-editor"
+            contentEditable={false}
+            onMouseEnter={keepActionsOpen}
+            onMouseLeave={scheduleActionsClose}
+            onPointerEnter={keepActionsOpen}
+            onPointerLeave={scheduleActionsClose}
+          >
+            <LinkEditorPanel
+              open={editOpen}
+              initialHref={attrs.href}
+              initialTitle={attrs.title ?? ''}
+              initialType={displayType}
+              initialTarget={attrs.target ?? '_blank'}
+              showAdvancedOptions
+              submitLabel={attrs.href ? '修改链接' : '插入链接'}
+              onClose={handleEditClose}
+              onSubmit={(value) => {
+                handleSaveWithValue(value)
+              }}
+              onRemove={() => {
+                const fakeEvent = {
+                  preventDefault() {},
+                  stopPropagation() {},
+                } as React.MouseEvent<HTMLButtonElement>
+                handleRemove(fakeEvent)
+                handleEditClose()
+              }}
+            />
+          </Box>
+        ) : null}
+      </Box>
+    )
+  }
 
   const popoverTriggerStyle = {
     display: isBlock ? 'block' : 'inline-flex',
