@@ -9,6 +9,7 @@ import { defineSuperscript } from 'prosekit/extensions/superscript'
 import { defineTextAlign } from 'prosekit/extensions/text-align'
 import { defineTextColor } from 'prosekit/extensions/text-color'
 
+import { defineAlertPanelExtension } from '../alert-panel'
 import { defineBasicExtension } from '../basic'
 import { defineFlipGridExtension } from '../flip-grid'
 import { defineTooltipExtension } from '../tooltip'
@@ -40,6 +41,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineHighlight(),
     defineSuperscript(),
     defineSubscript(),
+    defineAlertPanelExtension(),
     defineFlipGridExtension(),
     defineTooltipExtension(),
   )

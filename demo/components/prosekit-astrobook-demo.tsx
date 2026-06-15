@@ -22,13 +22,17 @@ import {
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
+  AlertBlockToolbar,
   ArrowGoBackLineIcon,
   ArrowGoForwardLineIcon,
   BoldIcon,
   CodeLineIcon,
+  CollapseIcon,
   EditorContent,
   EditorShell,
+  ErrorWarningFillIcon,
   FlipGridIcon,
+  Information2LineIcon,
   ItalicIcon,
   LinkIcon,
   LinkEditorPopover,
@@ -109,6 +113,28 @@ const demoContent: NodeJSON = {
         type: 'block',
         download: null,
       },
+    },
+    {
+      type: 'alertBox',
+      attrs: { variant: 'info' },
+      content: [
+        {
+          type: 'paragraph',
+          attrs: { textAlign: null },
+          content: [{ type: 'text', text: '这是一个提示块，可以在工具栏里插入不同语义的 alert。' }],
+        },
+      ],
+    },
+    {
+      type: 'collapsiblePanel',
+      attrs: { open: true, title: '可折叠面板' },
+      content: [
+        {
+          type: 'paragraph',
+          attrs: { textAlign: null },
+          content: [{ type: 'text', text: '面板标题可点击展开和收起，内容区域仍然是可编辑的 ProseMirror block。' }],
+        },
+      ],
     },
     {
       type: 'table',
@@ -467,6 +493,9 @@ function ProseKitAstrobookToolbar() {
           }}
         />
         <DemoToolbarButton tip="引用" active={state.blockquote} icon={<QuoteTextIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
+        <DemoToolbarButton tip="提示块" icon={<Information2LineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAlertBox('info') }} />
+        <DemoToolbarButton tip="警告块" icon={<ErrorWarningFillIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAlertBox('warning') }} />
+        <DemoToolbarButton tip="折叠面板" icon={<CollapseIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertCollapsiblePanel() }} />
         <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
         <ToolbarItem
           tip="表格"
@@ -568,6 +597,7 @@ export function ProseKitAstrobookDemo() {
         content={<EditorContent className="prosekit-astrobook-editor-content" />}
         footer={<DemoInspector />}
       />
+      <AlertBlockToolbar />
       <TableFloatingToolbar />
       <TableCellFloatingToolbar />
       <Box sx={{ mt: 2 }}>

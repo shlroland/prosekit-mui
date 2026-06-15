@@ -1,4 +1,5 @@
 export * from './basic/'
+export * from './alert-panel/'
 export * from './link/'
 export * from './trailing-node/'
 export * from './tooltip/'
