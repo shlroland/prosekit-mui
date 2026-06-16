@@ -10,7 +10,7 @@ export function defineLinkNodeView() {
       as: 'span',
       stopEvent: (event) => {
         return event.target instanceof HTMLElement
-          ? Boolean(event.target.closest('button, [role="dialog"], .MuiPopover-root'))
+          ? Boolean(event.target.closest('button, [role="dialog"], [data-editor-floating]'))
           : false
       },
     }),
@@ -20,7 +20,7 @@ export function defineLinkNodeView() {
       as: 'div',
       stopEvent: (event) => {
         return event.target instanceof HTMLElement
-          ? Boolean(event.target.closest('button, [role="dialog"], .MuiPopover-root'))
+          ? Boolean(event.target.closest('button, [role="dialog"], [data-editor-floating]'))
           : false
       },
     }),

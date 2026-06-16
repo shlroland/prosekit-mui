@@ -16,6 +16,18 @@
   }
 
   body {
+    --editor-background: #fcfaf5;
+    --editor-surface: rgba(255, 255, 255, 0.98);
+    --editor-surface-muted: rgba(252, 250, 245, 0.92);
+    --editor-foreground: #171717;
+    --editor-muted-foreground: #6b6258;
+    --editor-border: rgba(23, 23, 23, 0.1);
+    --editor-muted: rgba(23, 23, 23, 0.055);
+    --editor-primary: #5a8dda;
+    --editor-primary-hover: #4b7bc1;
+    --editor-primary-soft: rgba(90, 141, 218, 0.12);
+    --editor-ring: rgba(90, 141, 218, 0.58);
+
     margin: 0;
     min-height: 100vh;
     background:

@@ -1,6 +1,6 @@
-import { Box, Button, Stack, Tooltip, Typography } from '@mui/material'
 import { forwardRef, type MouseEvent, type ReactNode } from 'react'
 
+import { Button, Tooltip } from '../../ui'
 import { cn } from '../../utils/cn'
 import { getShortcutKeyText } from '../get-shortcut-key-text'
 import './toolbar.css'
@@ -32,19 +32,19 @@ function ToolbarItemTooltipContent({
 
   return (
     <>
-      <Stack
-        alignItems="center"
-        direction={customComponent ? 'row' : 'column'}
-        justifyContent="center"
-        gap={customComponent ? 1 : 0}
+      <span
+        className={cn(
+          'flex items-center justify-center',
+          customComponent ? 'flex-row gap-2' : 'flex-col gap-0',
+        )}
       >
-        <Box>{tip}</Box>
+        <span>{tip}</span>
         {shortcutKeyText ? (
-          <Box className="toolbar-item-shortcut">
+          <span className="toolbar-item-shortcut">
             {shortcutKeyText}
-          </Box>
+          </span>
         ) : null}
-      </Stack>
+      </span>
       {customComponent}
     </>
   )
@@ -70,44 +70,41 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
 
     return (
       <Tooltip
-        arrow
-        title={
+        content={
           <ToolbarItemTooltipContent
             tip={tip}
             customComponent={customComponent}
             shortcutKeyText={shortcutKeyText}
           />
         }
+        disabled={!tip}
       >
-        <Box>
-          <Button
-            ref={ref}
-            onClick={onClick}
-            className={cn('toolbar-item', className)}
-            disabled={disabled}
-            {...rest}
+        <Button
+          ref={ref}
+          variant="ghost"
+          size="icon"
+          onClick={onClick}
+          className={cn('toolbar-item', className)}
+          disabled={disabled}
+          {...rest}
+        >
+          <span
+            className="toolbar-item-content inline-flex items-center gap-1"
           >
-            <Stack
-              direction="row"
-              alignItems="center"
-              gap={0.5}
-              className="toolbar-item-content"
-            >
-              {content ? (
-                content
-              ) : icon ? (
-                <Box component="span" className="toolbar-item-icon">
-                  {icon}
-                </Box>
-              ) : null}
-              {!content && text ? (
-                <Typography component="span" variant="caption" fontWeight={700}>
-                  {text}
-                </Typography>
-              ) : null}
-            </Stack>
-          </Button>
-        </Box>
+            {content ? (
+              content
+            ) : icon ? (
+              <span className="toolbar-item-icon">
+                {icon}
+              </span>
+            ) : null}
+            {!content && text ? (
+              <span className="text-xs font-bold">
+                {text}
+              </span>
+            ) : null}
+          </span>
+        </Button>
       </Tooltip>
     )
   },

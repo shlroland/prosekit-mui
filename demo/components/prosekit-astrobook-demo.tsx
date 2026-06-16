@@ -5,19 +5,6 @@ import 'prosekit/extensions/placeholder/style.css'
 import 'prosekit/extensions/table/style.css'
 
 import {
-  Box,
-  Button,
-  Divider,
-  MenuItem,
-  Paper,
-  Select,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-} from '@mui/material'
-import {
   AlignCenterIcon,
   AlignJustifyIcon,
   AlignLeftIcon,
@@ -61,6 +48,7 @@ import {
   isLinkActive,
 } from '../../src'
 import type { LinkAttrs } from '../../src'
+import { Button, Separator } from '../../src/ui'
 import type { Editor, NodeJSON } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useMemo, useState, type ReactNode } from 'react'
@@ -414,20 +402,9 @@ function ProseKitAstrobookToolbar() {
   }
 
   return (
-    <Paper
-      variant="outlined"
-      square
-      sx={{
-        borderWidth: 0,
-        borderBottomWidth: 1,
-        bgcolor: 'background.paper',
-        px: 1,
-        py: 0.75,
-      }}
-    >
-      <Stack direction="row" alignItems="center" gap={0.5} flexWrap="wrap">
-        <Select
-          size="small"
+    <div className="border-b border-[var(--editor-border)] bg-[var(--editor-surface)] px-2 py-1.5">
+      <div className="flex flex-wrap items-center gap-1">
+        <select
           defaultValue="paragraph"
           onChange={(event) => {
             focus()
@@ -438,15 +415,15 @@ function ProseKitAstrobookToolbar() {
             }
             editor.commands.setHeading({ level: Number(value) })
           }}
-          sx={{ minWidth: 116, height: 34 }}
+          className="h-[34px] min-w-[116px] rounded-lg border border-[var(--editor-border)] bg-white px-2 text-sm font-medium text-[var(--editor-foreground)] outline-none focus:ring-2 focus:ring-[var(--editor-ring)]"
         >
-          <MenuItem value="paragraph">正文</MenuItem>
-          <MenuItem value="1">标题 1</MenuItem>
-          <MenuItem value="2">标题 2</MenuItem>
-          <MenuItem value="3">标题 3</MenuItem>
-        </Select>
+          <option value="paragraph">正文</option>
+          <option value="1">标题 1</option>
+          <option value="2">标题 2</option>
+          <option value="3">标题 3</option>
+        </select>
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+        <Separator orientation="vertical" className="mx-1 h-5" />
 
         <DemoToolbarButton
           tip="撤销"
@@ -465,7 +442,7 @@ function ProseKitAstrobookToolbar() {
           }}
         />
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+        <Separator orientation="vertical" className="mx-1 h-5" />
 
         <DemoToolbarButton tip="加粗" active={state.bold} icon={<BoldIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBold() }} />
         <DemoToolbarButton tip="斜体" active={state.italic} icon={<ItalicIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleItalic() }} />
@@ -476,30 +453,28 @@ function ProseKitAstrobookToolbar() {
         <DemoToolbarButton tip="上标" active={state.superscript} icon={<SuperscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
         <DemoToolbarButton tip="下标" active={state.subscript} icon={<SubscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+        <Separator orientation="vertical" className="mx-1 h-5" />
 
-        <ToggleButtonGroup size="small" exclusive aria-label="text alignment">
+        <div className="inline-flex items-center gap-px" aria-label="text alignment">
           {[
             ['left', <AlignLeftIcon key="left" {...iconProps} />],
             ['center', <AlignCenterIcon key="center" {...iconProps} />],
             ['right', <AlignRightIcon key="right" {...iconProps} />],
             ['justify', <AlignJustifyIcon key="justify" {...iconProps} />],
           ].map(([value, icon]) => (
-            <ToggleButton
+            <ToolbarItem
               key={value as string}
-              value={value}
+              tip={`对齐: ${value}`}
+              icon={icon}
               onClick={() => {
                 focus()
                 editor.commands.setTextAlign(value as string)
               }}
-              sx={{ width: 34, height: 34, p: 0 }}
-            >
-              {icon}
-            </ToggleButton>
+            />
           ))}
-        </ToggleButtonGroup>
+        </div>
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+        <Separator orientation="vertical" className="mx-1 h-5" />
 
         <DemoToolbarButton
           tip="无序列表"
@@ -578,7 +553,7 @@ function ProseKitAstrobookToolbar() {
             setLinkOpen(false)
           }}
         >
-          <Box component="span" sx={{ display: 'inline-flex' }}>
+          <span className="inline-flex">
             <DemoToolbarButton
               tip="链接节点"
               active={state.link}
@@ -588,10 +563,10 @@ function ProseKitAstrobookToolbar() {
                 setLinkOpen(true)
               }}
             />
-          </Box>
+          </span>
         </LinkEditorPopover>
-      </Stack>
-    </Paper>
+      </div>
+    </div>
   )
 }
 
@@ -609,12 +584,12 @@ function DemoInspector() {
   }, [statsSnapshot])
 
   return (
-    <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
-      <Typography variant="body2" color="text.secondary">
+    <div className="flex items-center justify-between gap-2">
+      <p className="m-0 text-sm text-[var(--editor-muted-foreground)]">
         Characters: {stats.chars}
-      </Typography>
+      </p>
       <Button
-        size="small"
+        size="sm"
         variant="outlined"
         onClick={() => {
           console.info(editor.state.doc.toJSON())
@@ -622,7 +597,7 @@ function DemoInspector() {
       >
         Log JSON
       </Button>
-    </Stack>
+    </div>
   )
 }
 
@@ -637,13 +612,13 @@ export function ProseKitAstrobookDemo() {
       <AlertBlockToolbar />
       <TableFloatingToolbar />
       <TableCellFloatingToolbar />
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="body2" color="text.secondary">
+      <div className="mt-2">
+        <p className="m-0 text-sm leading-6 text-[var(--editor-muted-foreground)]">
           This demo intentionally uses ProseKit built-in extensions for repeated
           features and keeps project-specific code focused on node links,
-          tooltip, flip-grid, and MUI presentation.
-        </Typography>
-      </Box>
+          tooltip, flip-grid, and Base UI presentation.
+        </p>
+      </div>
     </ProseKitProvider>
   )
 }

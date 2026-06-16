@@ -1,6 +1,6 @@
-import { Box, Menu, MenuItem, Typography } from '@mui/material'
+import { Menu } from '@base-ui/react/menu'
 import { ChevronDown } from 'lucide-react'
-import { useState, type MouseEvent, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 import { cn } from '../../utils/cn'
 import { getShortcutKeyText } from '../get-shortcut-key-text'
@@ -36,23 +36,11 @@ export function ToolbarMenu<Key extends string = string>({
   triggerContent,
   onSelect,
 }: ToolbarMenuProps<Key>) {
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const selectedOption =
     options.find((option) => option.key === selectedKey) ?? options[0]
 
-  const open = Boolean(anchorEl)
-
-  function handleOpen(event: MouseEvent<HTMLButtonElement>) {
-    setAnchorEl(event.currentTarget)
-  }
-
-  function handleClose() {
-    setAnchorEl(null)
-  }
-
   function handleSelect(key: Key) {
     onSelect(key)
-    handleClose()
   }
 
   if (!selectedOption) {
@@ -60,64 +48,58 @@ export function ToolbarMenu<Key extends string = string>({
   }
 
   return (
-    <>
-      <ToolbarItem
-        tip={tip}
-        content={
-          triggerContent ?? (
-            <Box className="toolbar-menu-trigger">
-              <Box component="span" className="toolbar-menu-trigger-icon">
-                {selectedOption.icon}
-              </Box>
-              <ChevronDown className="toolbar-menu-chevron" strokeWidth={1.85} />
-            </Box>
-          )
-        }
-        className={cn(active ? 'tool-active' : undefined, className)}
+    <Menu.Root modal={false}>
+      <Menu.Trigger
         disabled={disabled}
-        onClick={handleOpen}
+        render={(
+          <ToolbarItem
+            tip={tip}
+            content={
+              triggerContent ?? (
+                <span className="toolbar-menu-trigger">
+                  <span className="toolbar-menu-trigger-icon">
+                    {selectedOption.icon}
+                  </span>
+                  <ChevronDown className="toolbar-menu-chevron" strokeWidth={1.85} />
+                </span>
+              )
+            }
+            className={cn(active ? 'tool-active' : undefined, className)}
+            disabled={disabled}
+          />
+        )}
       />
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        slotProps={{
-          paper: {
-            className: 'toolbar-menu-paper',
-          },
-          list: {
-            className: 'toolbar-menu-list',
-          },
-        }}
-      >
+      <Menu.Portal>
+        <Menu.Positioner side="bottom" align="start" sideOffset={6}>
+          <Menu.Popup className="toolbar-menu-paper">
         {options.map((option) => {
           const selected = option.key === selectedKey
 
           return (
-            <MenuItem
+            <Menu.Item
               key={option.key}
-              selected={selected}
               disabled={option.disabled}
+              data-selected={selected ? '' : undefined}
               className="toolbar-menu-item"
               onClick={() => handleSelect(option.key)}
             >
-              <Box component="span" className="toolbar-menu-item-icon">
+              <span className="toolbar-menu-item-icon">
                 {option.icon}
-              </Box>
-              <Typography component="span" className="toolbar-menu-item-label">
+              </span>
+              <span className="toolbar-menu-item-label">
                 {option.label}
-              </Typography>
+              </span>
               {option.shortcutKey?.length ? (
-                <Typography component="span" className="toolbar-menu-item-shortcut">
+                <span className="toolbar-menu-item-shortcut">
                   {getShortcutKeyText(option.shortcutKey)}
-                </Typography>
+                </span>
               ) : null}
-            </MenuItem>
+            </Menu.Item>
           )
         })}
-      </Menu>
-    </>
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
   )
 }

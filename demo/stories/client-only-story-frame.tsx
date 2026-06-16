@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 
-import { MuiPlaygroundProvider } from './mui-playground-provider'
+import { BaseUiPlaygroundProvider } from './base-ui-playground-provider'
 import { PlaygroundShell } from './playground-shell'
 
 export type ClientOnlyStoryFrameProps = {
@@ -46,10 +46,10 @@ export function ClientOnlyStoryFrame({
   }
 
   return (
-    <MuiPlaygroundProvider>
+    <BaseUiPlaygroundProvider>
       <PlaygroundShell eyebrow={eyebrow} title={title} copy={copy}>
         {children}
       </PlaygroundShell>
-    </MuiPlaygroundProvider>
+    </BaseUiPlaygroundProvider>
   )
 }

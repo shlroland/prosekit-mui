@@ -1,5 +1,4 @@
-import { Button } from '@mui/material'
-
+import { Button } from '../../src/ui'
 import { cn } from '../../src/utils/cn'
 
 type CommandButtonProps = {
@@ -24,8 +23,7 @@ export function CommandButton({
 }: CommandButtonProps) {
   return (
     <Button
-      disableElevation
-      variant="contained"
+      variant="ghost"
       className={cn(
         'min-h-11 rounded-2xl px-4 font-bold shadow-none transition-transform duration-150 hover:-translate-y-px',
         toneClasses[tone],

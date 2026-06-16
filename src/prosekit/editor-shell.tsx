@@ -1,4 +1,3 @@
-import { Box, Card, Stack, Typography } from '@mui/material'
 import { type ReactNode } from 'react'
 
 export type EditorShellProps = {
@@ -9,21 +8,21 @@ export type EditorShellProps = {
 
 export function EditorShell({ toolbar, content, footer }: EditorShellProps) {
   return (
-    <Stack spacing={1.5}>
-      <Card variant="outlined" className="minimal-prosekit-editor-shell">
+    <div className="grid gap-3">
+      <div className="minimal-prosekit-editor-shell">
         {toolbar ? (
-          <Box className="minimal-prosekit-editor-toolbar-frame">
+          <div className="minimal-prosekit-editor-toolbar-frame">
             {toolbar}
-          </Box>
+          </div>
         ) : null}
         {content}
-      </Card>
+      </div>
       {footer ?? (
-        <Typography variant="body2" color="text.secondary">
+        <p className="m-0 text-sm leading-6 text-[var(--editor-muted-foreground)]">
           Compose your own editor UI by combining the provider, shell, toolbar,
           and content primitives exported from this package.
-        </Typography>
+        </p>
       )}
-    </Stack>
+    </div>
   )
 }

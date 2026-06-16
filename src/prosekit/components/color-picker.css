@@ -2,15 +2,15 @@
 
 @layer components {
   .prosekit-color-picker-popper {
-    @apply z-[1400];
+    @apply fixed z-[1400];
   }
 
   .prosekit-color-picker-paper {
-    @apply mt-2 w-[252px] rounded-xl border border-black/8 bg-white p-2.5 shadow-[0_12px_32px_rgba(15,23,42,0.12)];
+    @apply w-[252px] rounded-xl border border-black/8 bg-white p-2.5 shadow-[0_12px_32px_rgba(15,23,42,0.12)];
   }
 
   .prosekit-color-picker-header {
-    @apply border-b border-black/6 pb-2;
+    @apply flex items-center justify-between border-b border-black/6 pb-2;
   }
 
   .prosekit-color-picker-caption {
@@ -23,7 +23,7 @@
   }
 
   .prosekit-color-picker-swatch {
-    @apply h-5 w-5 cursor-pointer rounded-[6px] border border-black/8 transition-transform duration-150;
+    @apply h-5 w-5 cursor-pointer rounded-[6px] border border-black/8 p-0 transition-transform duration-150;
 
     &:hover {
       transform: scale(1.04);
@@ -75,17 +75,17 @@
   }
 
   .prosekit-color-picker-value-label {
-    @apply text-[10px] font-medium uppercase tracking-[0.06em];
+    @apply block text-[10px] font-medium uppercase tracking-[0.06em];
     color: rgb(23 23 23 / 0.38);
   }
 
   .prosekit-color-picker-input {
-    @apply w-full rounded-md border border-black/8 bg-white px-2 py-1 font-mono text-[12px] leading-none;
+    @apply w-full rounded-md border border-black/8 bg-white px-2 py-1 font-mono text-[12px] leading-none outline-none focus:ring-2 focus:ring-[var(--editor-ring)];
     color: rgb(23 23 23 / 0.74);
   }
 
   .prosekit-color-picker-footer {
-    @apply items-end gap-2 rounded-lg border border-black/6 bg-stone-50 px-2 py-2;
+    @apply flex items-end justify-between gap-2 rounded-lg border border-black/6 bg-stone-50 px-2 py-2;
   }
 
   .prosekit-color-picker-submit {

@@ -1,4 +1,3 @@
-import { Box, IconButton, Paper, Stack } from '@mui/material'
 import {
   InlinePopoverPopup,
   InlinePopoverPositioner,
@@ -11,6 +10,7 @@ import {
   type ReactNode,
 } from 'react'
 
+import { Button } from '../../ui'
 import { cn } from '../../utils/cn'
 import './inline-menu.css'
 
@@ -82,14 +82,11 @@ export function InlineMenu({
 
 export function InlineMenuGroup({ className, children }: InlineMenuGroupProps) {
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      spacing={0.5}
+    <div
       className={cn('prosekit-inline-menu-group', className)}
     >
       {children}
-    </Stack>
+    </div>
   )
 }
 
@@ -102,9 +99,10 @@ export const InlineMenuButton = forwardRef<HTMLButtonElement, InlineMenuButtonPr
     children,
   }, ref) => {
     return (
-      <IconButton
+      <Button
         ref={ref}
-        size="small"
+        variant="ghost"
+        size="icon"
         aria-label={title}
         title={title}
         disabled={disabled}
@@ -113,7 +111,7 @@ export const InlineMenuButton = forwardRef<HTMLButtonElement, InlineMenuButtonPr
         className={cn('prosekit-inline-menu-button', active && 'is-active')}
       >
         {children}
-      </IconButton>
+      </Button>
     )
   },
 )
@@ -121,13 +119,13 @@ export const InlineMenuButton = forwardRef<HTMLButtonElement, InlineMenuButtonPr
 InlineMenuButton.displayName = 'InlineMenuButton'
 
 export function InlineMenuDivider({ className }: InlineMenuDividerProps) {
-  return <Box className={cn('prosekit-inline-menu-divider', className)} />
+  return <div className={cn('prosekit-inline-menu-divider', className)} />
 }
 
 export function InlineMenuPanel({ className, children }: InlineMenuPanelProps) {
   return (
-    <Paper elevation={0} className={cn('prosekit-inline-menu-panel', className)}>
+    <div className={cn('prosekit-inline-menu-panel', className)}>
       {children}
-    </Paper>
+    </div>
   )
 }

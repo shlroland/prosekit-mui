@@ -1,5 +1,3 @@
-import { Chip } from '@mui/material'
-
 import { cn } from '../../src/utils/cn'
 
 type StatusChipProps = {
@@ -19,13 +17,14 @@ export function StatusChip({
   tone = 'neutral',
 }: StatusChipProps) {
   return (
-    <Chip
-      label={label}
+    <span
       className={cn(
-        'rounded-full border px-1 font-medium shadow-none',
+        'inline-flex min-h-7 items-center rounded-full border px-3 text-sm font-medium shadow-none',
         toneClasses[tone],
       )}
-    />
+    >
+      {label}
+    </span>
   )
 }
 

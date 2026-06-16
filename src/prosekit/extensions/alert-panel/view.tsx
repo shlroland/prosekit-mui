@@ -1,4 +1,3 @@
-import { Box, ButtonBase } from '@mui/material'
 import type { ReactNodeViewProps } from 'prosekit/react'
 
 import type { AlertBoxKind } from './types'
@@ -15,13 +14,13 @@ export function AlertBoxView({ node, contentRef, selected }: ReactNodeViewProps)
   const variant = normalizeAlertKind(node.attrs.variant)
 
   return (
-    <Box
+    <div
       className={`node-alert ${selected ? 'ProseMirror-selectednode' : ''}`}
       data-type="alert-box"
       data-variant={variant}
     >
-      <Box ref={contentRef} className="node-alert-content" />
-    </Box>
+      <div ref={contentRef} className="node-alert-content" />
+    </div>
   )
 }
 
@@ -56,27 +55,27 @@ export function CollapsiblePanelView({
   }
 
   return (
-    <Box
+    <div
       className={`cq-details ${open ? 'is-open' : ''} ${selected ? 'ProseMirror-selectednode' : ''}`}
       data-type="collapsible-panel"
       data-open={open ? 'true' : 'false'}
       data-title={title}
     >
-      <ButtonBase
-        component="button"
+      <button
+        type="button"
         className="cq-details-toggle"
         contentEditable={false}
         aria-label={open ? '收起面板' : '展开面板'}
         onClick={toggleOpen}
       />
-      <Box className="cq-details-body">
+      <div className="cq-details-body">
         <summary contentEditable={false}>{title}</summary>
-        <Box
+        <div
           ref={contentRef}
           data-type="detailsContent"
           data-open={open ? 'true' : 'false'}
         />
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

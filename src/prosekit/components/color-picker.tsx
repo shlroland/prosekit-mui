@@ -1,16 +1,15 @@
 import {
-  Box,
-  Button,
-  ClickAwayListener,
-  Paper,
-  Popper,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { useMemo, type ChangeEvent, type ReactNode } from 'react'
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from 'react'
 import { HexAlphaColorPicker } from 'react-colorful'
 
+import { Button } from '../../ui'
 import { cn } from '../../utils/cn'
 import './color-picker.css'
 
@@ -60,7 +59,46 @@ export function ColorPicker({
   resetLabel = '默认',
   className,
 }: ColorPickerProps) {
+  const popupRef = useRef<HTMLDivElement | null>(null)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
   const canSubmit = useMemo(() => isValidHexColor(value), [value])
+
+  useLayoutEffect(() => {
+    if (!open || !anchorEl) {
+      return
+    }
+
+    const rect = anchorEl.getBoundingClientRect()
+    setPosition({
+      top: rect.bottom + 8,
+      left: rect.left,
+    })
+  }, [anchorEl, open])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target
+
+      if (!(target instanceof Node)) {
+        return
+      }
+
+      if (popupRef.current?.contains(target) || anchorEl?.contains(target)) {
+        return
+      }
+
+      onClose()
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [anchorEl, onClose, open])
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     onChange(event.target.value)
@@ -80,97 +118,84 @@ export function ColorPicker({
     onClose()
   }
 
+  if (!open || !anchorEl) {
+    return null
+  }
+
   return (
-    <Popper
-      open={open}
-      anchorEl={anchorEl}
-      placement="bottom-start"
+    <div
+      ref={popupRef}
       className={cn('prosekit-color-picker-popper', className)}
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
     >
-      <ClickAwayListener onClickAway={onClose}>
-        <Paper className="prosekit-color-picker-paper">
-          <Stack spacing={1.25}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              className="prosekit-color-picker-header"
+      <div className="prosekit-color-picker-paper">
+        <div className="grid gap-3">
+          <div className="prosekit-color-picker-header">
+            <button
+              type="button"
+              className="inline-flex items-center gap-2"
+              onClick={handleReset}
             >
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Box
-                  className="prosekit-color-picker-swatch prosekit-color-picker-swatch-default"
-                  sx={{ backgroundColor: defaultColor }}
-                  onClick={handleReset}
-                />
-                <Typography className="prosekit-color-picker-reset-label">
-                  {resetLabel}
-                </Typography>
-              </Stack>
-              <Typography className="prosekit-color-picker-caption">
-                Text color
-              </Typography>
-            </Stack>
+              <span
+                className="prosekit-color-picker-swatch prosekit-color-picker-swatch-default"
+                style={{ backgroundColor: defaultColor }}
+              />
+              <span className="prosekit-color-picker-reset-label">
+                {resetLabel}
+              </span>
+            </button>
+            <span className="prosekit-color-picker-caption">
+              Text color
+            </span>
+          </div>
 
-            <Stack
-              direction="row"
-              flexWrap="wrap"
-              gap={0.75}
-              className="prosekit-color-picker-grid"
+          <div className="prosekit-color-picker-grid">
+            {presets.map((preset) => (
+              <button
+                key={preset.key}
+                type="button"
+                className="prosekit-color-picker-swatch"
+                style={{ backgroundColor: preset.color }}
+                title={preset.label ?? preset.color}
+                onClick={() => {
+                  onChange(preset.color)
+                  onSubmit(preset.color)
+                  onClose()
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="prosekit-color-picker-panel">
+            <HexAlphaColorPicker color={value} onChange={onChange} />
+          </div>
+
+          <div className="prosekit-color-picker-footer">
+            <label className="prosekit-color-picker-value-block">
+              <span className="prosekit-color-picker-value-label">
+                Hex
+              </span>
+              <input
+                value={value}
+                onChange={handleInputChange}
+                className="prosekit-color-picker-input"
+              />
+            </label>
+
+            <Button
+              size="sm"
+              disabled={!canSubmit}
+              className="prosekit-color-picker-submit"
+              onClick={handleSubmit}
             >
-              {presets.map((preset) => (
-                <Box
-                  key={preset.key}
-                  className="prosekit-color-picker-swatch"
-                  sx={{ backgroundColor: preset.color }}
-                  title={preset.label ?? preset.color}
-                  onClick={() => {
-                    onChange(preset.color)
-                    onSubmit(preset.color)
-                    onClose()
-                  }}
-                />
-              ))}
-            </Stack>
-
-            <Box className="prosekit-color-picker-panel">
-              <HexAlphaColorPicker color={value} onChange={onChange} />
-            </Box>
-
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              className="prosekit-color-picker-footer"
-            >
-              <Stack spacing={0.5} className="prosekit-color-picker-value-block">
-                <Typography className="prosekit-color-picker-value-label">
-                  Hex
-                </Typography>
-                <TextField
-                  value={value}
-                  size="small"
-                  onChange={handleInputChange}
-                  slotProps={{
-                    input: {
-                      className: 'prosekit-color-picker-input',
-                    },
-                  }}
-                />
-              </Stack>
-
-              <Button
-                size="small"
-                variant="contained"
-                disabled={!canSubmit}
-                className="prosekit-color-picker-submit"
-                onClick={handleSubmit}
-              >
-                Apply
-              </Button>
-            </Stack>
-          </Stack>
-        </Paper>
-      </ClickAwayListener>
-    </Popper>
+              Apply
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

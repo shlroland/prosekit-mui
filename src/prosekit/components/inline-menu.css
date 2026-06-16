@@ -15,24 +15,23 @@
   }
 
   .prosekit-inline-menu-group {
-    @apply flex items-center;
+    @apply flex items-center gap-1;
   }
 
   .prosekit-inline-menu-button {
-    @apply h-8 w-8 rounded-lg;
-    color: var(--mui-palette-text-primary);
+    @apply h-8 w-8 rounded-lg text-[var(--editor-foreground)];
 
     &:hover {
       background-color: rgba(23, 23, 23, 0.05);
     }
 
     &.is-active {
-      background-color: rgba(23, 23, 23, 0.08);
-      color: var(--mui-palette-primary-main);
+      background-color: var(--editor-primary-soft);
+      color: var(--editor-primary);
     }
 
     &:disabled {
-      color: var(--mui-palette-text-disabled);
+      color: var(--editor-muted-foreground);
     }
   }
 

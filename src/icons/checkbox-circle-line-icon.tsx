@@ -1,6 +1,5 @@
 
-import { SvgIcon } from "@mui/material";
-import type { SvgIconProps } from "@mui/material";
+import { SvgIcon, type SvgIconProps } from '../ui'
 import * as React from "react";
 
 export const CheckboxCircleLineIcon = (props: SvgIconProps) => {

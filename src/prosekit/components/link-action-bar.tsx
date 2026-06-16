@@ -1,5 +1,4 @@
-import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material'
-
+import { Button, Separator, Tooltip } from '../../ui'
 import {
   CarouselViewIcon,
   CopyIcon,
@@ -8,6 +7,7 @@ import {
   ScrollToBottomLineIcon,
   TextIcon,
 } from '../../icons'
+import { cn } from '../../utils/cn'
 import type { LinkDisplayType } from '../extensions/link/types'
 
 export type LinkActionBarProps = {
@@ -17,6 +17,38 @@ export type LinkActionBarProps = {
   onCopy: (event: React.MouseEvent<HTMLButtonElement>) => void
   onRemove: (event: React.MouseEvent<HTMLButtonElement>) => void
   onChangeDisplay: (type: LinkDisplayType, event: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+type LinkActionButtonProps = {
+  label: string
+  active?: boolean
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
+  children: React.ReactNode
+}
+
+function LinkActionButton({
+  label,
+  active = false,
+  onClick,
+  children,
+}: LinkActionButtonProps) {
+  return (
+    <Tooltip content={label}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn(
+          'h-8 w-8 rounded-lg',
+          active
+            ? 'bg-[var(--editor-primary)] text-white hover:bg-[var(--editor-primary-hover)]'
+            : 'text-[var(--editor-muted-foreground)] hover:text-[var(--editor-foreground)]',
+        )}
+        onClick={onClick}
+      >
+        {children}
+      </Button>
+    </Tooltip>
+  )
 }
 
 export function LinkActionBar({
@@ -30,92 +62,41 @@ export function LinkActionBar({
   const iconSx = { fontSize: '1rem' }
 
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      gap={0.5}
-      sx={{
-        p: 0.75,
-        bgcolor: '#fff',
-        borderRadius: 1,
-        '.MuiIconButton-root': {
-          color: 'text.secondary',
-          borderRadius: 1,
-          '&:hover': {
-            bgcolor: 'action.hover',
-            color: 'text.primary',
-          },
-          '&.MuiIconButton-colorPrimary': {
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            '&:hover': {
-              bgcolor: 'primary.dark',
-            },
-          },
-        },
-      }}
-    >
-      <Box
-        component="span"
-        sx={{
-          width: 200,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          px: 1,
-          fontSize: '0.875rem',
-          color: 'text.secondary',
-        }}
-      >
+    <div className="flex items-center gap-1 rounded-lg bg-white p-1.5">
+      <span className="w-[200px] overflow-hidden truncate whitespace-nowrap px-2 text-sm text-[var(--editor-muted-foreground)]">
         {href}
-      </Box>
-      <Tooltip title="编辑">
-        <IconButton size="small" onClick={onEdit}>
-          <EditLineIcon sx={iconSx} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="复制链接">
-        <IconButton size="small" onClick={onCopy}>
-          <CopyIcon sx={iconSx} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="取消链接">
-        <IconButton size="small" onClick={onRemove}>
-          <LinkUnlinkIcon sx={iconSx} />
-        </IconButton>
-      </Tooltip>
-      <Divider
-        orientation="vertical"
-        flexItem
-        sx={{ height: '1rem', mx: 0.5, alignSelf: 'center', borderColor: 'divider' }}
-      />
-      <Tooltip title="文字">
-        <IconButton
-          size="small"
-          color={type === 'text' ? 'primary' : 'default'}
-          onClick={(event) => onChangeDisplay('text', event)}
-        >
-          <TextIcon sx={iconSx} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="图标文字">
-        <IconButton
-          size="small"
-          color={type === 'icon' ? 'primary' : 'default'}
-          onClick={(event) => onChangeDisplay('icon', event)}
-        >
-          <ScrollToBottomLineIcon sx={{ ...iconSx, transform: 'rotate(90deg)' }} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="卡片">
-        <IconButton
-          size="small"
-          color={type === 'block' ? 'primary' : 'default'}
-          onClick={(event) => onChangeDisplay('block', event)}
-        >
-          <CarouselViewIcon sx={{ ...iconSx, transform: 'rotate(90deg)' }} />
-        </IconButton>
-      </Tooltip>
-    </Stack>
+      </span>
+      <LinkActionButton label="编辑" onClick={onEdit}>
+        <EditLineIcon sx={iconSx} />
+      </LinkActionButton>
+      <LinkActionButton label="复制链接" onClick={onCopy}>
+        <CopyIcon sx={iconSx} />
+      </LinkActionButton>
+      <LinkActionButton label="取消链接" onClick={onRemove}>
+        <LinkUnlinkIcon sx={iconSx} />
+      </LinkActionButton>
+      <Separator orientation="vertical" className="mx-1 h-4" />
+      <LinkActionButton
+        label="文字"
+        active={type === 'text'}
+        onClick={(event) => onChangeDisplay('text', event)}
+      >
+        <TextIcon sx={iconSx} />
+      </LinkActionButton>
+      <LinkActionButton
+        label="图标文字"
+        active={type === 'icon'}
+        onClick={(event) => onChangeDisplay('icon', event)}
+      >
+        <ScrollToBottomLineIcon sx={{ ...iconSx, transform: 'rotate(90deg)' }} />
+      </LinkActionButton>
+      <LinkActionButton
+        label="卡片"
+        active={type === 'block'}
+        onClick={(event) => onChangeDisplay('block', event)}
+      >
+        <CarouselViewIcon sx={{ ...iconSx, transform: 'rotate(90deg)' }} />
+      </LinkActionButton>
+    </div>
   )
 }

@@ -1,4 +1,3 @@
-import { Box } from '@mui/material'
 import { useEditor } from 'prosekit/react'
 
 import { cn } from '../utils/cn'
@@ -11,8 +10,8 @@ export function EditorContent({ className }: EditorContentProps) {
   const editor = useEditor<any>() as any
 
   return (
-    <Box className={cn('minimal-prosekit-editor-content', className)}>
+    <div className={cn('minimal-prosekit-editor-content', className)}>
       <div ref={editor.mount} />
-    </Box>
+    </div>
   )
 }
