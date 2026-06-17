@@ -1,4 +1,4 @@
-@reference "../../../demo/styles/tailwind.css";
+@reference "tailwindcss";
 
 @layer components {
   .prosekit-color-picker-popper {

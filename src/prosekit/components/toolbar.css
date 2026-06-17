@@ -1,4 +1,4 @@
-@reference "../../../demo/styles/tailwind.css";
+@reference "tailwindcss";
 
 @layer components {
   .minimal-prosekit-editor-shell {
@@ -190,11 +190,11 @@
   }
 
   .table-floating-toolbar-button {
-    @apply h-7 w-7 rounded-md text-[var(--mui-palette-text-secondary)];
+    @apply h-7 w-7 rounded-md text-[var(--editor-muted-foreground)];
 
     &:hover {
-      @apply text-[var(--mui-palette-text-primary)];
-      background-color: var(--mui-palette-action-hover);
+      @apply text-[var(--editor-foreground)];
+      background-color: var(--editor-muted);
     }
   }
 
@@ -211,13 +211,13 @@
   }
 
   .table-handle-trigger {
-    @apply inline-flex items-center justify-center rounded-md border bg-[var(--mui-palette-background-paper)] text-[var(--mui-palette-text-secondary)] shadow-[0_4px_14px_rgba(15,23,42,0.14)];
-    border-color: var(--mui-palette-divider);
+    @apply inline-flex items-center justify-center rounded-md border bg-[var(--editor-surface)] text-[var(--editor-muted-foreground)] shadow-[0_4px_14px_rgba(15,23,42,0.14)];
+    border-color: var(--editor-border);
     cursor: grab;
 
     &:hover {
-      @apply text-[var(--mui-palette-text-primary)];
-      background-color: var(--mui-palette-action-hover);
+      @apply text-[var(--editor-foreground)];
+      background-color: var(--editor-muted);
     }
 
     &:active {
@@ -238,8 +238,8 @@
   }
 
   .table-floating-toolbar-surface {
-    @apply rounded-lg border bg-[var(--mui-palette-background-paper)] p-1 shadow-[0_8px_24px_rgba(15,23,42,0.16),0_2px_8px_rgba(15,23,42,0.08)];
-    border-color: var(--mui-palette-divider);
+    @apply rounded-lg border bg-[var(--editor-surface)] p-1 shadow-[0_8px_24px_rgba(15,23,42,0.16),0_2px_8px_rgba(15,23,42,0.08)];
+    border-color: var(--editor-border);
   }
 
   .table-floating-toolbar-row {
@@ -256,7 +256,7 @@
   }
 
   .table-cell-focus-overlay {
-    @apply pointer-events-none fixed z-[1302] rounded-md border-2 border-[var(--mui-palette-primary-main)] shadow-[0_0_0_1px_rgba(255,255,255,0.85)];
+    @apply pointer-events-none fixed z-[1302] rounded-md border-2 border-[var(--editor-primary)] shadow-[0_0_0_1px_rgba(255,255,255,0.85)];
   }
 
   .table-cell-menu-anchor {
@@ -264,12 +264,12 @@
   }
 
   .table-cell-menu-trigger {
-    @apply h-6 w-6 rounded-md border bg-[var(--mui-palette-background-paper)] text-[var(--mui-palette-text-secondary)] shadow-md;
-    border-color: color-mix(in srgb, var(--mui-palette-primary-main) 28%, transparent);
+    @apply h-6 w-6 rounded-md border bg-[var(--editor-surface)] text-[var(--editor-muted-foreground)] shadow-md;
+    border-color: color-mix(in srgb, var(--editor-primary) 28%, transparent);
 
     &:hover {
-      @apply text-[var(--mui-palette-text-primary)];
-      background-color: color-mix(in srgb, var(--mui-palette-primary-main) 8%, transparent);
+      @apply text-[var(--editor-foreground)];
+      background-color: color-mix(in srgb, var(--editor-primary) 8%, transparent);
     }
   }
 
@@ -278,8 +278,29 @@
   }
 
   .table-cell-menu-paper {
-    @apply mt-1.5 min-w-[184px] rounded-lg border;
-    border-color: var(--mui-palette-divider);
+    @apply fixed z-[1304] mt-1.5 min-w-[184px] rounded-lg border bg-[var(--editor-surface)] p-1 shadow-[0_12px_32px_rgba(15,23,42,0.18)];
+    border-color: var(--editor-border);
+  }
+
+  .table-cell-menu-item {
+    @apply flex min-h-8 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-[var(--editor-foreground)] outline-none;
+
+    &:hover,
+    &[data-selected="true"] {
+      background-color: var(--editor-muted);
+    }
+
+    &:disabled {
+      @apply cursor-not-allowed opacity-45;
+    }
+  }
+
+  .table-cell-menu-item-icon {
+    @apply inline-flex h-4 w-4 shrink-0 items-center justify-center text-[var(--editor-muted-foreground)];
+  }
+
+  .table-cell-menu-item-label {
+    @apply min-w-0 flex-1 truncate;
   }
 
   .alert-block-toolbar-popup {
@@ -291,8 +312,8 @@
   }
 
   .alert-block-toolbar-surface {
-    @apply rounded-lg border bg-[var(--mui-palette-background-paper)] p-1 shadow-[0_8px_24px_rgba(15,23,42,0.16),0_2px_8px_rgba(15,23,42,0.08)];
-    border-color: var(--mui-palette-divider);
+    @apply rounded-lg border bg-[var(--editor-surface)] p-1 shadow-[0_8px_24px_rgba(15,23,42,0.16),0_2px_8px_rgba(15,23,42,0.08)];
+    border-color: var(--editor-border);
   }
 
   .alert-block-toolbar-row {
@@ -308,11 +329,11 @@
   }
 
   .alert-block-toolbar-button {
-    @apply h-7 w-7 rounded-md text-[var(--mui-palette-text-secondary)];
+    @apply h-7 w-7 rounded-md text-[var(--editor-muted-foreground)];
 
     &:hover {
-      @apply text-[var(--mui-palette-text-primary)];
-      background-color: var(--mui-palette-action-hover);
+      @apply text-[var(--editor-foreground)];
+      background-color: var(--editor-muted);
     }
   }
 
@@ -334,7 +355,7 @@
 
   .alert-block-toolbar-variant-button {
     &[data-active="true"] {
-      background-color: var(--mui-palette-action-selected);
+      background-color: var(--editor-primary-soft);
     }
   }
 

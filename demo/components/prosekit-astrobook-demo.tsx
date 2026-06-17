@@ -590,7 +590,7 @@ function DemoInspector() {
       </p>
       <Button
         size="sm"
-        variant="outlined"
+        variant="outline"
         onClick={() => {
           console.info(editor.state.doc.toJSON())
         }}
@@ -603,22 +603,24 @@ function DemoInspector() {
 
 export function ProseKitAstrobookDemo() {
   return (
-    <ProseKitProvider extension={extension} initialContent={demoContent}>
-      <EditorShell
-        toolbar={<ProseKitAstrobookToolbar />}
-        content={<EditorContent className="prosekit-astrobook-editor-content" />}
-        footer={<DemoInspector />}
-      />
-      <AlertBlockToolbar />
-      <TableFloatingToolbar />
-      <TableCellFloatingToolbar />
-      <div className="mt-2">
-        <p className="m-0 text-sm leading-6 text-[var(--editor-muted-foreground)]">
-          This demo intentionally uses ProseKit built-in extensions for repeated
-          features and keeps project-specific code focused on node links,
-          tooltip, flip-grid, and Base UI presentation.
-        </p>
-      </div>
-    </ProseKitProvider>
+    <div className="pk-mui-theme pk-demo-page" data-theme="light">
+      <ProseKitProvider extension={extension} initialContent={demoContent}>
+        <EditorShell
+          toolbar={<ProseKitAstrobookToolbar />}
+          content={<EditorContent className="prosekit-astrobook-editor-content" />}
+          footer={<DemoInspector />}
+        />
+        <AlertBlockToolbar />
+        <TableFloatingToolbar />
+        <TableCellFloatingToolbar />
+        <div className="mt-2">
+          <p className="m-0 text-sm leading-6 text-[var(--editor-muted-foreground)]">
+            This demo intentionally uses ProseKit built-in extensions for repeated
+            features and keeps project-specific code focused on node links,
+            tooltip, flip-grid, and Base UI presentation.
+          </p>
+        </div>
+      </ProseKitProvider>
+    </div>
   )
 }

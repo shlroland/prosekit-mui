@@ -1,4 +1,3 @@
-import { Box, Button, IconButton, LinearProgress, TextField, Tooltip } from '@mui/material'
 import type { ReactNodeViewProps } from 'prosekit/react'
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 
@@ -10,6 +9,7 @@ import {
   LinkIcon,
   UploadCloud2LineIcon,
 } from '../../../icons'
+import { Button, Tooltip } from '../../../ui'
 
 import './view.css'
 
@@ -41,6 +41,14 @@ function getAccept(kind: MediaKind) {
   }
 }
 
+function UploadProgress({ value }: { value: number }) {
+  return (
+    <span className="prosekit-upload-progress-track">
+      <span className="prosekit-upload-progress-bar" style={{ width: `${value}%` }} />
+    </span>
+  )
+}
+
 function MediaUploadPlaceholder({
   kind,
   progress,
@@ -51,20 +59,20 @@ function MediaUploadPlaceholder({
   onClick: () => void
 }) {
   return (
-    <Box
+    <div
       className="prosekit-media-placeholder"
       contentEditable={false}
       onClick={onClick}
     >
-      <Box className="prosekit-media-placeholder-title">
+      <div className="prosekit-media-placeholder-title">
         {progress === null ? `点击上传${getMediaKindLabel(kind)}` : `正在上传${getMediaKindLabel(kind)}`}
-      </Box>
+      </div>
       {progress !== null ? (
-        <Box className="prosekit-media-upload-progress">
-          <LinearProgress variant="determinate" value={progress} />
-        </Box>
+        <div className="prosekit-media-upload-progress">
+          <UploadProgress value={progress} />
+        </div>
       ) : null}
-    </Box>
+    </div>
   )
 }
 
@@ -91,39 +99,37 @@ function MediaInsertPanel({
   }
 
   return (
-    <Box
-      component="form"
+    <form
       className="prosekit-media-insert-panel"
       contentEditable={false}
       onSubmit={handleSubmit}
     >
-      <Box className="prosekit-media-insert-panel-title">
+      <div className="prosekit-media-insert-panel-title">
         插入{getMediaKindLabel(kind)}
-      </Box>
-      <Box className="prosekit-media-insert-panel-actions">
+      </div>
+      <div className="prosekit-media-insert-panel-actions">
         <Button
           type="button"
-          variant="contained"
-          size="small"
+          size="sm"
           className="prosekit-media-insert-panel-upload"
-          startIcon={<UploadCloud2LineIcon />}
           onClick={onUploadClick}
         >
+          <UploadCloud2LineIcon className="prosekit-media-button-icon" />
           上传文件
         </Button>
         <Button
           type="button"
-          variant="outlined"
-          size="small"
+          variant="outline"
+          size="sm"
           className="prosekit-media-insert-panel-cancel"
           onClick={onCancel}
         >
           取消
         </Button>
-      </Box>
-      <Box className="prosekit-media-insert-panel-link">
-        <TextField
-          size="small"
+      </div>
+      <div className="prosekit-media-insert-panel-link">
+        <input
+          type="url"
           value={linkValue}
           placeholder={`粘贴${getMediaKindLabel(kind)}链接`}
           className="prosekit-media-insert-panel-input"
@@ -131,20 +137,20 @@ function MediaInsertPanel({
         />
         <Button
           type="submit"
-          variant="outlined"
-          size="small"
+          variant="outline"
+          size="sm"
           className="prosekit-media-insert-panel-submit"
-          startIcon={<LinkIcon />}
         >
+          <LinkIcon className="prosekit-media-button-icon" />
           插入链接
         </Button>
-      </Box>
+      </div>
       {progress !== null ? (
-        <Box className="prosekit-media-upload-progress">
-          <LinearProgress variant="determinate" value={progress} />
-        </Box>
+        <div className="prosekit-media-upload-progress">
+          <UploadProgress value={progress} />
+        </div>
       ) : null}
-    </Box>
+    </form>
   )
 }
 
@@ -168,38 +174,36 @@ function MediaToolbar({
   }
 
   return (
-    <Box className="prosekit-media-toolbar" contentEditable={false}>
-      <Tooltip title="修改地址" arrow>
-        <IconButton size="small" aria-label="修改地址" className="prosekit-media-toolbar-button" onClick={onEdit}>
+    <div className="prosekit-media-toolbar" contentEditable={false}>
+      <Tooltip content="修改地址">
+        <Button variant="ghost" size="icon" aria-label="修改地址" className="prosekit-media-toolbar-button" onClick={onEdit}>
           <EditLineIcon className="prosekit-media-toolbar-icon" />
-        </IconButton>
+        </Button>
       </Tooltip>
-      <Tooltip title="复制地址" arrow>
-        <IconButton size="small" aria-label="复制地址" className="prosekit-media-toolbar-button" onClick={copySource}>
+      <Tooltip content="复制地址">
+        <Button variant="ghost" size="icon" aria-label="复制地址" className="prosekit-media-toolbar-button" onClick={copySource}>
           <CopyIcon className="prosekit-media-toolbar-icon" />
-        </IconButton>
+        </Button>
       </Tooltip>
       {src ? (
-        <Tooltip title={kind === 'image' ? '打开图片' : '打开媒体'} arrow>
-          <IconButton
-            size="small"
+        <Tooltip content={kind === 'image' ? '打开图片' : '打开媒体'}>
+          <a
             aria-label={kind === 'image' ? '打开图片' : '打开媒体'}
             className="prosekit-media-toolbar-button"
-            component="a"
             href={src}
             target="_blank"
             rel="noopener noreferrer"
           >
             <ExportLineIcon className="prosekit-media-toolbar-icon" />
-          </IconButton>
+          </a>
         </Tooltip>
       ) : null}
-      <Tooltip title="删除" arrow>
-        <IconButton size="small" aria-label="删除" className="prosekit-media-toolbar-button" onClick={onDelete}>
+      <Tooltip content="删除">
+        <Button variant="ghost" size="icon" aria-label="删除" className="prosekit-media-toolbar-button" onClick={onDelete}>
           <DeleteLineIcon className="prosekit-media-toolbar-icon" />
-        </IconButton>
+        </Button>
       </Tooltip>
-    </Box>
+    </div>
   )
 }
 
@@ -288,7 +292,7 @@ export function ImageView(props: ReactNodeViewProps) {
   }
 
   return (
-    <Box
+    <div
       className={`prosekit-media-shell prosekit-image-shell ${selected ? 'ProseMirror-selectednode' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -305,7 +309,7 @@ export function ImageView(props: ReactNodeViewProps) {
         <MediaToolbar kind="image" src={src} onEdit={openPanel} onDelete={deleteNode} />
       ) : null}
       {src ? (
-        <Box component="img" className="prosekit-media-image" src={src} alt="" />
+        <img className="prosekit-media-image" src={src} alt="" />
       ) : (
         <MediaUploadPlaceholder
           kind="image"
@@ -324,7 +328,7 @@ export function ImageView(props: ReactNodeViewProps) {
           onUploadClick={() => inputRef.current?.click()}
         />
       ) : null}
-    </Box>
+    </div>
   )
 }
 
@@ -381,7 +385,7 @@ export function VideoView(props: ReactNodeViewProps) {
   }
 
   return (
-    <Box
+    <div
       className={`prosekit-media-shell prosekit-video-shell ${selected ? 'ProseMirror-selectednode' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -398,7 +402,7 @@ export function VideoView(props: ReactNodeViewProps) {
         <MediaToolbar kind="video" src={src} onEdit={openPanel} onDelete={deleteNode} />
       ) : null}
       {src ? (
-        <Box component="video" className="prosekit-media-video" src={src} controls width={width} />
+        <video className="prosekit-media-video" src={src} controls width={width} />
       ) : (
         <MediaUploadPlaceholder
           kind="video"
@@ -417,7 +421,7 @@ export function VideoView(props: ReactNodeViewProps) {
           onUploadClick={() => inputRef.current?.click()}
         />
       ) : null}
-    </Box>
+    </div>
   )
 }
 
@@ -473,7 +477,7 @@ export function AudioView(props: ReactNodeViewProps) {
   }
 
   return (
-    <Box
+    <div
       className={`prosekit-media-shell prosekit-audio-shell ${selected ? 'ProseMirror-selectednode' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -490,7 +494,7 @@ export function AudioView(props: ReactNodeViewProps) {
         <MediaToolbar kind="audio" src={src} onEdit={openPanel} onDelete={deleteNode} />
       ) : null}
       {src ? (
-        <Box component="audio" className="prosekit-media-audio" src={src} controls />
+        <audio className="prosekit-media-audio" src={src} controls />
       ) : (
         <MediaUploadPlaceholder
           kind="audio"
@@ -509,6 +513,6 @@ export function AudioView(props: ReactNodeViewProps) {
           onUploadClick={() => inputRef.current?.click()}
         />
       ) : null}
-    </Box>
+    </div>
   )
 }

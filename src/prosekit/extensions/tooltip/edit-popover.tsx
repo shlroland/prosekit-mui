@@ -1,5 +1,13 @@
-import { Button, ClickAwayListener, Paper, Popper, Stack, TextField } from '@mui/material'
-import { useEffect, useState, type KeyboardEvent, type RefObject } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type RefObject,
+} from 'react'
+
+import { Button } from '../../../ui'
 
 export type TooltipEditPopoverProps = {
   anchorEl: HTMLElement | null
@@ -20,13 +28,59 @@ export function TooltipEditPopover({
   onSubmit,
   onRemove,
 }: TooltipEditPopoverProps) {
+  const popupRef = useRef<HTMLDivElement | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
   const [value, setValue] = useState(initialValue)
 
-  useEffect(() => {
-    if (open) {
-      setValue(initialValue)
+  useLayoutEffect(() => {
+    if (!open || !anchorEl) {
+      return
     }
+
+    const rect = anchorEl.getBoundingClientRect()
+    setPosition({
+      top: rect.bottom + 8,
+      left: rect.left,
+    })
+  }, [anchorEl, open])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    setValue(initialValue)
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus()
+      textareaRef.current?.select()
+    })
   }, [initialValue, open])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target
+
+      if (!(target instanceof Node)) {
+        return
+      }
+
+      if (popupRef.current?.contains(target) || anchorEl?.contains(target)) {
+        return
+      }
+
+      handleClose()
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [anchorEl, open])
 
   function handleSubmit() {
     onSubmit(value)
@@ -38,7 +92,7 @@ export function TooltipEditPopover({
     onClose()
   }
 
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
       event.preventDefault()
       handleSubmit()
@@ -56,60 +110,60 @@ export function TooltipEditPopover({
     focusRef.current?.focus()
   }
 
+  if (!open || !anchorEl) {
+    return null
+  }
+
   return (
-    <Popper
-      open={open}
-      anchorEl={anchorEl}
-      placement="bottom-start"
+    <div
+      ref={popupRef}
       className="prosekit-tooltip-edit-popper"
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
+      data-editor-floating
     >
-      <ClickAwayListener onClickAway={handleClose}>
-        <Paper className="prosekit-tooltip-edit-paper">
-          <Stack spacing={1.25}>
-            <TextField
-              multiline
-              minRows={3}
-              maxRows={8}
-              autoFocus
-              value={value}
-              onChange={(event) => setValue(event.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Input tooltip text"
-              slotProps={{
-                input: {
-                  className: 'prosekit-tooltip-edit-input',
-                },
-              }}
-            />
-            <Stack direction="row" justifyContent="space-between" gap={1}>
+      <div className="prosekit-tooltip-edit-paper">
+        <div className="grid gap-3">
+          <textarea
+            ref={textareaRef}
+            rows={3}
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Input tooltip text"
+            className="prosekit-tooltip-edit-input"
+          />
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="prosekit-tooltip-edit-remove"
+              onClick={handleRemove}
+            >
+              Remove
+            </Button>
+            <div className="flex items-center gap-2">
               <Button
-                size="small"
-                className="prosekit-tooltip-edit-remove"
-                onClick={handleRemove}
+                size="sm"
+                variant="ghost"
+                className="prosekit-tooltip-edit-cancel"
+                onClick={handleClose}
               >
-                Remove
+                Cancel
               </Button>
-              <Stack direction="row" gap={1}>
-                <Button
-                  size="small"
-                  className="prosekit-tooltip-edit-cancel"
-                  onClick={handleClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  size="small"
-                  variant="contained"
-                  className="prosekit-tooltip-edit-submit"
-                  onClick={handleSubmit}
-                >
-                  Save
-                </Button>
-              </Stack>
-            </Stack>
-          </Stack>
-        </Paper>
-      </ClickAwayListener>
-    </Popper>
+              <Button
+                size="sm"
+                className="prosekit-tooltip-edit-submit"
+                onClick={handleSubmit}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

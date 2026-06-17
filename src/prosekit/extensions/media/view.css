@@ -1,14 +1,14 @@
-@reference "../../../../demo/styles/tailwind.css";
+@reference "tailwindcss";
 
 @layer components {
   .ProseMirror .prosekit-media-shell {
     @apply relative my-3 block rounded-[10px] border;
-    border-color: var(--mui-palette-divider);
+    border-color: var(--editor-border);
   }
 
   .ProseMirror .prosekit-media-shell.ProseMirror-selectednode {
-    border-color: var(--mui-palette-primary-main);
-    background-color: color-mix(in srgb, var(--mui-palette-primary-main) 5%, transparent);
+    border-color: var(--editor-primary);
+    background-color: color-mix(in srgb, var(--editor-primary) 5%, transparent);
   }
 
   .ProseMirror .prosekit-media-image {
@@ -25,14 +25,14 @@
   }
 
   .ProseMirror .prosekit-media-placeholder {
-    @apply flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed px-4 py-6 text-sm text-[var(--mui-palette-text-secondary)];
-    border-color: var(--mui-palette-divider);
-    background-color: color-mix(in srgb, var(--mui-palette-background-paper) 86%, transparent);
+    @apply flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed px-4 py-6 text-sm text-[var(--editor-muted-foreground)];
+    border-color: var(--editor-border);
+    background-color: color-mix(in srgb, var(--editor-surface) 86%, transparent);
   }
 
   .ProseMirror .prosekit-media-placeholder:hover {
-    border-color: var(--mui-palette-primary-main);
-    background-color: color-mix(in srgb, var(--mui-palette-primary-main) 5%, var(--mui-palette-background-paper));
+    border-color: var(--editor-primary);
+    background-color: color-mix(in srgb, var(--editor-primary) 5%, var(--editor-surface));
   }
 
   .ProseMirror .prosekit-media-placeholder-title {
@@ -44,12 +44,12 @@
   }
 
   .ProseMirror .prosekit-media-insert-panel {
-    @apply absolute left-0 top-[calc(100%+0.5rem)] z-[1310] flex w-[min(360px,calc(100vw-2rem))] flex-col gap-3 rounded-lg border bg-white p-3 shadow-[0_18px_48px_rgb(15_23_42_/_20%)];
-    border-color: rgb(15 23 42 / 12%);
+    @apply absolute left-0 top-[calc(100%+0.5rem)] z-[1310] flex w-[min(360px,calc(100vw-2rem))] flex-col gap-3 rounded-lg border bg-[var(--editor-surface)] p-3 shadow-[0_18px_48px_rgb(15_23_42_/_20%)];
+    border-color: var(--editor-border);
   }
 
   .ProseMirror .prosekit-media-insert-panel-title {
-    @apply text-sm font-semibold text-[var(--mui-palette-text-primary)];
+    @apply text-sm font-semibold text-[var(--editor-foreground)];
   }
 
   .ProseMirror .prosekit-media-insert-panel-actions {
@@ -61,7 +61,13 @@
   }
 
   .ProseMirror .prosekit-media-insert-panel-input {
-    @apply min-w-0 flex-1;
+    @apply min-h-8 min-w-0 flex-1 rounded-md border bg-[var(--editor-surface)] px-2.5 py-1.5 text-sm text-[var(--editor-foreground)] outline-none;
+    border-color: var(--editor-border);
+
+    &:focus {
+      border-color: var(--editor-primary);
+      box-shadow: 0 0 0 2px var(--editor-ring);
+    }
   }
 
   .ProseMirror .prosekit-media-insert-panel-submit,
@@ -71,20 +77,32 @@
   }
 
   .ProseMirror .prosekit-media-toolbar {
-    @apply absolute left-2 top-2 z-[1305] flex items-center gap-1 rounded-lg border bg-white p-1 shadow-[0_12px_32px_rgb(15_23_42_/_18%)];
-    border-color: rgb(15 23 42 / 12%);
+    @apply absolute left-2 top-2 z-[1305] flex items-center gap-1 rounded-lg border bg-[var(--editor-surface)] p-1 shadow-[0_12px_32px_rgb(15_23_42_/_18%)];
+    border-color: var(--editor-border);
   }
 
   .ProseMirror .prosekit-media-toolbar-button {
-    @apply h-7 w-7 rounded-md text-[var(--mui-palette-text-secondary)];
+    @apply inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--editor-muted-foreground)];
 
     &:hover {
-      @apply text-[var(--mui-palette-text-primary)];
-      background-color: var(--mui-palette-action-hover);
+      @apply text-[var(--editor-foreground)];
+      background-color: var(--editor-muted);
     }
   }
 
   .ProseMirror .prosekit-media-toolbar-icon {
     @apply text-base;
+  }
+
+  .ProseMirror .prosekit-media-button-icon {
+    @apply text-base;
+  }
+
+  .ProseMirror .prosekit-upload-progress-track {
+    @apply block h-1.5 overflow-hidden rounded-full bg-[var(--editor-muted)];
+  }
+
+  .ProseMirror .prosekit-upload-progress-bar {
+    @apply block h-full rounded-full bg-[var(--editor-primary)] transition-[width] duration-150;
   }
 }

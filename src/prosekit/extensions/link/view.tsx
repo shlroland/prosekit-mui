@@ -1,4 +1,3 @@
-import { Avatar, Box } from '@mui/material'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NodeSelection } from 'prosekit/pm/state'
 import type { ReactNodeViewProps } from 'prosekit/react'
@@ -38,30 +37,21 @@ function LinkFavicon({
   const showImage = Boolean(src) && failedSrc !== src
 
   return (
-    <Avatar className={`prosekit-link-node-avatar ${isBlock ? 'block' : ''}`}>
+    <span className={`prosekit-link-node-avatar ${isBlock ? 'block' : ''}`}>
       {showImage ? (
-        <Box
-          component="img"
+        <img
           src={src}
           alt=""
           onError={() => setFailedSrc(src)}
-          sx={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
+          className="h-full w-full object-cover"
         />
       ) : (
         <ChromeIcon
-          sx={{
-            fontSize: isBlock ? '2rem' : '1rem',
-            color: 'primary.main',
-            cursor: 'grab',
-            ':active': { cursor: 'grabbing' },
-          }}
+          className="cursor-grab text-[var(--editor-primary)] active:cursor-grabbing"
+          style={{ fontSize: isBlock ? '2rem' : '1rem' }}
         />
       )}
-    </Avatar>
+    </span>
   )
 }
 
@@ -274,38 +264,22 @@ export function LinkView({
     : {}
 
   const content = (
-    <Box
-      component={isBlock ? 'div' : 'span'}
+    <span
       className={`prosekit-link-node ${isBlock ? 'block' : ''} ${selected ? 'ProseMirror-selectednode' : ''}`}
       data-drag-handle={isBlock ? 'true' : undefined}
       {...contentHoverProps}
     >
       {!attrs.href && isEditable ? (
-        <Box
-          component="button"
+        <button
           type="button"
           onClick={() => setEditOpen(true)}
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 1,
-            px: 1.5,
-            py: isBlock ? 1.5 : 0.75,
-            borderRadius: 2,
-            border: '1px dashed',
-            borderColor: 'divider',
-            bgcolor: 'action.hover',
-            color: 'text.secondary',
-            cursor: 'pointer',
-            width: isBlock ? '100%' : 'auto',
-          }}
+          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-[var(--editor-border)] bg-[var(--editor-muted)] px-3 text-sm text-[var(--editor-muted-foreground)] ${isBlock ? 'w-full py-3' : 'py-1.5'}`}
         >
-          <LinkIcon sx={{ fontSize: '1rem', flexShrink: 0 }} />
-          <Box component="span">{attrs.title ? `添加“${attrs.title}”链接` : '添加链接'}</Box>
-        </Box>
+          <LinkIcon className="shrink-0 text-base" />
+          <span>{attrs.title ? `添加“${attrs.title}”链接` : '添加链接'}</span>
+        </button>
       ) : (
-        <Box
-          component="a"
+        <a
           href={attrs.href}
           target={attrs.target ?? '_blank'}
           rel={getLinkRel(attrs.target ?? '_blank', attrs.rel) ?? undefined}
@@ -316,28 +290,28 @@ export function LinkView({
           {isBlock || displayType === 'icon' ? (
             <LinkFavicon src={favicon} isBlock={isBlock} />
           ) : null}
-          <Box component="span" className="prosekit-link-node-content">
+          <span className="prosekit-link-node-content">
             {isBlock ? (
-              <Box component="span" className="prosekit-link-node-meta">
-                <Box component="span" className="prosekit-link-node-title">
+              <span className="prosekit-link-node-meta">
+                <span className="prosekit-link-node-title">
                   {label}
-                </Box>
-                <Box component="span" className="prosekit-link-node-href">
+                </span>
+                <span className="prosekit-link-node-href">
                   {attrs.href}
-                </Box>
-              </Box>
+                </span>
+              </span>
             ) : (
-              <Box component="span">{label}</Box>
+              <span>{label}</span>
             )}
-          </Box>
-        </Box>
+          </span>
+        </a>
       )}
-    </Box>
+    </span>
   )
 
   if (isEditable && isBlock) {
     return (
-      <Box
+      <div
         className="prosekit-block-link-shell"
         onMouseEnter={keepActionsOpen}
         onMouseLeave={scheduleActionsClose}
@@ -348,7 +322,7 @@ export function LinkView({
       >
         {content}
         {actionsOpen && !editOpen ? (
-          <Box
+          <div
             className="prosekit-block-link-actions"
             contentEditable={false}
             onMouseEnter={keepActionsOpen}
@@ -357,10 +331,10 @@ export function LinkView({
             onPointerLeave={scheduleActionsClose}
           >
             {actionBar}
-          </Box>
+          </div>
         ) : null}
         {editOpen ? (
-          <Box
+          <div
             className="prosekit-block-link-editor"
             contentEditable={false}
             onMouseEnter={keepActionsOpen}
@@ -389,9 +363,9 @@ export function LinkView({
                 handleEditClose()
               }}
             />
-          </Box>
+          </div>
         ) : null}
-      </Box>
+      </div>
     )
   }
 

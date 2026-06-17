@@ -1,17 +1,8 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Radio,
-  RadioGroup,
-  Stack,
-  TextField,
-} from '@mui/material'
 import { PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTrigger } from 'prosekit/react/popover'
 import type { CSSProperties, ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
+
+import { Button } from '../../ui'
 
 export type LinkEditorType = 'text' | 'icon' | 'block'
 export type LinkEditorTarget = '_blank' | '_self'
@@ -39,6 +30,61 @@ export type LinkEditorPopoverProps = {
 }
 
 export type LinkEditorPanelProps = Omit<LinkEditorPopoverProps, 'children' | 'triggerStyle'>
+
+const linkTypeOptions: Array<{ value: LinkEditorType; label: string }> = [
+  { value: 'text', label: '文字' },
+  { value: 'icon', label: '图标文字' },
+  { value: 'block', label: '卡片' },
+]
+
+const targetOptions: Array<{ value: LinkEditorTarget; label: string }> = [
+  { value: '_blank', label: '新窗口' },
+  { value: '_self', label: '当前窗口' },
+]
+
+function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <span className="w-10 shrink-0 text-sm text-[var(--editor-muted-foreground)]">
+      {children}
+    </span>
+  )
+}
+
+function RadioRow<Value extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: Value
+  options: Array<{ value: Value; label: string }>
+  onChange: (value: Value) => void
+}) {
+  return (
+    <fieldset className="flex items-center gap-3">
+      <legend className="w-10 shrink-0 text-sm text-[var(--editor-muted-foreground)]">
+        {label}
+      </legend>
+      <div className="flex flex-wrap items-center gap-3">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="inline-flex cursor-pointer items-center gap-1.5 text-sm text-[var(--editor-foreground)]"
+          >
+            <input
+              type="radio"
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+              className="h-3.5 w-3.5 accent-[var(--editor-primary)]"
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  )
+}
 
 export function LinkEditorPanel({
   open,
@@ -92,122 +138,93 @@ export function LinkEditorPanel({
   }
 
   return (
-    <Stack
-      gap={2}
-      sx={{
-        p: 2,
-        width: 350,
-        bgcolor: '#fff',
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 1,
-        boxShadow: 3,
-        '.MuiFormControlLabel-label': {
-          fontSize: '0.875rem',
-        },
-      }}
+    <div
+      className="grid w-[350px] gap-3 rounded-lg border border-[var(--editor-border)] bg-white p-4 shadow-[0_12px_32px_rgba(23,23,23,0.14)]"
+      data-editor-floating
     >
-            <Stack direction="row" gap={2} alignItems="center">
-              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary', flexShrink: 0 }}>地址</Box>
-              <TextField
-                fullWidth
-                inputRef={inputRef}
-                value={href}
-                size="small"
-                placeholder="https://example.com"
-                required
-                error={href.length > 0 && !href.trim()}
-                helperText={href.length > 0 && !href.trim() ? '请输入有效的链接地址' : ''}
-                onChange={(event) => setHref(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Escape') {
-                    event.preventDefault()
-                    onClose()
-                  }
+      <label className="flex items-start gap-3">
+        <FieldLabel>地址</FieldLabel>
+        <div className="grid min-w-0 flex-1 gap-1">
+          <input
+            ref={inputRef}
+            value={href}
+            placeholder="https://example.com"
+            required
+            className="h-9 w-full rounded-md border border-[var(--editor-border)] bg-white px-2.5 text-sm text-[var(--editor-foreground)] outline-none focus:ring-2 focus:ring-[var(--editor-ring)]"
+            onChange={(event) => setHref(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault()
+                onClose()
+              }
 
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    handleSubmit()
-                  }
-                }}
-              />
-            </Stack>
-            {showAdvancedOptions ? (
-              <>
-                <Stack direction="row" gap={2} alignItems="center">
-                  <Box sx={{ fontSize: '0.875rem', color: 'text.secondary', flexShrink: 0 }}>标题</Box>
-                  <TextField
-                    fullWidth
-                    value={title}
-                    size="small"
-                    placeholder="链接标题（可选）"
-                    onChange={(event) => setTitle(event.target.value)}
-                  />
-                </Stack>
-                <FormControl component="fieldset">
-                  <Stack direction="row" gap={2} alignItems="center">
-                    <FormLabel component="legend" sx={{ fontSize: '0.875rem', flexShrink: 0 }}>
-                      风格
-                    </FormLabel>
-                    <RadioGroup
-                      row
-                      value={type}
-                      onChange={(event) => setType(event.target.value as LinkEditorType)}
-                    >
-                      <FormControlLabel value="text" control={<Radio size="small" />} label="文字" />
-                      <FormControlLabel value="icon" control={<Radio size="small" />} label="图标文字" />
-                      <FormControlLabel value="block" control={<Radio size="small" />} label="卡片" />
-                    </RadioGroup>
-                  </Stack>
-                </FormControl>
-                <FormControl component="fieldset">
-                  <Stack direction="row" gap={2} alignItems="center">
-                    <FormLabel component="legend" sx={{ fontSize: '0.875rem', flexShrink: 0 }}>
-                      打开
-                    </FormLabel>
-                    <RadioGroup
-                      row
-                      value={target}
-                      onChange={(event) => setTarget(event.target.value as LinkEditorTarget)}
-                    >
-                      <FormControlLabel value="_blank" control={<Radio size="small" />} label="新窗口" />
-                      <FormControlLabel value="_self" control={<Radio size="small" />} label="当前窗口" />
-                    </RadioGroup>
-                  </Stack>
-                </FormControl>
-              </>
-            ) : null}
-            <Stack direction="row" gap={1}>
-              {onRemove ? (
-                <Button
-                  size="small"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={onRemove}
-                  className="normal-case"
-                >
-                  取消链接
-                </Button>
-              ) : null}
-              <Button
-                size="small"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={onClose}
-                className="normal-case"
-              >
-                取消
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={handleSubmit}
-                disabled={!href.trim()}
-                className="normal-case"
-              >
-                {submitLabel}
-              </Button>
-            </Stack>
-    </Stack>
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                handleSubmit()
+              }
+            }}
+          />
+          {href.length > 0 && !href.trim() ? (
+            <span className="text-xs text-red-600">请输入有效的链接地址</span>
+          ) : null}
+        </div>
+      </label>
+
+      {showAdvancedOptions ? (
+        <>
+          <label className="flex items-center gap-3">
+            <FieldLabel>标题</FieldLabel>
+            <input
+              value={title}
+              placeholder="链接标题（可选）"
+              className="h-9 min-w-0 flex-1 rounded-md border border-[var(--editor-border)] bg-white px-2.5 text-sm text-[var(--editor-foreground)] outline-none focus:ring-2 focus:ring-[var(--editor-ring)]"
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </label>
+          <RadioRow
+            label="风格"
+            value={type}
+            options={linkTypeOptions}
+            onChange={setType}
+          />
+          <RadioRow
+            label="打开"
+            value={target}
+            options={targetOptions}
+            onChange={setTarget}
+          />
+        </>
+      ) : null}
+
+      <div className="flex items-center gap-2">
+        {onRemove ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={onRemove}
+          >
+            取消链接
+          </Button>
+        ) : null}
+        <Button
+          size="sm"
+          variant="ghost"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={onClose}
+        >
+          取消
+        </Button>
+        <Button
+          size="sm"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={handleSubmit}
+          disabled={!href.trim()}
+        >
+          {submitLabel}
+        </Button>
+      </div>
+    </div>
   )
 }
 

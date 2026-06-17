@@ -59,21 +59,19 @@ export function LinkActionBar({
   onRemove,
   onChangeDisplay,
 }: LinkActionBarProps) {
-  const iconSx = { fontSize: '1rem' }
-
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-white p-1.5">
+    <div className="flex items-center gap-1 rounded-lg bg-[var(--editor-surface)] p-1.5">
       <span className="w-[200px] overflow-hidden truncate whitespace-nowrap px-2 text-sm text-[var(--editor-muted-foreground)]">
         {href}
       </span>
       <LinkActionButton label="编辑" onClick={onEdit}>
-        <EditLineIcon sx={iconSx} />
+        <EditLineIcon className="text-base" />
       </LinkActionButton>
       <LinkActionButton label="复制链接" onClick={onCopy}>
-        <CopyIcon sx={iconSx} />
+        <CopyIcon className="text-base" />
       </LinkActionButton>
       <LinkActionButton label="取消链接" onClick={onRemove}>
-        <LinkUnlinkIcon sx={iconSx} />
+        <LinkUnlinkIcon className="text-base" />
       </LinkActionButton>
       <Separator orientation="vertical" className="mx-1 h-4" />
       <LinkActionButton
@@ -81,21 +79,21 @@ export function LinkActionBar({
         active={type === 'text'}
         onClick={(event) => onChangeDisplay('text', event)}
       >
-        <TextIcon sx={iconSx} />
+        <TextIcon className="text-base" />
       </LinkActionButton>
       <LinkActionButton
         label="图标文字"
         active={type === 'icon'}
         onClick={(event) => onChangeDisplay('icon', event)}
       >
-        <ScrollToBottomLineIcon sx={{ ...iconSx, transform: 'rotate(90deg)' }} />
+        <ScrollToBottomLineIcon className="text-base" style={{ transform: 'rotate(90deg)' }} />
       </LinkActionButton>
       <LinkActionButton
         label="卡片"
         active={type === 'block'}
         onClick={(event) => onChangeDisplay('block', event)}
       >
-        <CarouselViewIcon sx={{ ...iconSx, transform: 'rotate(90deg)' }} />
+        <CarouselViewIcon className="text-base" style={{ transform: 'rotate(90deg)' }} />
       </LinkActionButton>
     </div>
   )

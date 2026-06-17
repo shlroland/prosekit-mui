@@ -1,10 +1,4 @@
 import {
-  Divider,
-  IconButton,
-  Paper,
-  Tooltip,
-} from '@mui/material'
-import {
   TableHandleColumnMenuRoot,
   TableHandleColumnMenuTrigger,
   TableHandleColumnPopup,
@@ -37,6 +31,7 @@ import {
   InsertRowBottomIcon,
   InsertRowTopIcon,
 } from '../../icons'
+import { Button, Separator, Tooltip } from '../../ui'
 
 type TableCommandName =
   | 'addTableColumnBefore'
@@ -55,14 +50,15 @@ function TableToolbarButton({
   icon: ReactNode
 }) {
   return (
-    <Tooltip title={title} arrow>
-      <IconButton
-        size="small"
+    <Tooltip content={title}>
+      <Button
+        variant="ghost"
+        size="icon"
         aria-label={title}
         className="table-floating-toolbar-button"
       >
         {icon}
-      </IconButton>
+      </Button>
     </Tooltip>
   )
 }
@@ -97,27 +93,23 @@ function TableHandleTrigger({
   orientation: 'horizontal' | 'vertical'
 }) {
   return (
-    <Tooltip title={title} arrow>
-      <Paper
-        elevation={5}
+    <Tooltip content={title}>
+      <div
         className={`table-handle-trigger table-handle-trigger-${orientation}`}
       >
         <DraggableIcon className="table-handle-trigger-icon" />
-      </Paper>
+      </div>
     </Tooltip>
   )
 }
 
 function TableToolbarSurface({ children }: { children: ReactNode }) {
   return (
-    <Paper
-      elevation={8}
-      className="table-floating-toolbar-surface"
-    >
+    <div className="table-floating-toolbar-surface" data-editor-floating>
       <div className="table-floating-toolbar-row">
         {children}
       </div>
-    </Paper>
+    </div>
   )
 }
 
@@ -166,7 +158,7 @@ export function TableFloatingToolbar() {
                     icon={<DeleteColumnIcon className="table-floating-toolbar-icon" />}
                     onSelect={() => runCommand('deleteTableColumn')}
                   />
-                  <Divider orientation="vertical" flexItem className="table-floating-toolbar-divider" />
+                  <Separator orientation="vertical" className="table-floating-toolbar-divider" />
                   <TableMenuAction
                     title="删除表格"
                     icon={<DeleteLineIcon className="table-floating-toolbar-icon" />}
@@ -209,7 +201,7 @@ export function TableFloatingToolbar() {
                     icon={<DeleteRowIcon className="table-floating-toolbar-icon" />}
                     onSelect={() => runCommand('deleteTableRow')}
                   />
-                  <Divider orientation="vertical" flexItem className="table-floating-toolbar-divider" />
+                  <Separator orientation="vertical" className="table-floating-toolbar-divider" />
                   <TableMenuAction
                     title="删除表格"
                     icon={<DeleteLineIcon className="table-floating-toolbar-icon" />}

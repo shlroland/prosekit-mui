@@ -1,10 +1,4 @@
 import {
-  Divider,
-  IconButton,
-  Paper,
-  Tooltip,
-} from '@mui/material'
-import {
   BlockHandleDraggable,
   BlockHandlePopup,
   BlockHandlePositioner,
@@ -20,6 +14,7 @@ import {
   DeleteLineIcon,
   DraggableIcon,
 } from '../../icons'
+import { Button, Separator, Tooltip } from '../../ui'
 import type { AlertBoxKind } from '../extensions/alert-panel'
 
 type AlertBlockState = {
@@ -80,11 +75,11 @@ function findAlertBlockState(editor: any, state: AlertBlockState): AlertBlockSta
 
 function AlertToolbarSurface({ children }: { children: ReactNode }) {
   return (
-    <Paper elevation={8} className="alert-block-toolbar-surface">
+    <div className="alert-block-toolbar-surface" data-editor-floating>
       <div className="alert-block-toolbar-row">
         {children}
       </div>
-    </Paper>
+    </div>
   )
 }
 
@@ -144,21 +139,23 @@ export function AlertBlockToolbar() {
           {alertBlockState ? (
             <AlertToolbarSurface>
               <BlockHandleDraggable editor={editor} className="alert-block-toolbar-draggable">
-                <Tooltip title="拖动提示块" arrow>
-                  <IconButton
-                    size="small"
+                <Tooltip content="拖动提示块">
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     aria-label="拖动提示块"
                     className="alert-block-toolbar-button alert-block-toolbar-drag-button"
                   >
                     <DraggableIcon className="alert-block-toolbar-icon" />
-                  </IconButton>
+                  </Button>
                 </Tooltip>
               </BlockHandleDraggable>
-              <Divider orientation="vertical" flexItem className="alert-block-toolbar-divider" />
+              <Separator orientation="vertical" className="alert-block-toolbar-divider" />
               {alertVariantOptions.map((option) => (
-                <Tooltip title={option.label} arrow key={option.value}>
-                  <IconButton
-                    size="small"
+                <Tooltip content={option.label} key={option.value}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     aria-label={option.label}
                     className="alert-block-toolbar-button alert-block-toolbar-variant-button"
                     data-variant={option.value}
@@ -166,19 +163,20 @@ export function AlertBlockToolbar() {
                     onClick={() => updateVariant(option.value)}
                   >
                     <span className="alert-block-toolbar-swatch" />
-                  </IconButton>
+                  </Button>
                 </Tooltip>
               ))}
-              <Divider orientation="vertical" flexItem className="alert-block-toolbar-divider" />
-              <Tooltip title="删除提示块" arrow>
-                <IconButton
-                  size="small"
+              <Separator orientation="vertical" className="alert-block-toolbar-divider" />
+              <Tooltip content="删除提示块">
+                <Button
+                  variant="ghost"
+                  size="icon"
                   aria-label="删除提示块"
                   className="alert-block-toolbar-button"
                   onClick={deleteAlert}
                 >
                   <DeleteLineIcon className="alert-block-toolbar-icon" />
-                </IconButton>
+                </Button>
               </Tooltip>
             </AlertToolbarSurface>
           ) : null}

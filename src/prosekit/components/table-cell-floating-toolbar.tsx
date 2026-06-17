@@ -1,12 +1,3 @@
-import {
-  Box,
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Tooltip,
-} from '@mui/material'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
@@ -27,6 +18,7 @@ import {
   MoreLineIcon,
   SplitCellsHorizontalIcon,
 } from '../../icons'
+import { Button, Tooltip } from '../../ui'
 
 type TableCellCommandName =
   | 'addTableColumnBefore'
@@ -218,7 +210,7 @@ function getTableCellToolbarSnapshot(editor: any): string {
 
 export function TableCellFloatingToolbar() {
   const editor = useEditor<any>()
-  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const snapshot = useEditorDerivedValue<any, string>(getTableCellToolbarSnapshot)
   const toolbarState = useMemo(() => {
     return JSON.parse(snapshot) as {
@@ -270,9 +262,25 @@ export function TableCellFloatingToolbar() {
   ])
   useEffect(() => {
     if (!toolbarState.open) {
-      setMenuAnchor(null)
+      setMenuOpen(false)
     }
   }, [toolbarState.open])
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return
+    }
+
+    const closeMenu = () => setMenuOpen(false)
+
+    window.addEventListener('resize', closeMenu)
+    window.addEventListener('scroll', closeMenu, true)
+
+    return () => {
+      window.removeEventListener('resize', closeMenu)
+      window.removeEventListener('scroll', closeMenu, true)
+    }
+  }, [menuOpen])
 
   function runCommand(name: TableCellCommandName, value?: TableCellVerticalAlign) {
     editor.focus()
@@ -382,7 +390,7 @@ export function TableCellFloatingToolbar() {
   return (
     <>
       {!toolbarState.hasSelectedCells ? (
-        <Box
+        <div
           className="table-cell-focus-overlay"
           style={{
             top: cellRect.top - 1,
@@ -392,55 +400,56 @@ export function TableCellFloatingToolbar() {
           }}
         />
       ) : null}
-      <Box
+      <div
         className="table-cell-menu-anchor"
         style={{
           top: cellRect.top + 6,
           left: cellRect.left + cellRect.width - 30,
         }}
       >
-        <Tooltip title="单元格操作" arrow>
-          <span>
-            <IconButton
-              size="small"
-              aria-label="单元格操作"
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={(event) => setMenuAnchor(event.currentTarget)}
-              className="table-cell-menu-trigger"
-            >
-              <MoreLineIcon className="table-cell-menu-trigger-icon" />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </Box>
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={() => setMenuAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        slotProps={{
-          paper: {
-            elevation: 8,
-            className: 'table-cell-menu-paper',
-          },
-        }}
-      >
-        {actions.map((action) => (
-          <MenuItem
-            key={action.key}
-            disabled={action.disabled}
-            selected={action.selected}
-            onClick={() => {
-              action.onClick()
-              setMenuAnchor(null)
-            }}
+        <Tooltip content="单元格操作">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="单元格操作"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => setMenuOpen((open) => !open)}
+            className="table-cell-menu-trigger"
           >
-            <ListItemIcon>{action.icon}</ListItemIcon>
-            <ListItemText>{action.label}</ListItemText>
-          </MenuItem>
-        ))}
-      </Menu>
+            <MoreLineIcon className="table-cell-menu-trigger-icon" />
+          </Button>
+        </Tooltip>
+      </div>
+      {menuOpen ? (
+        <div
+          className="table-cell-menu-paper"
+          data-editor-floating
+          style={{
+            top: cellRect.top + 34,
+            left: Math.max(8, cellRect.left + cellRect.width - 184),
+          }}
+          onMouseDown={(event) => {
+            event.preventDefault()
+          }}
+        >
+          {actions.map((action) => (
+            <button
+              key={action.key}
+              type="button"
+              disabled={action.disabled}
+              data-selected={action.selected ? 'true' : 'false'}
+              className="table-cell-menu-item"
+              onClick={() => {
+                action.onClick()
+                setMenuOpen(false)
+              }}
+            >
+              <span className="table-cell-menu-item-icon">{action.icon}</span>
+              <span className="table-cell-menu-item-label">{action.label}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
     </>
   )
 }

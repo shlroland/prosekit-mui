@@ -1,4 +1,4 @@
-@reference "../../../../demo/styles/tailwind.css";
+@reference "tailwindcss";
 
 .prosekit-tooltip-mark {
   @apply inline cursor-help border-b border-dotted border-neutral-400 transition-colors;
@@ -13,7 +13,9 @@
 }
 
 .prosekit-tooltip-mark-popup {
-  @apply max-w-[20rem] rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-[12px] leading-5 text-neutral-700 shadow-md;
+  @apply fixed z-[1500] flex max-w-[20rem] -translate-x-1/2 -translate-y-full items-center gap-1.5 rounded-md border bg-white px-2.5 py-1.5 text-[12px] leading-5 shadow-md;
+  border-color: var(--editor-border);
+  color: var(--editor-muted-foreground);
 }
 
 .prosekit-tooltip-mark-arrow {
@@ -40,15 +42,17 @@
 }
 
 .prosekit-tooltip-edit-popper {
-  @apply z-[1500];
+  @apply fixed z-[1500];
 }
 
 .prosekit-tooltip-edit-paper {
-  @apply mt-2 w-[320px] rounded-xl border border-black/8 bg-white p-3 shadow-[0_12px_32px_rgba(15,23,42,0.14)];
+  @apply w-[320px] rounded-xl border bg-white p-3 shadow-[0_12px_32px_rgba(15,23,42,0.14)];
+  border-color: var(--editor-border);
 }
 
 .prosekit-tooltip-edit-input {
-  @apply rounded-lg border border-black/8 bg-white px-2.5 py-2 text-[13px] leading-5;
+  @apply max-h-48 min-h-20 resize-y rounded-lg border bg-white px-2.5 py-2 text-[13px] leading-5 outline-none focus:ring-2 focus:ring-[var(--editor-ring)];
+  border-color: var(--editor-border);
   color: rgb(23 23 23 / 0.82);
 }
 

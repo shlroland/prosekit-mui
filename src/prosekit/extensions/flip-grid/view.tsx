@@ -1,9 +1,9 @@
-import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material'
 import type { ReactNodeViewProps } from 'prosekit/react'
 import type { Node as ProseMirrorNode } from 'prosekit/pm/model'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { DeleteLineIcon, FlipLeftLineIcon, FlipRightLineIcon } from '../../../icons'
+import { Button, Separator, Tooltip } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import {
   applyFlipGridWidths,
@@ -230,13 +230,13 @@ export function FlipGridView({
   const showHandles = isEditable && (hovering || dragIndex !== null || hoverGapIndex !== null)
 
   return (
-    <Box
+    <div
       ref={wrapperRef}
       className={cn(
         'node-flipGrid my-2.5 block w-full rounded-md border px-3 py-3',
         selected
-          ? 'border-[color:var(--mui-palette-primary-main)]'
-          : 'border-[color:var(--mui-palette-divider)]',
+          ? 'border-[color:var(--editor-primary)]'
+          : 'border-[color:var(--editor-border)]',
       )}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => {
@@ -253,17 +253,17 @@ export function FlipGridView({
           : '0 10px 24px rgba(23,23,23,0.04)',
       }}
     >
-      <Box ref={contentRef} />
+      <div ref={contentRef} />
       {isEditable ? (
         <>
           {layout.handlePercents.map((percent, index) => {
             const active = dragIndex === index || hoverGapIndex === index
 
             return (
-              <Box
+              <div
                 key={index}
                 data-flip-grid-controls="true"
-                sx={{
+                style={{
                   position: 'absolute',
                   left: `${contentOffsetX + (percent / 100) * containerWidth}px`,
                   width: Math.max(gapPx, 8),
@@ -280,13 +280,13 @@ export function FlipGridView({
                 onMouseLeave={() => setHoverGapIndex(null)}
                 onMouseDown={(event) => handleResizeStart(index, event)}
               >
-                <Box
-                  sx={{
+                <div
+                  style={{
                     height: '100%',
                     minHeight: 16,
                     width: 2,
                     borderRadius: '4px',
-                    bgcolor: active
+                    backgroundColor: active
                       ? 'rgba(25, 118, 210, 0.72)'
                       : 'rgba(25, 118, 210, 0.34)',
                     cursor: 'ew-resize',
@@ -295,22 +295,21 @@ export function FlipGridView({
                     pointerEvents: 'auto',
                   }}
                 />
-              </Box>
+              </div>
             )
           })}
           {showPercents
             ? layout.labelPercents.map((offset, index) => (
-              <Box
+              <div
                 key={`percent-${index}`}
-                sx={{
+                style={{
                   position: 'absolute',
                   top: 4,
                   left: `${contentOffsetX + (offset / 100) * containerWidth - 4}px`,
                   transform: 'translateX(-100%)',
-                  px: 0.75,
-                  py: 0.25,
+                  padding: '1px 6px',
                   borderRadius: '4px',
-                  bgcolor: 'rgba(0,0,0,0.56)',
+                  backgroundColor: 'rgba(0,0,0,0.56)',
                   color: '#fff',
                   fontSize: 10,
                   lineHeight: 1.2,
@@ -320,12 +319,12 @@ export function FlipGridView({
                 }}
               >
                 {`${Math.round(safeWidths[index] ?? 0)}%`}
-              </Box>
+              </div>
             ))
             : null}
         </>
       ) : null}
-    </Box>
+    </div>
   )
 }
 
@@ -521,73 +520,63 @@ export function FlipGridColumnView({
   }
 
   const toolbar = (
-    <Stack
+    <div
       data-flip-grid-controls="true"
-      direction="row"
-      alignItems="center"
       onMouseEnter={keepToolbarOpen}
       onMouseLeave={scheduleToolbarClose}
-      sx={{
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        zIndex: 4,
-        p: 0.5,
-        width: 'max-content',
-        minWidth: 'max-content',
-        bgcolor: '#fff',
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 1,
-        boxShadow: '0 12px 32px rgba(15, 23, 42, 0.18), 0 3px 10px rgba(15, 23, 42, 0.12)',
-      }}
+      className="absolute right-2 top-2 z-[4] flex w-max min-w-max items-center rounded-md border border-[var(--editor-border)] bg-[var(--editor-surface)] p-1 shadow-[0_12px_32px_rgba(15,23,42,0.18),0_3px_10px_rgba(15,23,42,0.12)]"
     >
-      <Tooltip title="左侧插入" arrow>
-        <IconButton
-          size="small"
+      <Tooltip content="左侧插入">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="左侧插入"
           onClick={() => handleInsert('left')}
           className="h-7 w-7 rounded-sm"
         >
-          <FlipLeftLineIcon sx={{ fontSize: '1rem' }} />
-        </IconButton>
+          <FlipLeftLineIcon className="text-base" />
+        </Button>
       </Tooltip>
-      <Tooltip title="右侧插入" arrow>
-        <IconButton
-          size="small"
+      <Tooltip content="右侧插入">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="右侧插入"
           onClick={() => handleInsert('right')}
           className="h-7 w-7 rounded-sm"
         >
-          <FlipRightLineIcon sx={{ fontSize: '1rem' }} />
-        </IconButton>
+          <FlipRightLineIcon className="text-base" />
+        </Button>
       </Tooltip>
       {widths.length > 2 ? (
         <>
-          <Divider
+          <Separator
             orientation="vertical"
-            flexItem
-            className="mx-1 my-1 border-[color:var(--mui-palette-divider)]"
+            className="mx-1 my-1 h-5"
           />
-          <Tooltip title="删除当前栏" arrow>
-            <IconButton
-              size="small"
+          <Tooltip content="删除当前栏">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="删除当前栏"
               onClick={() => handleDelete()}
               className="h-7 w-7 rounded-sm"
             >
-              <DeleteLineIcon sx={{ fontSize: '1rem' }} />
-            </IconButton>
+              <DeleteLineIcon className="text-base" />
+            </Button>
           </Tooltip>
         </>
       ) : null}
-    </Stack>
+    </div>
   )
 
   const column = (
-    <Box
+    <div
       ref={wrapperRef}
       className={cn(
         'flip-grid-column relative h-full w-full min-w-0 rounded-sm border px-4 py-4',
         selected
-          ? 'border-[color:var(--mui-palette-primary-main)]'
+          ? 'border-[color:var(--editor-primary)]'
           : 'border-[rgba(23,23,23,0.12)]',
       )}
       onMouseEnter={keepToolbarOpen}
@@ -603,8 +592,8 @@ export function FlipGridColumnView({
       }}
     >
       {isEditable && (toolbarOpen || selected) ? toolbar : null}
-      <Box ref={contentRef} className="min-h-6 w-full" />
-    </Box>
+      <div ref={contentRef} className="min-h-6 w-full" />
+    </div>
   )
 
   return column

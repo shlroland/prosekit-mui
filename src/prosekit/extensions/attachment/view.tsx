@@ -1,4 +1,3 @@
-import { Box, Button, IconButton, LinearProgress, TextField, Tooltip } from '@mui/material'
 import type { ReactNodeViewProps } from 'prosekit/react'
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 
@@ -11,6 +10,7 @@ import {
   LinkIcon,
   UploadCloud2LineIcon,
 } from '../../../icons'
+import { Button, Tooltip } from '../../../ui'
 
 import './view.css'
 
@@ -28,6 +28,14 @@ function formatFileSize(size: number) {
   }
 
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function UploadProgress({ value }: { value: number }) {
+  return (
+    <span className="prosekit-upload-progress-track">
+      <span className="prosekit-upload-progress-bar" style={{ width: `${value}%` }} />
+    </span>
+  )
 }
 
 function AttachmentInsertPanel({
@@ -59,51 +67,49 @@ function AttachmentInsertPanel({
   }
 
   return (
-    <Box
-      component="form"
+    <form
       className="prosekit-attachment-insert-panel"
       contentEditable={false}
       onSubmit={handleSubmit}
     >
-      <Box className="prosekit-attachment-insert-panel-title">插入附件</Box>
-      <Box className="prosekit-attachment-insert-panel-actions">
+      <div className="prosekit-attachment-insert-panel-title">插入附件</div>
+      <div className="prosekit-attachment-insert-panel-actions">
         <Button
           type="button"
-          variant="contained"
-          size="small"
+          size="sm"
           className="prosekit-attachment-insert-panel-upload"
-          startIcon={<UploadCloud2LineIcon />}
           onClick={onUploadClick}
         >
+          <UploadCloud2LineIcon className="prosekit-attachment-button-icon" />
           上传文件
         </Button>
         <Button
           type="button"
-          variant="outlined"
-          size="small"
+          variant="outline"
+          size="sm"
           className="prosekit-attachment-insert-panel-cancel"
           onClick={onCancel}
         >
           取消
         </Button>
-      </Box>
-      <Box className="prosekit-attachment-insert-panel-fields">
-        <TextField
-          size="small"
+      </div>
+      <div className="prosekit-attachment-insert-panel-fields">
+        <input
+          type="url"
           value={urlValue}
           placeholder="粘贴附件链接"
           className="prosekit-attachment-insert-panel-input"
           onChange={(event) => onUrlChange(event.target.value)}
         />
-        <TextField
-          size="small"
+        <input
+          type="text"
           value={titleValue}
           placeholder="附件标题"
           className="prosekit-attachment-insert-panel-input"
           onChange={(event) => onTitleChange(event.target.value)}
         />
-        <TextField
-          size="small"
+        <input
+          type="text"
           value={sizeValue}
           placeholder="文件大小，可选"
           className="prosekit-attachment-insert-panel-input"
@@ -111,20 +117,20 @@ function AttachmentInsertPanel({
         />
         <Button
           type="submit"
-          variant="outlined"
-          size="small"
+          variant="outline"
+          size="sm"
           className="prosekit-attachment-insert-panel-submit"
-          startIcon={<LinkIcon />}
         >
+          <LinkIcon className="prosekit-attachment-button-icon" />
           插入链接
         </Button>
-      </Box>
+      </div>
       {progress !== null ? (
-        <Box component="span" className="prosekit-attachment-upload-progress">
-          <LinearProgress variant="determinate" value={progress} />
-        </Box>
+        <span className="prosekit-attachment-upload-progress">
+          <UploadProgress value={progress} />
+        </span>
       ) : null}
-    </Box>
+    </form>
   )
 }
 
@@ -229,8 +235,10 @@ export function AttachmentView({
     view.focus()
   }
 
+  const CardTag = url ? 'a' : 'div'
+
   return (
-    <Box
+    <div
       className={`prosekit-attachment-shell ${selected ? 'ProseMirror-selectednode' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -243,41 +251,38 @@ export function AttachmentView({
         onChange={handleFileChange}
       />
       {hovered ? (
-        <Box className="prosekit-attachment-toolbar" contentEditable={false}>
-          <Tooltip title="修改附件" arrow>
-            <IconButton size="small" aria-label="修改附件" className="prosekit-attachment-toolbar-button" onClick={openPanel}>
+        <div className="prosekit-attachment-toolbar" contentEditable={false}>
+          <Tooltip content="修改附件">
+            <Button variant="ghost" size="icon" aria-label="修改附件" className="prosekit-attachment-toolbar-button" onClick={openPanel}>
               <EditLineIcon className="prosekit-attachment-toolbar-icon" />
-            </IconButton>
+            </Button>
           </Tooltip>
-          <Tooltip title="复制地址" arrow>
-            <IconButton size="small" aria-label="复制地址" className="prosekit-attachment-toolbar-button" onClick={copyUrl}>
+          <Tooltip content="复制地址">
+            <Button variant="ghost" size="icon" aria-label="复制地址" className="prosekit-attachment-toolbar-button" onClick={copyUrl}>
               <CopyIcon className="prosekit-attachment-toolbar-icon" />
-            </IconButton>
+            </Button>
           </Tooltip>
           {url ? (
-            <Tooltip title="下载附件" arrow>
-              <IconButton
-                size="small"
+            <Tooltip content="下载附件">
+              <a
                 aria-label="下载附件"
                 className="prosekit-attachment-toolbar-button"
-                component="a"
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <DownloadLineIcon className="prosekit-attachment-toolbar-icon" />
-              </IconButton>
+              </a>
             </Tooltip>
           ) : null}
-          <Tooltip title="删除附件" arrow>
-            <IconButton size="small" aria-label="删除附件" className="prosekit-attachment-toolbar-button" onClick={deleteAttachment}>
+          <Tooltip content="删除附件">
+            <Button variant="ghost" size="icon" aria-label="删除附件" className="prosekit-attachment-toolbar-button" onClick={deleteAttachment}>
               <DeleteLineIcon className="prosekit-attachment-toolbar-icon" />
-            </IconButton>
+            </Button>
           </Tooltip>
-        </Box>
+        </div>
       ) : null}
-      <Box
-        component={url ? 'a' : 'div'}
+      <CardTag
         className="prosekit-attachment-card"
         href={url || undefined}
         target={url ? '_blank' : undefined}
@@ -287,19 +292,19 @@ export function AttachmentView({
         onClick={!url ? openPanel : undefined}
       >
         <FileIcon className="prosekit-attachment-card-icon" />
-        <Box component="span" className="prosekit-attachment-card-text">
-          <Box component="span" className="prosekit-attachment-card-title">{title}</Box>
+        <span className="prosekit-attachment-card-text">
+          <span className="prosekit-attachment-card-title">{title}</span>
           {progress !== null ? (
-            <Box component="span" className="prosekit-attachment-upload-progress">
-              <LinearProgress variant="determinate" value={progress} />
-            </Box>
+            <span className="prosekit-attachment-upload-progress">
+              <UploadProgress value={progress} />
+            </span>
           ) : size ? (
-            <Box component="span" className="prosekit-attachment-card-size">{size}</Box>
+            <span className="prosekit-attachment-card-size">{size}</span>
           ) : (
-            <Box component="span" className="prosekit-attachment-card-size">点击上传附件</Box>
+            <span className="prosekit-attachment-card-size">点击上传附件</span>
           )}
-        </Box>
-      </Box>
+        </span>
+      </CardTag>
       {panelOpen ? (
         <AttachmentInsertPanel
           titleValue={titleValue}
@@ -314,6 +319,6 @@ export function AttachmentView({
           onUrlChange={setUrlValue}
         />
       ) : null}
-    </Box>
+    </div>
   )
 }

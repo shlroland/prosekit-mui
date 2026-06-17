@@ -1,8 +1,8 @@
-@reference "../../../../demo/styles/tailwind.css";
+@reference "tailwindcss";
 
 @layer components {
   .node-alert {
-    @apply my-4 rounded-[var(--mui-shape-borderRadius)] px-4 py-3;
+    @apply my-4 rounded-[var(--radius-md)] px-4 py-3;
 
     > .node-alert-content > :first-child {
       @apply mt-0;
@@ -30,8 +30,8 @@
   }
 
   .cq-details {
-    @apply my-5 flex gap-1 rounded-[var(--mui-shape-borderRadius)] border p-2;
-    border-color: var(--mui-palette-divider);
+    @apply my-5 flex gap-1 rounded-[var(--radius-md)] border p-2;
+    border-color: var(--editor-border);
   }
 
   .cq-details summary {
@@ -43,7 +43,7 @@
   }
 
   .cq-details > button:hover {
-    background-color: var(--mui-palette-divider);
+    background-color: var(--editor-muted);
   }
 
   .cq-details > button::before {
