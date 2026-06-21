@@ -115,11 +115,14 @@ const demoContent: NodeJSON = {
       },
     },
     {
-      type: 'attachment',
+      type: 'blockAttachment',
       attrs: {
         url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
         title: '示例附件.pdf',
         size: '13 KB',
+        type: 'block',
+        view: '0',
+        height: 300,
       },
     },
     {

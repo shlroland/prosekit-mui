@@ -11,7 +11,7 @@ import { LINK_ENTER_RE, LINK_INPUT_RE, LINK_MARK_RE } from './link-regex'
 import { defineLinkNodeView } from './node-view'
 import { defineLinkSpec } from './spec'
 import type { LinkExtension } from './types'
-import { getLinkMatch, toLinkAttrs } from './utils'
+import { getLinkMatch, normalizeLinkTarget, toLinkAttrs } from './utils'
 
 function buildInlineLinkNode(state: EditorState, href: string) {
   const attrs = toLinkAttrs(href, { type: 'icon' })
@@ -157,7 +157,7 @@ function defineOpenOnClickHandler(): PlainExtension {
     }
 
     const attrs = toLinkAttrs(link.getAttribute('href') || '', {
-      target: link.getAttribute('target'),
+      target: normalizeLinkTarget(link.getAttribute('target')),
       rel: link.getAttribute('rel'),
     })
 

@@ -4,11 +4,11 @@ import type { ReactNodeViewProps } from 'prosekit/react'
 import { PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTrigger } from 'prosekit/react/popover'
 
 import { ChromeIcon, LinkIcon } from '../../../icons'
+import { cn } from '../../../utils/cn'
 import { LinkActionBar } from '../../components/link-action-bar'
 import { LinkEditorPanel } from '../../components/link-editor-popover'
 import type { LinkAttrs, LinkDisplayType, LinkTarget } from './types'
 import { getLinkRel, getLinkTitle, normalizeInlineLinkType, normalizeLinkTarget, toLinkAttrs } from './utils'
-import './view.css'
 
 function getNodeAttrs(node: ReactNodeViewProps['node']): LinkAttrs {
   return {
@@ -37,7 +37,12 @@ function LinkFavicon({
   const showImage = Boolean(src) && failedSrc !== src
 
   return (
-    <span className={`prosekit-link-node-avatar ${isBlock ? 'block' : ''}`}>
+    <span
+      className={cn(
+        'inline-flex shrink-0 items-center justify-center self-center overflow-hidden rounded-full bg-white',
+        isBlock ? 'h-8 w-8' : 'h-4 w-4',
+      )}
+    >
       {showImage ? (
         <img
           src={src}
@@ -265,7 +270,10 @@ export function LinkView({
 
   const content = (
     <span
-      className={`prosekit-link-node ${isBlock ? 'block' : ''} ${selected ? 'ProseMirror-selectednode' : ''}`}
+      className={cn(
+        'inline-flex max-w-full items-center gap-1 align-baseline',
+        isBlock && 'block',
+      )}
       data-drag-handle={isBlock ? 'true' : undefined}
       {...contentHoverProps}
     >
@@ -283,20 +291,26 @@ export function LinkView({
           href={attrs.href}
           target={attrs.target ?? '_blank'}
           rel={getLinkRel(attrs.target ?? '_blank', attrs.rel) ?? undefined}
-          className={`prosekit-link-node-anchor ${isBlock ? 'block' : ''}`}
+          className={cn(
+            'inline-flex max-w-full items-baseline gap-1 rounded-[var(--radius-md)] text-[var(--editor-primary)] no-underline transition-colors hover:underline',
+            isBlock && [
+              'flex w-full cursor-pointer items-center gap-4 rounded-[var(--radius-md)] border border-[var(--editor-border)] p-4 text-left text-[inherit] no-underline hover:border-[var(--editor-primary)] hover:no-underline',
+              selected && 'border-[var(--editor-primary)] bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
+            ],
+          )}
           title={attrs.title ?? undefined}
           download={attrs.download ?? undefined}
         >
           {isBlock || displayType === 'icon' ? (
             <LinkFavicon src={favicon} isBlock={isBlock} />
           ) : null}
-          <span className="prosekit-link-node-content">
+          <span className="min-w-0">
             {isBlock ? (
-              <span className="prosekit-link-node-meta">
-                <span className="prosekit-link-node-title">
+              <span className="flex min-w-0 flex-col gap-[0.15rem]">
+                <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold">
                   {label}
                 </span>
-                <span className="prosekit-link-node-href">
+                <span className="overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[var(--editor-muted-foreground)]">
                   {attrs.href}
                 </span>
               </span>
@@ -312,7 +326,7 @@ export function LinkView({
   if (isEditable && isBlock) {
     return (
       <div
-        className="prosekit-block-link-shell"
+        className="relative block"
         onMouseEnter={keepActionsOpen}
         onMouseLeave={scheduleActionsClose}
         onPointerEnter={keepActionsOpen}
@@ -323,7 +337,8 @@ export function LinkView({
         {content}
         {actionsOpen && !editOpen ? (
           <div
-            className="prosekit-block-link-actions"
+            className="absolute left-0 top-[-0.375rem] z-[1305] w-max max-w-[min(420px,calc(100vw-2rem))] -translate-y-full rounded-lg border bg-white text-xs shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
+            style={{ borderColor: 'rgb(15 23 42 / 24%)' }}
             contentEditable={false}
             onMouseEnter={keepActionsOpen}
             onMouseLeave={scheduleActionsClose}
@@ -335,7 +350,8 @@ export function LinkView({
         ) : null}
         {editOpen ? (
           <div
-            className="prosekit-block-link-editor"
+            className="absolute left-0 top-[-0.375rem] z-[1305] w-max max-w-[min(420px,calc(100vw-2rem))] -translate-y-full rounded-lg border bg-white shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
+            style={{ borderColor: 'rgb(15 23 42 / 24%)' }}
             contentEditable={false}
             onMouseEnter={keepActionsOpen}
             onMouseLeave={scheduleActionsClose}
@@ -385,14 +401,21 @@ export function LinkView({
         {content}
       </PopoverTrigger>
       <PopoverPositioner
-        className="prosekit-link-popover-positioner"
+        className="z-[1305] h-auto min-h-0 min-w-0 max-w-max overflow-visible p-0"
+        style={{ position: 'fixed', width: 'max-content', maxHeight: 'none', lineHeight: 'normal', margin: 0 }}
         placement={editOpen ? 'bottom' : 'top'}
         offset={6}
         hoist
         strategy="fixed"
       >
         <PopoverPopup
-          className={editOpen ? 'prosekit-link-editor-popover' : 'prosekit-link-node-popup'}
+          className={cn(
+            'block h-auto min-h-0 w-max rounded-[8px] bg-white p-0',
+            editOpen
+              ? 'shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]'
+              : 'text-xs shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]',
+          )}
+          style={{ border: '1px solid rgb(15 23 42 / 24%)', zIndex: 1300 }}
           onMouseEnter={keepActionsOpen}
           onMouseLeave={scheduleActionsClose}
         >

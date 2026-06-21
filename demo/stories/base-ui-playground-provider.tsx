@@ -1,12 +1,66 @@
+import '../styles/tailwind.css'
 import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
+import type { CSSProperties } from 'react'
 import type { ReactNode } from 'react'
+
+const lightThemeStyle = {
+  '--radius': '0.25rem',
+  '--background': 'oklch(1 0 0)',
+  '--foreground': 'oklch(0 0 0 / 0.87)',
+  '--card': 'oklch(1 0 0)',
+  '--card-foreground': 'oklch(0 0 0 / 0.87)',
+  '--popover': 'oklch(1 0 0)',
+  '--popover-foreground': 'oklch(0 0 0 / 0.87)',
+  '--primary': 'oklch(0.565 0.163 253.3)',
+  '--primary-foreground': 'oklch(1 0 0)',
+  '--secondary': 'oklch(0.517 0.215 321.2)',
+  '--secondary-foreground': 'oklch(1 0 0)',
+  '--muted': 'oklch(0.97 0 0)',
+  '--muted-foreground': 'oklch(0 0 0 / 0.6)',
+  '--accent': 'oklch(0.565 0.163 253.3 / 0.08)',
+  '--accent-foreground': 'oklch(0.565 0.163 253.3)',
+  '--destructive': 'oklch(0.568 0.2 26.4)',
+  '--destructive-foreground': 'oklch(1 0 0)',
+  '--border': 'oklch(0 0 0 / 0.12)',
+  '--input': 'oklch(0 0 0 / 0.23)',
+  '--ring': 'oklch(0.565 0.163 253.3)',
+  '--sand-50': '#fcfaf5',
+  '--sand-100': '#f5efe4',
+  '--clay-500': '#b85c38',
+  '--ink-950': '#171717',
+  '--moss-700': '#2f5d50',
+  '--editor-background': 'var(--background)',
+  '--editor-surface': 'var(--popover)',
+  '--editor-surface-muted': 'oklch(0.985 0 0)',
+  '--editor-foreground': 'var(--foreground)',
+  '--editor-muted-foreground': 'var(--muted-foreground)',
+  '--editor-border': 'var(--border)',
+  '--editor-muted': 'var(--muted)',
+  '--editor-primary': 'var(--primary)',
+  '--editor-primary-hover': 'oklch(0.51 0.163 253.3)',
+  '--editor-primary-soft': 'var(--accent)',
+  '--editor-ring': 'var(--ring)',
+  '--pk-editor-bg': 'var(--background)',
+  '--pk-editor-fg': 'var(--foreground)',
+  '--pk-editor-placeholder': 'oklch(0 0 0 / 0.38)',
+  '--pk-editor-selection': 'oklch(0.565 0.163 253.3 / 0.18)',
+  '--pk-editor-toolbar-bg': 'var(--background)',
+  '--pk-editor-toolbar-border': 'var(--border)',
+  '--pk-editor-code-bg': 'var(--muted)',
+  background: 'radial-gradient(circle at top left, rgb(184 92 56 / 0.14), transparent 28rem), radial-gradient(circle at bottom right, rgb(47 93 80 / 0.14), transparent 26rem), linear-gradient(180deg, var(--sand-50) 0%, var(--sand-100) 100%)',
+  color: 'var(--ink-950)',
+} satisfies CSSProperties
 
 export function BaseUiPlaygroundProvider({ children }: { children?: ReactNode }) {
   return (
-    <div className="pk-mui-theme pk-demo-page" data-theme="light">
+    <div
+      className="pk-mui-theme pk-demo-page min-h-screen w-full"
+      data-theme="light"
+      style={lightThemeStyle}
+    >
       {children}
     </div>
   )

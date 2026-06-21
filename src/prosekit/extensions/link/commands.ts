@@ -155,7 +155,7 @@ function updateCurrentLink(attrs: Partial<LinkAttrs>): Command {
       return false
     }
 
-    const nextRawAttrs = {
+    const nextRawAttrs: Partial<LinkAttrs> = {
       ...(active.node.attrs as Partial<LinkAttrs>),
       ...attrs,
       type: active.type === 'blockLink' ? 'block' : normalizeInlineLinkType(attrs.type ?? active.node.attrs.type),

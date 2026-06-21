@@ -54,6 +54,7 @@ export { ErrorWarningFillIcon } from './error-warning-fill-icon';
 export { ExpandHorizontalLineIcon } from './expand-horizontal-line-icon';
 export { ExpendIcon } from './expend-icon';
 export { ExportLineIcon } from './export-line-icon';
+export { EyeLineIcon } from './eye-line-icon';
 export { FileCopyLineIcon } from './file-copy-line-icon';
 export { FileIcon } from './file-icon';
 export { FileUploadLineIcon } from './file-upload-line-icon';

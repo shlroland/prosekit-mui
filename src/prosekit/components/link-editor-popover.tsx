@@ -15,7 +15,7 @@ export type LinkEditorSubmitValue = {
 }
 
 export type LinkEditorPopoverProps = {
-  children: ReactNode
+  children?: ReactNode
   triggerStyle?: CSSProperties
   open: boolean
   onClose: () => void
@@ -97,7 +97,7 @@ export function LinkEditorPanel({
   initialTarget = '_blank',
   showAdvancedOptions = false,
   submitLabel = '保存链接',
-}: LinkEditorPopoverProps) {
+}: LinkEditorPanelProps) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [href, setHref] = useState(initialHref)
   const [title, setTitle] = useState(initialTitle)
@@ -236,11 +236,11 @@ export function LinkEditorPopover({
   ...panelProps
 }: LinkEditorPopoverProps) {
   return (
-    <PopoverRoot
+      <PopoverRoot
       style={{ display: 'contents' }}
       open={open}
-      onOpenChange={(event) => {
-        if (!event.detail.open) {
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
           onClose()
         }
       }}

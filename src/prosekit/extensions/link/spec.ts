@@ -1,7 +1,7 @@
 import { defineNodeSpec, union } from 'prosekit/core'
 
 import type { LinkAttrs, LinkSpecExtension } from './types'
-import { getLinkRel, getLinkTitle, getSafeHref, normalizeInlineLinkType, toLinkAttrs } from './utils'
+import { getLinkRel, getLinkTitle, getSafeHref, normalizeInlineLinkType, normalizeLinkTarget, toLinkAttrs } from './utils'
 
 export function defineLinkSpec(): LinkSpecExtension {
   return union(
@@ -37,7 +37,7 @@ export function defineLinkSpec(): LinkSpecExtension {
             }
 
             const attrs = toLinkAttrs(dom.getAttribute('href') || '', {
-              target: dom.getAttribute('target'),
+              target: normalizeLinkTarget(dom.getAttribute('target')),
               rel: dom.getAttribute('rel'),
               class: dom.getAttribute('class'),
               title: dom.textContent || dom.getAttribute('title'),
@@ -86,7 +86,7 @@ export function defineLinkSpec(): LinkSpecExtension {
             }
 
             const attrs = toLinkAttrs(dom.getAttribute('href') || '', {
-              target: dom.getAttribute('target'),
+              target: normalizeLinkTarget(dom.getAttribute('target')),
               rel: dom.getAttribute('rel'),
               class: dom.getAttribute('class'),
               title: dom.textContent || dom.getAttribute('title'),
