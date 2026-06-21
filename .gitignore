@@ -3,3 +3,4 @@ dist/
 .astro/
 .types/
 *.tsbuildinfo
+tiptap-v3/
