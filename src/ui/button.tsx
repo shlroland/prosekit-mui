@@ -24,18 +24,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={cn(
-          'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg text-sm font-medium outline-none transition-colors',
-          'focus-visible:ring-2 focus-visible:ring-[var(--editor-ring)] focus-visible:ring-offset-1',
-          'disabled:pointer-events-none disabled:opacity-45',
+          'pk:inline-flex pk:shrink-0 pk:items-center pk:justify-center pk:gap-1.5 pk:rounded-lg pk:text-sm pk:font-medium pk:outline-none pk:transition-colors',
+          'pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)] pk:focus-visible:ring-offset-1',
+          'pk:disabled:pointer-events-none pk:disabled:opacity-45',
           variant === 'default'
-            && 'bg-[var(--editor-primary)] text-white hover:bg-[var(--editor-primary-hover)]',
+            && 'pk:bg-[var(--editor-primary)] pk:text-white pk:hover:bg-[var(--editor-primary-hover)]',
           variant === 'ghost'
-            && 'bg-transparent text-[var(--editor-foreground)] hover:bg-[var(--editor-muted)]',
+            && 'pk:bg-transparent pk:text-[var(--editor-foreground)] pk:hover:bg-[var(--editor-muted)]',
           variant === 'outline'
-            && 'border border-[var(--editor-border)] bg-[var(--editor-surface)] text-[var(--editor-foreground)] hover:bg-[var(--editor-muted)]',
-          size === 'default' && 'min-h-9 px-3 py-2',
-          size === 'sm' && 'min-h-8 px-2.5 py-1.5 text-xs',
-          size === 'icon' && 'h-9 w-9 p-0',
+            && 'pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:text-[var(--editor-foreground)] pk:hover:bg-[var(--editor-muted)]',
+          size === 'default' && 'pk:min-h-9 pk:px-3 pk:py-2',
+          size === 'sm' && 'pk:min-h-8 pk:px-2.5 pk:py-1.5 pk:text-xs',
+          size === 'icon' && 'pk:h-9 pk:w-9 pk:p-0',
           className,
         )}
         {...props}

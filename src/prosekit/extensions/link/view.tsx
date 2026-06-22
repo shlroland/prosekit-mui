@@ -39,8 +39,8 @@ function LinkFavicon({
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center justify-center self-center overflow-hidden rounded-full bg-white',
-        isBlock ? 'h-8 w-8' : 'h-4 w-4',
+        'pk:inline-flex pk:shrink-0 pk:items-center pk:justify-center pk:self-center pk:overflow-hidden pk:rounded-full pk:bg-white',
+        isBlock ? 'pk:h-8 pk:w-8' : 'pk:h-4 pk:w-4',
       )}
     >
       {showImage ? (
@@ -48,11 +48,11 @@ function LinkFavicon({
           src={src}
           alt=""
           onError={() => setFailedSrc(src)}
-          className="h-full w-full object-cover"
+          className="pk:h-full pk:w-full pk:object-cover"
         />
       ) : (
         <ChromeIcon
-          className="cursor-grab text-[var(--editor-primary)] active:cursor-grabbing"
+          className="pk:cursor-grab pk:text-[var(--editor-primary)] pk:active:cursor-grabbing"
           style={{ fontSize: isBlock ? '2rem' : '1rem' }}
         />
       )}
@@ -271,8 +271,8 @@ export function LinkView({
   const content = (
     <span
       className={cn(
-        'inline-flex max-w-full items-center gap-1 align-baseline',
-        isBlock && 'block',
+        'pk:inline-flex pk:max-w-full pk:items-center pk:gap-1 pk:align-baseline',
+        isBlock && 'pk:block',
       )}
       data-drag-handle={isBlock ? 'true' : undefined}
       {...contentHoverProps}
@@ -281,9 +281,9 @@ export function LinkView({
         <button
           type="button"
           onClick={() => setEditOpen(true)}
-          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-[var(--editor-border)] bg-[var(--editor-muted)] px-3 text-sm text-[var(--editor-muted-foreground)] ${isBlock ? 'w-full py-3' : 'py-1.5'}`}
+          className={`pk:inline-flex pk:cursor-pointer pk:items-center pk:gap-2 pk:rounded-lg pk:border pk:border-dashed pk:border-[var(--editor-border)] pk:bg-[var(--editor-muted)] pk:px-3 pk:text-sm pk:text-[var(--editor-muted-foreground)] ${isBlock ? 'pk:w-full pk:py-3' : 'pk:py-1.5'}`}
         >
-          <LinkIcon className="shrink-0 text-base" />
+          <LinkIcon className="pk:shrink-0 pk:text-base" />
           <span>{attrs.title ? `添加“${attrs.title}”链接` : '添加链接'}</span>
         </button>
       ) : (
@@ -292,10 +292,10 @@ export function LinkView({
           target={attrs.target ?? '_blank'}
           rel={getLinkRel(attrs.target ?? '_blank', attrs.rel) ?? undefined}
           className={cn(
-            'inline-flex max-w-full items-baseline gap-1 rounded-[var(--radius-md)] text-[var(--editor-primary)] no-underline transition-colors hover:underline',
+            'pk:inline-flex pk:max-w-full pk:items-baseline pk:gap-1 pk:rounded-[var(--radius-md)] pk:text-[var(--editor-primary)] pk:no-underline pk:transition-colors pk:hover:underline',
             isBlock && [
-              'flex w-full cursor-pointer items-center gap-4 rounded-[var(--radius-md)] border border-[var(--editor-border)] p-4 text-left text-[inherit] no-underline hover:border-[var(--editor-primary)] hover:no-underline',
-              selected && 'border-[var(--editor-primary)] bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
+              'pk:flex pk:w-full pk:cursor-pointer pk:items-center pk:gap-4 pk:rounded-[var(--radius-md)] pk:border pk:border-[var(--editor-border)] pk:p-4 pk:text-left pk:text-[inherit] pk:no-underline pk:hover:border-[var(--editor-primary)] pk:hover:no-underline',
+              selected && 'pk:border-[var(--editor-primary)] pk:bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
             ],
           )}
           title={attrs.title ?? undefined}
@@ -304,13 +304,13 @@ export function LinkView({
           {isBlock || displayType === 'icon' ? (
             <LinkFavicon src={favicon} isBlock={isBlock} />
           ) : null}
-          <span className="min-w-0">
+          <span className="pk:min-w-0">
             {isBlock ? (
-              <span className="flex min-w-0 flex-col gap-[0.15rem]">
-                <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold">
+              <span className="pk:flex pk:min-w-0 pk:flex-col pk:gap-[0.15rem]">
+                <span className="pk:overflow-hidden pk:text-ellipsis pk:whitespace-nowrap pk:text-sm pk:font-bold">
                   {label}
                 </span>
-                <span className="overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[var(--editor-muted-foreground)]">
+                <span className="pk:overflow-hidden pk:text-ellipsis pk:whitespace-nowrap pk:text-xs pk:text-[var(--editor-muted-foreground)]">
                   {attrs.href}
                 </span>
               </span>
@@ -326,7 +326,7 @@ export function LinkView({
   if (isEditable && isBlock) {
     return (
       <div
-        className="relative block"
+        className="pk:relative pk:block"
         onMouseEnter={keepActionsOpen}
         onMouseLeave={scheduleActionsClose}
         onPointerEnter={keepActionsOpen}
@@ -337,7 +337,7 @@ export function LinkView({
         {content}
         {actionsOpen && !editOpen ? (
           <div
-            className="absolute left-0 top-[-0.375rem] z-[1305] w-max max-w-[min(420px,calc(100vw-2rem))] -translate-y-full rounded-lg border bg-white text-xs shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
+            className="pk:absolute pk:left-0 pk:top-[-0.375rem] pk:z-[1305] pk:w-max pk:max-w-[min(420px,calc(100vw-2rem))] pk:-translate-y-full pk:rounded-lg pk:border pk:bg-white pk:text-xs pk:shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
             style={{ borderColor: 'rgb(15 23 42 / 24%)' }}
             contentEditable={false}
             onMouseEnter={keepActionsOpen}
@@ -350,7 +350,7 @@ export function LinkView({
         ) : null}
         {editOpen ? (
           <div
-            className="absolute left-0 top-[-0.375rem] z-[1305] w-max max-w-[min(420px,calc(100vw-2rem))] -translate-y-full rounded-lg border bg-white shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
+            className="pk:absolute pk:left-0 pk:top-[-0.375rem] pk:z-[1305] pk:w-max pk:max-w-[min(420px,calc(100vw-2rem))] pk:-translate-y-full pk:rounded-lg pk:border pk:bg-white pk:shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
             style={{ borderColor: 'rgb(15 23 42 / 24%)' }}
             contentEditable={false}
             onMouseEnter={keepActionsOpen}
@@ -401,7 +401,7 @@ export function LinkView({
         {content}
       </PopoverTrigger>
       <PopoverPositioner
-        className="z-[1305] h-auto min-h-0 min-w-0 max-w-max overflow-visible p-0"
+        className="pk:z-[1305] pk:h-auto pk:min-h-0 pk:min-w-0 pk:max-w-max pk:overflow-visible pk:p-0"
         style={{ position: 'fixed', width: 'max-content', maxHeight: 'none', lineHeight: 'normal', margin: 0 }}
         placement={editOpen ? 'bottom' : 'top'}
         offset={6}
@@ -410,10 +410,10 @@ export function LinkView({
       >
         <PopoverPopup
           className={cn(
-            'block h-auto min-h-0 w-max rounded-[8px] bg-white p-0',
+            'pk:block pk:h-auto pk:min-h-0 pk:w-max pk:rounded-[8px] pk:bg-white pk:p-0',
             editOpen
-              ? 'shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]'
-              : 'text-xs shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]',
+              ? 'pk:shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]'
+              : 'pk:text-xs pk:shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]',
           )}
           style={{ border: '1px solid rgb(15 23 42 / 24%)', zIndex: 1300 }}
           onMouseEnter={keepActionsOpen}

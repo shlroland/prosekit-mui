@@ -166,10 +166,10 @@ function AttachmentActionButton({
         variant="ghost"
         size="icon"
         className={cn(
-          'h-8 w-8 rounded-lg',
+          'pk:h-8 pk:w-8 pk:rounded-lg',
           active
-            ? 'bg-[var(--editor-primary)] text-white hover:bg-[var(--editor-primary-hover)]'
-            : 'text-[var(--editor-muted-foreground)] hover:text-[var(--editor-foreground)]',
+            ? 'pk:bg-[var(--editor-primary)] pk:text-white pk:hover:bg-[var(--editor-primary-hover)]'
+            : 'pk:text-[var(--editor-muted-foreground)] pk:hover:text-[var(--editor-foreground)]',
         )}
         onClick={onClick}
       >
@@ -198,32 +198,32 @@ function AttachmentActionBar({
 }) {
   return (
     <div
-      className="flex items-center gap-1 rounded-lg bg-[var(--editor-surface)] p-1.5"
+      className="pk:flex pk:items-center pk:gap-1 pk:rounded-lg pk:bg-[var(--editor-surface)] pk:p-1.5"
       data-editor-floating
     >
-      <span className="w-[180px] overflow-hidden truncate whitespace-nowrap px-2 text-sm text-[var(--editor-muted-foreground)]">
+      <span className="pk:w-[180px] pk:overflow-hidden pk:truncate pk:whitespace-nowrap pk:px-2 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
         {attrs.title || attrs.url}
       </span>
       <AttachmentActionButton label="编辑" onClick={onEdit}>
-        <EditLineIcon className="text-base" />
+        <EditLineIcon className="pk:text-base" />
       </AttachmentActionButton>
       <AttachmentActionButton label="下载" onClick={onDownload}>
-        <DownloadLineIcon className="text-base" />
+        <DownloadLineIcon className="pk:text-base" />
       </AttachmentActionButton>
-      <Separator orientation="vertical" className="mx-1 h-4" />
+      <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
       <AttachmentActionButton
         label="图标文字"
         active={displayType === 'icon'}
         onClick={(event) => onChangeDisplay('icon', event)}
       >
-        <ScrollToBottomLineIcon className="text-base" style={{ transform: 'rotate(90deg)' }} />
+        <ScrollToBottomLineIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />
       </AttachmentActionButton>
       <AttachmentActionButton
         label="文字卡片"
         active={displayType === 'block'}
         onClick={(event) => onChangeDisplay('block', event)}
       >
-        <CarouselViewIcon className="text-base" style={{ transform: 'rotate(90deg)' }} />
+        <CarouselViewIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />
       </AttachmentActionButton>
       {isPdf ? (
         <AttachmentActionButton
@@ -231,12 +231,12 @@ function AttachmentActionBar({
           active={displayType === 'view'}
           onClick={(event) => onChangeDisplay('view', event)}
         >
-          <CarouselViewIcon className="text-base" />
+          <CarouselViewIcon className="pk:text-base" />
         </AttachmentActionButton>
       ) : null}
-      <Separator orientation="vertical" className="mx-1 h-4" />
+      <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
       <AttachmentActionButton label="删除" onClick={onDelete}>
-        <DeleteLineIcon className="text-base" />
+        <DeleteLineIcon className="pk:text-base" />
       </AttachmentActionButton>
     </div>
   )
@@ -275,16 +275,16 @@ function AttachmentTitlePanel({
 
   return (
     <div
-      className="grid w-[320px] gap-3 rounded-lg border border-[var(--editor-border)] bg-white p-4 shadow-[0_12px_32px_rgba(23,23,23,0.14)]"
+      className="pk:grid pk:w-[320px] pk:gap-3 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-white pk:p-4 pk:shadow-[0_12px_32px_rgba(23,23,23,0.14)]"
       data-editor-floating
     >
-      <label className="flex items-center gap-3">
-        <span className="w-10 shrink-0 text-sm text-[var(--editor-muted-foreground)]">标题</span>
+      <label className="pk:flex pk:items-center pk:gap-3">
+        <span className="pk:w-10 pk:shrink-0 pk:text-sm pk:text-[var(--editor-muted-foreground)]">标题</span>
         <input
           ref={inputRef}
           value={name}
           placeholder="附件标题"
-          className="h-9 min-w-0 flex-1 rounded-md border border-[var(--editor-border)] bg-white px-2.5 text-sm text-[var(--editor-foreground)] outline-none focus:ring-2 focus:ring-[var(--editor-ring)]"
+          className="pk:h-9 pk:min-w-0 pk:flex-1 pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-white pk:px-2.5 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
           onChange={(event) => setName(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === 'Escape') {
@@ -299,7 +299,7 @@ function AttachmentTitlePanel({
           }}
         />
       </label>
-      <div className="flex items-center justify-end gap-2">
+      <div className="pk:flex pk:items-center pk:justify-end pk:gap-2">
         <Button size="sm" variant="ghost" onClick={onCancel}>取消</Button>
         <Button size="sm" onClick={handleSave}>修改附件</Button>
       </div>
@@ -342,22 +342,22 @@ function AttachmentUploadPlaceholder({
   }
 
   return (
-    <span className="my-2 inline-flex max-w-full">
+    <span className="pk:my-2 pk:inline-flex pk:max-w-full">
       <input
         ref={inputRef}
         type="file"
         multiple
         accept="*/*"
-        className="hidden"
+        className="pk:hidden"
         data-attachment-upload-control
         onChange={handleChange}
       />
       <button
         type="button"
         className={cn(
-          'relative inline-flex min-h-11 max-w-full items-center gap-4 overflow-hidden rounded-lg border border-dashed border-[var(--editor-border)] bg-[var(--editor-surface)] px-4 py-3 text-sm text-[var(--editor-muted-foreground)] outline-none transition-colors',
-          !uploading && 'cursor-pointer hover:bg-[var(--editor-muted)]',
-          selected && 'border-[var(--editor-primary)] bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
+          'pk:relative pk:inline-flex pk:min-h-11 pk:max-w-full pk:items-center pk:gap-4 pk:overflow-hidden pk:rounded-lg pk:border pk:border-dashed pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-4 pk:py-3 pk:text-sm pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors',
+          !uploading && 'pk:cursor-pointer pk:hover:bg-[var(--editor-muted)]',
+          selected && 'pk:border-[var(--editor-primary)] pk:bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
         )}
         style={uploading ? { '--attachment-upload-progress': `${progress}%` } as CSSProperties : undefined}
         disabled={uploading}
@@ -365,22 +365,22 @@ function AttachmentUploadPlaceholder({
       >
         {uploading ? (
           <span
-            className="pointer-events-none absolute inset-y-0 left-0 bg-[var(--editor-primary)] opacity-10 transition-[width] duration-300"
+            className="pk:pointer-events-none pk:absolute pk:inset-y-0 pk:left-0 pk:bg-[var(--editor-primary)] pk:opacity-10 pk:transition-[width] pk:duration-300"
             style={{ width: 'var(--attachment-upload-progress)' }}
           />
         ) : null}
         {uploading ? (
-          <span className="relative z-[1] h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[var(--editor-border)] border-t-[var(--editor-primary)]" />
+          <span className="pk:relative pk:z-[1] pk:h-4 pk:w-4 pk:shrink-0 pk:animate-spin pk:rounded-full pk:border-2 pk:border-[var(--editor-border)] pk:border-t-[var(--editor-primary)]" />
         ) : (
-          <Attachment2Icon className="relative z-[1] shrink-0 text-base" />
+          <Attachment2Icon className="pk:relative pk:z-[1] pk:shrink-0 pk:text-base" />
         )}
         {uploading ? (
-          <span className="relative z-[1]">
+          <span className="pk:relative pk:z-[1]">
             正在上传第 <strong>{current}</strong> / {total} 个附件
-            <span className="ml-2 inline-block w-10 text-right text-xs">{progress}%</span>
+            <span className="pk:ml-2 pk:inline-block pk:w-10 pk:text-right pk:text-xs">{progress}%</span>
           </span>
         ) : (
-          <span className="relative z-[1]">添加附件</span>
+          <span className="pk:relative pk:z-[1]">添加附件</span>
         )}
       </button>
     </span>
@@ -452,12 +452,12 @@ function AttachmentContent({
       <button
         type="button"
         className={cn(
-          'inline-flex max-w-full cursor-pointer items-center gap-1 rounded-md border-0 bg-transparent p-0 text-sm text-[var(--editor-primary)] outline-none transition-colors hover:bg-[var(--editor-muted)]',
-          isError && 'text-red-600',
+          'pk:inline-flex pk:max-w-full pk:cursor-pointer pk:items-center pk:gap-1 pk:rounded-md pk:border-0 pk:bg-transparent pk:p-0 pk:text-sm pk:text-[var(--editor-primary)] pk:outline-none pk:transition-colors pk:hover:bg-[var(--editor-muted)]',
+          isError && 'pk:text-red-600',
         )}
         onClick={onDownload}
       >
-        <Download2LineIcon className="cursor-grab text-sm active:cursor-grabbing" />
+        <Download2LineIcon className="pk:cursor-grab pk:text-sm pk:active:cursor-grabbing" />
         <span>{attrs.title}</span>
       </button>
     )
@@ -466,15 +466,15 @@ function AttachmentContent({
   if (type === 'view' && isPdf && attrs.url && !isError) {
     return (
       <span
-        className="relative block w-full"
+        className="pk:relative pk:block pk:w-full"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         <span
           className={cn(
-            'block w-full overflow-hidden rounded-lg border border-[var(--editor-border)] bg-[var(--editor-surface)]',
-            editable && 'hover:border-[var(--editor-primary)]',
-            selected && 'border-[var(--editor-primary)] bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
+            'pk:block pk:w-full pk:overflow-hidden pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)]',
+            editable && 'pk:hover:border-[var(--editor-primary)]',
+            selected && 'pk:border-[var(--editor-primary)] pk:bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
           )}
           style={{ height }}
         >
@@ -484,29 +484,29 @@ function AttachmentContent({
             height="100%"
             allowFullScreen
             title={attrs.title}
-            className="block border-0"
+            className="pk:block pk:border-0"
             style={{ pointerEvents: dragging ? 'none' : 'auto' }}
           />
         </span>
         {editable && (hovered || dragging) ? (
           <>
             <span
-              className="absolute -left-1 -top-1 z-[2] h-3 w-3 cursor-ns-resize rounded-full border-2 border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] bg-[var(--editor-background)] transition-colors hover:border-[var(--editor-primary)]"
+              className="pk:absolute pk:-left-1 pk:-top-1 pk:z-[2] pk:h-3 pk:w-3 pk:cursor-ns-resize pk:rounded-full pk:border-2 pk:border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] pk:bg-[var(--editor-background)] pk:transition-colors pk:hover:border-[var(--editor-primary)]"
               data-attachment-resize-handle
               onMouseDown={startResize}
             />
             <span
-              className="absolute -right-1 -top-1 z-[2] h-3 w-3 cursor-ns-resize rounded-full border-2 border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] bg-[var(--editor-background)] transition-colors hover:border-[var(--editor-primary)]"
+              className="pk:absolute pk:-right-1 pk:-top-1 pk:z-[2] pk:h-3 pk:w-3 pk:cursor-ns-resize pk:rounded-full pk:border-2 pk:border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] pk:bg-[var(--editor-background)] pk:transition-colors pk:hover:border-[var(--editor-primary)]"
               data-attachment-resize-handle
               onMouseDown={startResize}
             />
             <span
-              className="absolute -bottom-1 -left-1 z-[2] h-3 w-3 cursor-ns-resize rounded-full border-2 border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] bg-[var(--editor-background)] transition-colors hover:border-[var(--editor-primary)]"
+              className="pk:absolute pk:-bottom-1 pk:-left-1 pk:z-[2] pk:h-3 pk:w-3 pk:cursor-ns-resize pk:rounded-full pk:border-2 pk:border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] pk:bg-[var(--editor-background)] pk:transition-colors pk:hover:border-[var(--editor-primary)]"
               data-attachment-resize-handle
               onMouseDown={startResize}
             />
             <span
-              className="absolute -bottom-1 -right-1 z-[2] h-3 w-3 cursor-ns-resize rounded-full border-2 border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] bg-[var(--editor-background)] transition-colors hover:border-[var(--editor-primary)]"
+              className="pk:absolute pk:-bottom-1 pk:-right-1 pk:z-[2] pk:h-3 pk:w-3 pk:cursor-ns-resize pk:rounded-full pk:border-2 pk:border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] pk:bg-[var(--editor-background)] pk:transition-colors pk:hover:border-[var(--editor-primary)]"
               data-attachment-resize-handle
               onMouseDown={startResize}
             />
@@ -519,39 +519,39 @@ function AttachmentContent({
   return (
     <span
       className={cn(
-        'block w-full cursor-pointer rounded-lg border border-[var(--editor-border)] bg-[var(--editor-surface)] p-4 text-[var(--editor-foreground)] transition-colors',
-        editable && 'hover:border-[var(--editor-primary)]',
-        selected && 'border-[var(--editor-primary)] bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
-        isError && 'border-red-500 text-red-600',
+        'pk:block pk:w-full pk:cursor-pointer pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-4 pk:text-[var(--editor-foreground)] pk:transition-colors',
+        editable && 'pk:hover:border-[var(--editor-primary)]',
+        selected && 'pk:border-[var(--editor-primary)] pk:bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
+        isError && 'pk:border-red-500 pk:text-red-600',
       )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <span className="flex w-full items-center gap-4 rounded-md">
-        <FileIcon className={cn('h-7 w-7 shrink-0 text-[var(--editor-primary)]', isError && 'text-red-600')} />
-        <span className="grid min-w-0 flex-1 gap-1">
-          <span className="truncate text-sm font-bold">{attrs.title}</span>
+      <span className="pk:flex pk:w-full pk:items-center pk:gap-4 pk:rounded-md">
+        <FileIcon className={cn('pk:h-7 pk:w-7 pk:shrink-0 pk:text-[var(--editor-primary)]', isError && 'pk:text-red-600')} />
+        <span className="pk:grid pk:min-w-0 pk:flex-1 pk:gap-1">
+          <span className="pk:truncate pk:text-sm pk:font-bold">{attrs.title}</span>
           {attrs.size && attrs.size !== '0' ? (
-            <span className="text-xs text-[var(--editor-muted-foreground)]">{attrs.size}</span>
+            <span className="pk:text-xs pk:text-[var(--editor-muted-foreground)]">{attrs.size}</span>
           ) : null}
         </span>
         {hovered ? (
-          <span className="flex shrink-0 items-center gap-1">
+          <span className="pk:flex pk:shrink-0 pk:items-center pk:gap-1">
             {isPdf ? (
               <button
                 type="button"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border-0 bg-transparent text-[var(--editor-muted-foreground)] outline-none transition-colors hover:bg-[var(--editor-muted)] hover:text-[var(--editor-foreground)]"
+                className="pk:inline-flex pk:h-8 pk:w-8 pk:items-center pk:justify-center pk:rounded-md pk:border-0 pk:bg-transparent pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]"
                 onClick={onPreview}
               >
-                <EyeLineIcon className="text-base" />
+                <EyeLineIcon className="pk:text-base" />
               </button>
             ) : null}
             <button
               type="button"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border-0 bg-transparent text-[var(--editor-muted-foreground)] outline-none transition-colors hover:bg-[var(--editor-muted)] hover:text-[var(--editor-foreground)]"
+              className="pk:inline-flex pk:h-8 pk:w-8 pk:items-center pk:justify-center pk:rounded-md pk:border-0 pk:bg-transparent pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]"
               onClick={onDownload}
             >
-              <Download2LineIcon className="text-base" />
+              <Download2LineIcon className="pk:text-base" />
             </button>
           </span>
         ) : null}
@@ -819,8 +819,8 @@ export function AttachmentView({
   const content = (
     <span
       className={cn(
-        'inline-flex max-w-full align-baseline leading-none',
-        node.type.name === 'blockAttachment' && 'my-4 block w-full leading-normal',
+        'pk:inline-flex pk:max-w-full pk:align-baseline pk:leading-none',
+        node.type.name === 'blockAttachment' && 'pk:my-4 pk:block pk:w-full pk:leading-normal',
       )}
       data-drag-handle={node.type.name === 'blockAttachment' ? 'true' : undefined}
       onMouseEnter={keepActionsOpen}
@@ -850,7 +850,7 @@ export function AttachmentView({
   if (isBlock) {
     return (
       <span
-        className="relative my-4 block w-full"
+        className="pk:relative pk:my-4 pk:block pk:w-full"
         onMouseEnter={keepActionsOpen}
         onMouseLeave={scheduleActionsClose}
         onPointerEnter={keepActionsOpen}
@@ -859,7 +859,7 @@ export function AttachmentView({
         {content}
         {actionsOpen && !editOpen ? (
           <span
-            className="absolute left-0 top-[-0.5rem] z-[1305] -translate-y-full rounded-lg border border-[var(--editor-border)] bg-[var(--editor-surface)] shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
+            className="pk:absolute pk:left-0 pk:top-[-0.5rem] pk:z-[1305] pk:-translate-y-full pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
             contentEditable={false}
             onMouseEnter={keepActionsOpen}
             onMouseLeave={scheduleActionsClose}
@@ -871,7 +871,7 @@ export function AttachmentView({
         ) : null}
         {editOpen ? (
           <span
-            className="absolute left-0 top-[calc(100%+0.5rem)] z-[1310]"
+            className="pk:absolute pk:left-0 pk:top-[calc(100%+0.5rem)] pk:z-[1310]"
             contentEditable={false}
             onMouseEnter={keepActionsOpen}
             onMouseLeave={scheduleActionsClose}
@@ -906,7 +906,7 @@ export function AttachmentView({
         strategy="fixed"
       >
         <PopoverPopup
-          className="z-[1400] rounded-lg border border-[var(--editor-border)] bg-[var(--editor-surface)] shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
+          className="pk:z-[1400] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
           onMouseEnter={keepActionsOpen}
           onMouseLeave={scheduleActionsClose}
         >

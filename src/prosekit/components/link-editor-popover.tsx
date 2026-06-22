@@ -44,7 +44,7 @@ const targetOptions: Array<{ value: LinkEditorTarget; label: string }> = [
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
-    <span className="w-10 shrink-0 text-sm text-[var(--editor-muted-foreground)]">
+    <span className="pk:w-10 pk:shrink-0 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
       {children}
     </span>
   )
@@ -62,21 +62,21 @@ function RadioRow<Value extends string>({
   onChange: (value: Value) => void
 }) {
   return (
-    <fieldset className="flex items-center gap-3">
-      <legend className="w-10 shrink-0 text-sm text-[var(--editor-muted-foreground)]">
+    <fieldset className="pk:flex pk:items-center pk:gap-3">
+      <legend className="pk:w-10 pk:shrink-0 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
         {label}
       </legend>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="pk:flex pk:flex-wrap pk:items-center pk:gap-3">
         {options.map((option) => (
           <label
             key={option.value}
-            className="inline-flex cursor-pointer items-center gap-1.5 text-sm text-[var(--editor-foreground)]"
+            className="pk:inline-flex pk:cursor-pointer pk:items-center pk:gap-1.5 pk:text-sm pk:text-[var(--editor-foreground)]"
           >
             <input
               type="radio"
               checked={value === option.value}
               onChange={() => onChange(option.value)}
-              className="h-3.5 w-3.5 accent-[var(--editor-primary)]"
+              className="pk:h-3.5 pk:w-3.5 pk:accent-[var(--editor-primary)]"
             />
             {option.label}
           </label>
@@ -139,18 +139,18 @@ export function LinkEditorPanel({
 
   return (
     <div
-      className="grid w-[350px] gap-3 rounded-lg border border-[var(--editor-border)] bg-white p-4 shadow-[0_12px_32px_rgba(23,23,23,0.14)]"
+      className="pk:grid pk:w-[350px] pk:gap-3 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-white pk:p-4 pk:shadow-[0_12px_32px_rgba(23,23,23,0.14)]"
       data-editor-floating
     >
-      <label className="flex items-start gap-3">
+      <label className="pk:flex pk:items-start pk:gap-3">
         <FieldLabel>地址</FieldLabel>
-        <div className="grid min-w-0 flex-1 gap-1">
+        <div className="pk:grid pk:min-w-0 pk:flex-1 pk:gap-1">
           <input
             ref={inputRef}
             value={href}
             placeholder="https://example.com"
             required
-            className="h-9 w-full rounded-md border border-[var(--editor-border)] bg-white px-2.5 text-sm text-[var(--editor-foreground)] outline-none focus:ring-2 focus:ring-[var(--editor-ring)]"
+            className="pk:h-9 pk:w-full pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-white pk:px-2.5 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
             onChange={(event) => setHref(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Escape') {
@@ -165,19 +165,19 @@ export function LinkEditorPanel({
             }}
           />
           {href.length > 0 && !href.trim() ? (
-            <span className="text-xs text-red-600">请输入有效的链接地址</span>
+            <span className="pk:text-xs pk:text-red-600">请输入有效的链接地址</span>
           ) : null}
         </div>
       </label>
 
       {showAdvancedOptions ? (
         <>
-          <label className="flex items-center gap-3">
+          <label className="pk:flex pk:items-center pk:gap-3">
             <FieldLabel>标题</FieldLabel>
             <input
               value={title}
               placeholder="链接标题（可选）"
-              className="h-9 min-w-0 flex-1 rounded-md border border-[var(--editor-border)] bg-white px-2.5 text-sm text-[var(--editor-foreground)] outline-none focus:ring-2 focus:ring-[var(--editor-ring)]"
+              className="pk:h-9 pk:min-w-0 pk:flex-1 pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-white pk:px-2.5 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
               onChange={(event) => setTitle(event.target.value)}
             />
           </label>
@@ -196,7 +196,7 @@ export function LinkEditorPanel({
         </>
       ) : null}
 
-      <div className="flex items-center gap-2">
+      <div className="pk:flex pk:items-center pk:gap-2">
         {onRemove ? (
           <Button
             size="sm"

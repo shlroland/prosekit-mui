@@ -38,10 +38,10 @@ function LinkActionButton({
         variant="ghost"
         size="icon"
         className={cn(
-          'h-8 w-8 rounded-lg',
+          'pk:h-8 pk:w-8 pk:rounded-lg',
           active
-            ? 'bg-[var(--editor-primary)] text-white hover:bg-[var(--editor-primary-hover)]'
-            : 'text-[var(--editor-muted-foreground)] hover:text-[var(--editor-foreground)]',
+            ? 'pk:bg-[var(--editor-primary)] pk:text-white pk:hover:bg-[var(--editor-primary-hover)]'
+            : 'pk:text-[var(--editor-muted-foreground)] pk:hover:text-[var(--editor-foreground)]',
         )}
         onClick={onClick}
       >
@@ -60,40 +60,40 @@ export function LinkActionBar({
   onChangeDisplay,
 }: LinkActionBarProps) {
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-[var(--editor-surface)] p-1.5">
-      <span className="w-[200px] overflow-hidden truncate whitespace-nowrap px-2 text-sm text-[var(--editor-muted-foreground)]">
+    <div className="pk:flex pk:items-center pk:gap-1 pk:rounded-lg pk:bg-[var(--editor-surface)] pk:p-1.5">
+      <span className="pk:w-[200px] pk:overflow-hidden pk:truncate pk:whitespace-nowrap pk:px-2 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
         {href}
       </span>
       <LinkActionButton label="编辑" onClick={onEdit}>
-        <EditLineIcon className="text-base" />
+        <EditLineIcon className="pk:text-base" />
       </LinkActionButton>
       <LinkActionButton label="复制链接" onClick={onCopy}>
-        <CopyIcon className="text-base" />
+        <CopyIcon className="pk:text-base" />
       </LinkActionButton>
       <LinkActionButton label="取消链接" onClick={onRemove}>
-        <LinkUnlinkIcon className="text-base" />
+        <LinkUnlinkIcon className="pk:text-base" />
       </LinkActionButton>
-      <Separator orientation="vertical" className="mx-1 h-4" />
+      <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
       <LinkActionButton
         label="文字"
         active={type === 'text'}
         onClick={(event) => onChangeDisplay('text', event)}
       >
-        <TextIcon className="text-base" />
+        <TextIcon className="pk:text-base" />
       </LinkActionButton>
       <LinkActionButton
         label="图标文字"
         active={type === 'icon'}
         onClick={(event) => onChangeDisplay('icon', event)}
       >
-        <ScrollToBottomLineIcon className="text-base" style={{ transform: 'rotate(90deg)' }} />
+        <ScrollToBottomLineIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />
       </LinkActionButton>
       <LinkActionButton
         label="卡片"
         active={type === 'block'}
         onClick={(event) => onChangeDisplay('block', event)}
       >
-        <CarouselViewIcon className="text-base" style={{ transform: 'rotate(90deg)' }} />
+        <CarouselViewIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />
       </LinkActionButton>
     </div>
   )

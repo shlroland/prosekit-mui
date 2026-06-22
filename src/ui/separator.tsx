@@ -12,8 +12,8 @@ export const Separator = forwardRef<HTMLDivElement, SeparatorProps>(
         ref={ref}
         orientation={orientation}
         className={cn(
-          'shrink-0 bg-[var(--editor-border)]',
-          orientation === 'vertical' ? 'h-full w-px' : 'h-px w-full',
+          'pk:shrink-0 pk:bg-[var(--editor-border)]',
+          orientation === 'vertical' ? 'pk:h-full pk:w-px' : 'pk:h-px pk:w-full',
           className,
         )}
         {...props}

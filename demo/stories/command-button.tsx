@@ -25,9 +25,9 @@ export function CommandButton({
     <Button
       variant="ghost"
       className={cn(
-        'min-h-11 rounded-2xl px-4 font-bold shadow-none transition-transform duration-150 hover:-translate-y-px',
+        'pk:min-h-11 pk:rounded-2xl pk:px-4 pk:font-bold pk:shadow-none pk:transition-transform pk:duration-150 pk:hover:-translate-y-px',
         toneClasses[tone],
-        active && 'border-clay-500 bg-clay-500 text-white hover:bg-clay-500',
+        active && 'pk:border-clay-500 pk:bg-clay-500 pk:text-white pk:hover:bg-clay-500',
       )}
     >
       {label}

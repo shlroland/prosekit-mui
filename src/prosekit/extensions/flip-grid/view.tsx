@@ -233,10 +233,10 @@ export function FlipGridView({
     <div
       ref={wrapperRef}
       className={cn(
-        'node-flipGrid my-2.5 block w-full rounded-md border px-3 py-3',
+        'node-flipGrid pk:my-2.5 pk:block pk:w-full pk:rounded-md pk:border pk:px-3 pk:py-3',
         selected
-          ? 'border-[color:var(--editor-primary)]'
-          : 'border-[color:var(--editor-border)]',
+          ? 'pk:border-[color:var(--editor-primary)]'
+          : 'pk:border-[color:var(--editor-border)]',
       )}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => {
@@ -524,7 +524,7 @@ export function FlipGridColumnView({
       data-flip-grid-controls="true"
       onMouseEnter={keepToolbarOpen}
       onMouseLeave={scheduleToolbarClose}
-      className="absolute right-2 top-2 z-[4] flex w-max min-w-max items-center rounded-md border border-[var(--editor-border)] bg-[var(--editor-surface)] p-1 shadow-[0_12px_32px_rgba(15,23,42,0.18),0_3px_10px_rgba(15,23,42,0.12)]"
+      className="pk:absolute pk:right-2 pk:top-2 pk:z-[4] pk:flex pk:w-max pk:min-w-max pk:items-center pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.18),0_3px_10px_rgba(15,23,42,0.12)]"
     >
       <Tooltip content="左侧插入">
         <Button
@@ -532,9 +532,9 @@ export function FlipGridColumnView({
           size="icon"
           aria-label="左侧插入"
           onClick={() => handleInsert('left')}
-          className="h-7 w-7 rounded-sm"
+          className="pk:h-7 pk:w-7 pk:rounded-sm"
         >
-          <FlipLeftLineIcon className="text-base" />
+          <FlipLeftLineIcon className="pk:text-base" />
         </Button>
       </Tooltip>
       <Tooltip content="右侧插入">
@@ -543,16 +543,16 @@ export function FlipGridColumnView({
           size="icon"
           aria-label="右侧插入"
           onClick={() => handleInsert('right')}
-          className="h-7 w-7 rounded-sm"
+          className="pk:h-7 pk:w-7 pk:rounded-sm"
         >
-          <FlipRightLineIcon className="text-base" />
+          <FlipRightLineIcon className="pk:text-base" />
         </Button>
       </Tooltip>
       {widths.length > 2 ? (
         <>
           <Separator
             orientation="vertical"
-            className="mx-1 my-1 h-5"
+            className="pk:mx-1 pk:my-1 pk:h-5"
           />
           <Tooltip content="删除当前栏">
             <Button
@@ -560,9 +560,9 @@ export function FlipGridColumnView({
               size="icon"
               aria-label="删除当前栏"
               onClick={() => handleDelete()}
-              className="h-7 w-7 rounded-sm"
+              className="pk:h-7 pk:w-7 pk:rounded-sm"
             >
-              <DeleteLineIcon className="text-base" />
+              <DeleteLineIcon className="pk:text-base" />
             </Button>
           </Tooltip>
         </>
@@ -576,8 +576,8 @@ export function FlipGridColumnView({
       className={cn(
         'flip-grid-column relative h-full w-full min-w-0 rounded-sm border px-4 py-4',
         selected
-          ? 'border-[color:var(--editor-primary)]'
-          : 'border-[rgba(23,23,23,0.12)]',
+          ? 'pk:border-[color:var(--editor-primary)]'
+          : 'pk:border-[rgba(23,23,23,0.12)]',
       )}
       onMouseEnter={keepToolbarOpen}
       onMouseLeave={scheduleToolbarClose}
@@ -592,7 +592,7 @@ export function FlipGridColumnView({
       }}
     >
       {isEditable && (toolbarOpen || selected) ? toolbar : null}
-      <div ref={contentRef} className="min-h-6 w-full" />
+      <div ref={contentRef} className="pk:min-h-6 pk:w-full" />
     </div>
   )
 

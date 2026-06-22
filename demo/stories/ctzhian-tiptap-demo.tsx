@@ -51,7 +51,7 @@ export function CtzhianTiptapDemo() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <div className="pk:rounded-lg pk:border pk:border-red-200 pk:bg-red-50 pk:px-4 pk:py-3 pk:text-sm pk:text-red-700">
         {error.message}
       </div>
     )
@@ -59,7 +59,7 @@ export function CtzhianTiptapDemo() {
 
   if (!Demo) {
     return (
-      <div className="rounded-lg border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm font-medium text-stone-500">
+      <div className="pk:rounded-lg pk:border pk:border-dashed pk:border-stone-300 pk:bg-stone-50 pk:px-4 pk:py-10 pk:text-center pk:text-sm pk:font-medium pk:text-stone-500">
         Loading @ctzhian/tiptap demo...
       </div>
     )

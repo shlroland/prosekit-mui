@@ -132,11 +132,11 @@ export function ColorPicker({
       }}
     >
       <div className="prosekit-color-picker-paper">
-        <div className="grid gap-3">
+        <div className="pk:grid pk:gap-3">
           <div className="prosekit-color-picker-header">
             <button
               type="button"
-              className="inline-flex items-center gap-2"
+              className="pk:inline-flex pk:items-center pk:gap-2"
               onClick={handleReset}
             >
               <span

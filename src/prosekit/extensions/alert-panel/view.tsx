@@ -76,7 +76,7 @@ export function AlertView({ node, contentRef, selected }: ReactNodeViewProps) {
   return (
     <div
       className={cn(
-        'my-4 flex items-start gap-4 rounded-[var(--radius)] border px-4 py-3',
+        'pk:my-4 pk:flex pk:items-start pk:gap-4 pk:rounded-[var(--radius)] pk:border pk:px-4 pk:py-3',
         selected && 'ProseMirror-selectednode',
       )}
       data-node="alert"
@@ -86,18 +86,18 @@ export function AlertView({ node, contentRef, selected }: ReactNodeViewProps) {
     >
       {showIcon ? (
         <div
-          className="shrink-0 pt-0.5 leading-none"
+          className="pk:shrink-0 pk:pt-0.5 pk:leading-none"
           contentEditable={false}
           style={{ color: state.color }}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="pk:h-5 pk:w-5" />
         </div>
       ) : null}
       <div
         ref={contentRef}
         className={cn(
-          'min-w-0 flex-1 [&_>_:first-child]:mt-0 [&_>_:last-child]:mb-0',
-          variant !== 'default' && '[&_code]:border-[color-mix(in_srgb,var(--pk-alert-color)_30%,transparent)] [&_code]:bg-[color-mix(in_srgb,var(--pk-alert-color)_10%,transparent)]',
+          'pk:min-w-0 pk:flex-1 pk:[&_>_:first-child]:mt-0 pk:[&_>_:last-child]:mb-0',
+          variant !== 'default' && 'pk:[&_code]:border-[color-mix(in_srgb,var(--pk-alert-color)_30%,transparent)] pk:[&_code]:bg-[color-mix(in_srgb,var(--pk-alert-color)_10%,transparent)]',
         )}
         style={{ '--pk-alert-color': state.color } as CSSProperties}
       />
@@ -135,12 +135,12 @@ export function DetailsView({
   return (
     <details
       className={cn(
-        'my-5 flex gap-1 rounded-[var(--radius)] border border-[var(--editor-border)] p-2',
-        '[&_[data-node=\'details\']]:my-2 [&_[data-node=\'details-content\']>_:last-child]:mb-2',
-        '[&_[data-type=\'detailsContent\']]:min-w-0 [&_[data-type=\'detailsContent\']]:flex-1 [&_[data-type=\'detailsContent\']]:flex-col [&_[data-type=\'detailsContent\']]:gap-4',
-        '[&_summary]:relative [&_summary]:cursor-text [&_summary]:list-none [&_summary]:font-semibold [&_summary]:outline-none',
-        '[&_summary::-webkit-details-marker]:hidden [&_summary[data-empty=true]::before]:pointer-events-none [&_summary[data-empty=true]::before]:absolute [&_summary[data-empty=true]::before]:left-0 [&_summary[data-empty=true]::before]:top-0 [&_summary[data-empty=true]::before]:text-[var(--pk-editor-placeholder)] [&_summary[data-empty=true]::before]:content-[attr(data-placeholder)]',
-        !open && '[&_[data-type=\'detailsContent\']]:hidden',
+        'pk:my-5 pk:flex pk:gap-1 pk:rounded-[var(--radius)] pk:border pk:border-[var(--editor-border)] pk:p-2',
+        'pk:[&_[data-node=\'details\']]:my-2 pk:[&_[data-node=\'details-content\']>_:last-child]:mb-2',
+        'pk:[&_[data-type=\'detailsContent\']]:min-w-0 pk:[&_[data-type=\'detailsContent\']]:flex-1 pk:[&_[data-type=\'detailsContent\']]:flex-col pk:[&_[data-type=\'detailsContent\']]:gap-4',
+        'pk:[&_summary]:relative pk:[&_summary]:cursor-text pk:[&_summary]:list-none pk:[&_summary]:font-semibold pk:[&_summary]:outline-none',
+        'pk:[&_summary::-webkit-details-marker]:hidden pk:[&_summary[data-empty=true]::before]:pointer-events-none pk:[&_summary[data-empty=true]::before]:absolute pk:[&_summary[data-empty=true]::before]:left-0 pk:[&_summary[data-empty=true]::before]:top-0 pk:[&_summary[data-empty=true]::before]:text-[var(--pk-editor-placeholder)] pk:[&_summary[data-empty=true]::before]:content-[attr(data-placeholder)]',
+        !open && 'pk:[&_[data-type=\'detailsContent\']]:hidden',
         selected && 'ProseMirror-selectednode',
       )}
       data-node="details"
@@ -148,19 +148,19 @@ export function DetailsView({
     >
       <button
         type="button"
-        className="mt-[0.1rem] inline-flex h-6 w-5 shrink-0 items-center justify-center rounded bg-transparent p-0 text-[0.625rem] text-[var(--editor-foreground)] transition-colors hover:bg-[var(--editor-muted)]"
+        className="pk:mt-[0.1rem] pk:inline-flex pk:h-6 pk:w-5 pk:shrink-0 pk:items-center pk:justify-center pk:rounded pk:bg-transparent pk:p-0 pk:text-[0.625rem] pk:text-[var(--editor-foreground)] pk:transition-colors pk:hover:bg-[var(--editor-muted)]"
         contentEditable={false}
         aria-label={open ? '收起面板' : '展开面板'}
         onClick={toggleOpen}
       >
         <PlayLineIcon
           className={cn(
-            'h-3.5 w-3.5 transition-transform duration-200 ease-in-out',
-            open && 'rotate-90',
+            'pk:h-3.5 pk:w-3.5 pk:transition-transform pk:duration-200 pk:ease-in-out',
+            open && 'pk:rotate-90',
           )}
         />
       </button>
-      <div ref={contentRef} className="flex min-w-0 flex-1 flex-col gap-4" />
+      <div ref={contentRef} className="pk:flex pk:min-w-0 pk:flex-1 pk:flex-col pk:gap-4" />
     </details>
   )
 }
@@ -173,7 +173,7 @@ export function DetailsSummaryView({ node, contentRef }: ReactNodeViewProps) {
       ref={contentRef}
       data-placeholder="输入面板标题"
       data-empty={isEmpty ? 'true' : 'false'}
-      className="relative list-none font-semibold outline-none marker:hidden"
+      className="pk:relative pk:list-none pk:font-semibold pk:outline-none pk:marker:hidden"
     />
   )
 }
@@ -184,7 +184,7 @@ export function DetailsContentView({ contentRef }: ReactNodeViewProps) {
       ref={contentRef}
       data-type="detailsContent"
       data-node="details-content"
-      className="flex min-w-0 flex-1 flex-col gap-4"
+      className="pk:flex pk:min-w-0 pk:flex-1 pk:flex-col pk:gap-4"
     />
   )
 }

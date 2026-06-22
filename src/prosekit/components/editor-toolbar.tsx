@@ -52,7 +52,7 @@ export function EditorToolbarPlaceholder({
 }) {
   return (
     <div className="editor-toolbar-placeholder">
-      <span className="text-xs font-bold text-[var(--editor-muted-foreground)]">
+      <span className="pk:text-xs pk:font-bold pk:text-[var(--editor-muted-foreground)]">
         {label}
       </span>
     </div>

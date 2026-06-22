@@ -414,8 +414,8 @@ function ProseKitAstrobookToolbar() {
   }
 
   return (
-    <div className="border-b border-[var(--editor-border)] bg-[var(--editor-surface)] px-2 py-1.5">
-      <div className="flex flex-wrap items-center gap-1">
+    <div className="pk:border-b pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-2 pk:py-1.5">
+      <div className="pk:flex pk:flex-wrap pk:items-center pk:gap-1">
         <select
           defaultValue="paragraph"
           onChange={(event) => {
@@ -427,7 +427,7 @@ function ProseKitAstrobookToolbar() {
             }
             editor.commands.setHeading({ level: Number(value) })
           }}
-          className="h-[34px] min-w-[116px] rounded-lg border border-[var(--editor-border)] bg-white px-2 text-sm font-medium text-[var(--editor-foreground)] outline-none focus:ring-2 focus:ring-[var(--editor-ring)]"
+          className="pk:h-[34px] pk:min-w-[116px] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-white pk:px-2 pk:text-sm pk:font-medium pk:text-[var(--editor-foreground)] pk:outline-none pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
         >
           <option value="paragraph">正文</option>
           <option value="1">标题 1</option>
@@ -435,7 +435,7 @@ function ProseKitAstrobookToolbar() {
           <option value="3">标题 3</option>
         </select>
 
-        <Separator orientation="vertical" className="mx-1 h-5" />
+        <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
 
         <DemoToolbarButton
           tip="撤销"
@@ -454,7 +454,7 @@ function ProseKitAstrobookToolbar() {
           }}
         />
 
-        <Separator orientation="vertical" className="mx-1 h-5" />
+        <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
 
         <DemoToolbarButton tip="加粗" active={state.bold} icon={<BoldIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBold() }} />
         <DemoToolbarButton tip="斜体" active={state.italic} icon={<ItalicIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleItalic() }} />
@@ -465,9 +465,9 @@ function ProseKitAstrobookToolbar() {
         <DemoToolbarButton tip="上标" active={state.superscript} icon={<SuperscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
         <DemoToolbarButton tip="下标" active={state.subscript} icon={<SubscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
 
-        <Separator orientation="vertical" className="mx-1 h-5" />
+        <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
 
-        <div className="inline-flex items-center gap-px" aria-label="text alignment">
+        <div className="pk:inline-flex pk:items-center pk:gap-px" aria-label="text alignment">
           {[
             ['left', <AlignLeftIcon key="left" {...iconProps} />],
             ['center', <AlignCenterIcon key="center" {...iconProps} />],
@@ -486,7 +486,7 @@ function ProseKitAstrobookToolbar() {
           ))}
         </div>
 
-        <Separator orientation="vertical" className="mx-1 h-5" />
+        <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
 
         <DemoToolbarButton
           tip="无序列表"
@@ -565,7 +565,7 @@ function ProseKitAstrobookToolbar() {
             setLinkOpen(false)
           }}
         >
-          <span className="inline-flex">
+          <span className="pk:inline-flex">
             <DemoToolbarButton
               tip="链接节点"
               active={state.link}
@@ -596,8 +596,8 @@ function DemoInspector() {
   }, [statsSnapshot])
 
   return (
-    <div className="flex items-center justify-between gap-2">
-      <p className="m-0 text-sm text-[var(--editor-muted-foreground)]">
+    <div className="pk:flex pk:items-center pk:justify-between pk:gap-2">
+      <p className="pk:m-0 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
         Characters: {stats.chars}
       </p>
       <Button
@@ -625,8 +625,8 @@ export function ProseKitAstrobookDemo() {
         <AlertBlockToolbar />
         <TableFloatingToolbar />
         <TableCellFloatingToolbar />
-        <div className="mt-2">
-          <p className="m-0 text-sm leading-6 text-[var(--editor-muted-foreground)]">
+        <div className="pk:mt-2">
+          <p className="pk:m-0 pk:text-sm pk:leading-6 pk:text-[var(--editor-muted-foreground)]">
             This demo intentionally uses ProseKit built-in extensions for repeated
             features and keeps project-specific code focused on node links,
             tooltip, flip-grid, and Base UI presentation.

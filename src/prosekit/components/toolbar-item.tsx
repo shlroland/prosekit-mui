@@ -34,8 +34,8 @@ function ToolbarItemTooltipContent({
     <>
       <span
         className={cn(
-          'flex items-center justify-center',
-          customComponent ? 'flex-row gap-2' : 'flex-col gap-0',
+          'pk:flex pk:items-center pk:justify-center',
+          customComponent ? 'pk:flex-row pk:gap-2' : 'pk:flex-col pk:gap-0',
         )}
       >
         <span>{tip}</span>
@@ -89,7 +89,7 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
           {...rest}
         >
           <span
-            className="toolbar-item-content inline-flex items-center gap-1"
+            className="toolbar-item-content pk:inline-flex pk:items-center pk:gap-1"
           >
             {content ? (
               content
@@ -99,7 +99,7 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
               </span>
             ) : null}
             {!content && text ? (
-              <span className="text-xs font-bold">
+              <span className="pk:text-xs pk:font-bold">
                 {text}
               </span>
             ) : null}

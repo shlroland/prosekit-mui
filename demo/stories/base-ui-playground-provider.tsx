@@ -57,7 +57,7 @@ const lightThemeStyle = {
 export function BaseUiPlaygroundProvider({ children }: { children?: ReactNode }) {
   return (
     <div
-      className="pk-mui-theme pk-demo-page min-h-screen w-full"
+      className="pk-mui-theme pk-demo-page pk:min-h-screen pk:w-full"
       data-theme="light"
       style={lightThemeStyle}
     >

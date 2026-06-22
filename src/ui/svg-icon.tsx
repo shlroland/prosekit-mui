@@ -22,7 +22,7 @@ export const SvgIcon = forwardRef<SVGSVGElement, SvgIconProps>(
         aria-hidden={props['aria-label'] ? undefined : true}
         focusable="false"
         fill={fill}
-        className={cn('inline-block h-[1em] w-[1em] shrink-0 select-none text-[1.25rem]', className)}
+        className={cn('pk:inline-block pk:h-[1em] pk:w-[1em] pk:shrink-0 pk:select-none pk:text-[1.25rem]', className)}
         style={{
           ...sxStyle,
           ...style,

@@ -29,12 +29,12 @@ export function Tooltip({
         <BaseTooltip.Positioner side={side} sideOffset={8}>
           <BaseTooltip.Popup
             className={cn(
-              'z-[1400] rounded-md bg-neutral-950 px-2.5 py-1.5 text-xs font-medium leading-5 text-white shadow-[0_8px_24px_rgba(15,23,42,0.2)]',
+              'pk:z-[1400] pk:rounded-md pk:bg-neutral-950 pk:px-2.5 pk:py-1.5 pk:text-xs pk:font-medium pk:leading-5 pk:text-white pk:shadow-[0_8px_24px_rgba(15,23,42,0.2)]',
               className,
             )}
           >
             {content}
-            <BaseTooltip.Arrow className="fill-neutral-950" />
+            <BaseTooltip.Arrow className="pk:fill-neutral-950" />
           </BaseTooltip.Popup>
         </BaseTooltip.Positioner>
       </BaseTooltip.Portal>

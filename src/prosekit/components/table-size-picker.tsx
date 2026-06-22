@@ -96,7 +96,7 @@ export function TableSizePicker({
       }}
     >
       <div className="table-size-picker-surface">
-        <div className="grid gap-2">
+        <div className="pk:grid pk:gap-2">
           <span className="table-size-picker-label">
             {activeRows} x {activeColumns}
           </span>

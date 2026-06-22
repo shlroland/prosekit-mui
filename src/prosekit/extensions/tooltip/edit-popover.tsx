@@ -125,7 +125,7 @@ export function TooltipEditPopover({
       data-editor-floating
     >
       <div className="prosekit-tooltip-edit-paper">
-        <div className="grid gap-3">
+        <div className="pk:grid pk:gap-3">
           <textarea
             ref={textareaRef}
             rows={3}
@@ -135,7 +135,7 @@ export function TooltipEditPopover({
             placeholder="Input tooltip text"
             className="prosekit-tooltip-edit-input"
           />
-          <div className="flex items-center justify-between gap-2">
+          <div className="pk:flex pk:items-center pk:justify-between pk:gap-2">
             <Button
               size="sm"
               variant="ghost"
@@ -144,7 +144,7 @@ export function TooltipEditPopover({
             >
               Remove
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="pk:flex pk:items-center pk:gap-2">
               <Button
                 size="sm"
                 variant="ghost"

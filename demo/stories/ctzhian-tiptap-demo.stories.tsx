@@ -2,7 +2,7 @@ import { CtzhianTiptapDemo } from './ctzhian-tiptap-demo'
 
 function CtzhianTiptapDemoStory() {
   return (
-    <div className="min-h-screen w-full min-w-0 overflow-x-auto overflow-y-visible bg-white p-4 md:p-6">
+    <div className="pk:min-h-screen pk:w-full pk:min-w-0 pk:overflow-x-auto pk:overflow-y-visible pk:bg-white pk:p-4 pk:md:p-6">
       <CtzhianTiptapDemo />
     </div>
   )
