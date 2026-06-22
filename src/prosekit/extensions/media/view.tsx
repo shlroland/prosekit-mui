@@ -1,19 +1,29 @@
+import { Tabs } from '@base-ui/react/tabs'
 import type { ReactNodeViewProps } from 'prosekit/react'
-import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useRef, useState, type ChangeEvent, type CSSProperties, type FormEvent } from 'react'
 
 import {
   CopyIcon,
   DeleteLineIcon,
   EditLineIcon,
   ExportLineIcon,
+  ImageLineIcon,
   LinkIcon,
   UploadCloud2LineIcon,
 } from '../../../icons'
-import { Button, Tooltip } from '../../../ui'
+import { Button, EditorFloatingPopover, Tooltip } from '../../../ui'
+import { cn } from '../../../utils/cn'
+import type { ImageAttrs, ImageOptions } from './types'
 
 import './view.css'
 
 type MediaKind = 'image' | 'video' | 'audio'
+type MediaInsertMode = 'upload' | 'link'
+type ImageViewProps = ReactNodeViewProps & {
+  options?: ImageOptions
+}
+
+const imageDimensionsCache = new Map<string, { width: number; height: number }>()
 
 function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value : ''
@@ -39,6 +49,54 @@ function getAccept(kind: MediaKind) {
     case 'audio':
       return 'audio/*'
   }
+}
+
+function normalizeNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  return null
+}
+
+function getImageDimensions(src: string): Promise<{ width: number; height: number }> {
+  const cached = imageDimensionsCache.get(src)
+  if (cached) {
+    return Promise.resolve(cached)
+  }
+
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => {
+      const dimensions = {
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      }
+      imageDimensionsCache.set(src, dimensions)
+      resolve(dimensions)
+    }
+    image.onerror = () => reject(new Error('无法加载图片'))
+    image.src = src
+  })
+}
+
+function getImageDimensionsFromFile(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const image = new Image()
+      image.onload = () => {
+        resolve({
+          width: image.naturalWidth,
+          height: image.naturalHeight,
+        })
+      }
+      image.onerror = () => reject(new Error('无法读取图片文件'))
+      image.src = String(event.target?.result || '')
+    }
+    reader.onerror = () => reject(new Error('无法读取文件'))
+    reader.readAsDataURL(file)
+  })
 }
 
 function UploadProgress({ value }: { value: number }) {
@@ -240,31 +298,64 @@ function useMediaNodeActions({
   return { updateAttrs, deleteNode }
 }
 
-export function ImageView(props: ReactNodeViewProps) {
-  const { node, selected } = props
+export function ImageView(props: ImageViewProps) {
+  const { node, options = {}, selected } = props
   const [hovered, setHovered] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
   const [linkValue, setLinkValue] = useState('')
+  const [titleValue, setTitleValue] = useState('')
+  const [insertMode, setInsertMode] = useState<MediaInsertMode>(options.onUpload ? 'upload' : 'link')
   const [progress, setProgress] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const anchorRef = useRef<HTMLDivElement | null>(null)
   const src = normalizeText(node.attrs.src)
+  const title = normalizeText(node.attrs.title)
+  const width = normalizeNumber(node.attrs.width)
+  const height = normalizeNumber(node.attrs.height)
   const { updateAttrs, deleteNode } = useMediaNodeActions(props)
 
-  function uploadFile(file: File) {
-    setProgress(8)
-    let nextProgress = 8
-    const timer = window.setInterval(() => {
-      nextProgress = Math.min(nextProgress + 18, 92)
-      setProgress(nextProgress)
-    }, 140)
+  async function updateImageAttrs(nextSrc: string, nextTitle?: string) {
+    const attrs: ImageAttrs = {
+      src: nextSrc,
+      title: nextTitle?.trim() || null,
+    }
 
-    window.setTimeout(() => {
-      window.clearInterval(timer)
-      updateAttrs({ src: URL.createObjectURL(file) })
-      setPanelOpen(false)
+    try {
+      const dimensions = await getImageDimensions(nextSrc)
+      attrs.width = dimensions.width
+      attrs.height = dimensions.height
+    } catch {
+      attrs.width = width || 400
+      attrs.height = height
+    }
+
+    updateAttrs(attrs as Record<string, unknown>)
+  }
+
+  async function uploadFile(file: File) {
+    setProgress(0)
+    setPanelOpen(false)
+
+    try {
+      const dimensions = await getImageDimensionsFromFile(file)
+      const uploadedUrl = options.onUpload
+        ? await options.onUpload(file, ({ progress: nextProgress }) => {
+            setProgress(Math.round(nextProgress * 100))
+          })
+        : URL.createObjectURL(file)
+
+      updateAttrs({
+        src: uploadedUrl,
+        title: titleValue.trim() || null,
+        width: dimensions.width,
+        height: dimensions.height,
+      })
       setProgress(100)
-      window.setTimeout(() => setProgress(null), 700)
-    }, 900)
+    } catch (error) {
+      options.onError?.(error instanceof Error ? error : new Error('图片上传失败'))
+    } finally {
+      window.setTimeout(() => setProgress(null), 500)
+    }
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -278,22 +369,53 @@ export function ImageView(props: ReactNodeViewProps) {
 
   function openPanel() {
     setLinkValue(src)
+    setTitleValue(title)
+    setInsertMode(src ? 'link' : options.onUpload ? 'upload' : 'link')
     setPanelOpen(true)
   }
 
-  function submitLink() {
-    const nextSrc = linkValue.trim()
-    if (!nextSrc) {
+  function handleChangeInsertMode(value: unknown) {
+    if (value === 'upload' || value === 'link') {
+      setInsertMode(value)
+    }
+  }
+
+  async function submitLink() {
+    let nextSrc = linkValue.trim()
+    if (!nextSrc || progress !== null) {
       return
     }
 
-    updateAttrs({ src: nextSrc })
-    setPanelOpen(false)
+    try {
+      if (options.onValidateUrl) {
+        nextSrc = await options.onValidateUrl(nextSrc, 'image')
+      }
+
+      if (
+        options.onUploadUrl
+        && (nextSrc.startsWith('http://') || nextSrc.startsWith('https://') || nextSrc.startsWith('//'))
+      ) {
+        setProgress(8)
+        const abortController = new AbortController()
+        nextSrc = await options.onUploadUrl(nextSrc, abortController.signal)
+      }
+
+      await updateImageAttrs(nextSrc, titleValue)
+      setPanelOpen(false)
+    } catch (error) {
+      options.onError?.(error instanceof Error ? error : new Error('图片链接处理失败'))
+    } finally {
+      setProgress(null)
+    }
   }
 
   return (
     <div
-      className={`prosekit-media-shell prosekit-image-shell ${selected ? 'ProseMirror-selectednode' : ''}`}
+      ref={anchorRef}
+      className={cn(
+        'prosekit-media-shell prosekit-image-shell',
+        selected && 'ProseMirror-selectednode',
+      )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -309,25 +431,149 @@ export function ImageView(props: ReactNodeViewProps) {
         <MediaToolbar kind="image" src={src} onEdit={openPanel} onDelete={deleteNode} />
       ) : null}
       {src ? (
-        <img className="prosekit-media-image" src={src} alt="" />
+        <>
+          <img
+            className="prosekit-media-image"
+            src={src}
+            alt={title || ''}
+            title={title || undefined}
+            style={{
+              width: width ? `${width}px` : undefined,
+              height: width ? 'auto' : height ? `${height}px` : undefined,
+            }}
+            onError={(event) => {
+              options.onError?.(event instanceof Error ? event : new Error('图片加载失败'))
+            }}
+          />
+          {title ? (
+            <span className="pk:mt-1 pk:block pk:w-full pk:text-center pk:text-xs pk:leading-5 pk:text-[var(--editor-muted-foreground)]">
+              {title}
+            </span>
+          ) : null}
+        </>
       ) : (
-        <MediaUploadPlaceholder
-          kind="image"
-          progress={progress}
-          onClick={openPanel}
-        />
+        <div
+          className={cn(
+            'pk:relative pk:flex pk:min-h-12 pk:min-w-[200px] pk:cursor-pointer pk:items-center pk:gap-3 pk:overflow-hidden pk:rounded-lg pk:border pk:border-dashed pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-4 pk:py-3 pk:text-sm pk:text-[var(--editor-muted-foreground)] pk:transition-colors',
+            progress === null && 'pk:hover:bg-[var(--editor-muted)]',
+          )}
+          style={progress !== null ? { '--media-upload-progress': `${progress}%` } as CSSProperties : undefined}
+          contentEditable={false}
+          onClick={progress === null ? openPanel : undefined}
+        >
+          {progress !== null ? (
+            <span
+              className="pk:pointer-events-none pk:absolute pk:inset-y-0 pk:left-0 pk:bg-[var(--editor-primary)] pk:opacity-10 pk:transition-[width] pk:duration-300"
+              style={{ width: 'var(--media-upload-progress)' }}
+            />
+          ) : null}
+          <ImageLineIcon className="pk:relative pk:z-[1] pk:shrink-0 pk:text-base" />
+          <span className="pk:relative pk:z-[1] pk:min-w-0 pk:flex-1 pk:text-left">
+            {progress === null ? '点击此处嵌入或粘贴图片链接' : '图片上传中...'}
+          </span>
+          {progress !== null ? (
+            <span className="pk:relative pk:z-[1] pk:shrink-0 pk:text-xs pk:font-bold pk:text-[var(--editor-primary)]">
+              {progress}%
+            </span>
+          ) : null}
+        </div>
       )}
-      {panelOpen ? (
-        <MediaInsertPanel
-          kind="image"
-          linkValue={linkValue}
-          progress={progress}
-          onCancel={() => setPanelOpen(false)}
-          onLinkChange={setLinkValue}
-          onLinkSubmit={submitLink}
-          onUploadClick={() => inputRef.current?.click()}
-        />
-      ) : null}
+      <EditorFloatingPopover
+        anchor={anchorRef}
+        open={panelOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setPanelOpen(false)
+          }
+        }}
+        side="bottom"
+        align="start"
+        sideOffset={8}
+        popupClassName="pk:z-[1310] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_20%)]"
+        content={(
+          <div className="pk:w-[min(350px,calc(100vw-2rem))] pk:overflow-hidden pk:rounded-lg pk:bg-[var(--editor-surface)]" contentEditable={false}>
+            <Tabs.Root value={insertMode} onValueChange={handleChangeInsertMode} className="pk:flex pk:flex-col">
+              <div className="pk:flex pk:h-12 pk:items-center pk:justify-center pk:border-b pk:border-[var(--editor-border)]">
+                <Tabs.List className="pk:inline-flex pk:h-12 pk:items-center pk:justify-center">
+                  <Tabs.Tab
+                    value="upload"
+                    className={cn(
+                      'pk:flex pk:h-12 pk:min-w-20 pk:items-center pk:justify-center pk:border-b-2 pk:border-transparent pk:px-4 pk:text-sm pk:font-medium pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors pk:hover:text-[var(--editor-foreground)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]',
+                      insertMode === 'upload' && 'pk:border-[var(--editor-primary)] pk:text-[var(--editor-primary)]',
+                    )}
+                  >
+                    上传
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                    value="link"
+                    className={cn(
+                      'pk:flex pk:h-12 pk:min-w-24 pk:items-center pk:justify-center pk:border-b-2 pk:border-transparent pk:px-4 pk:text-sm pk:font-medium pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors pk:hover:text-[var(--editor-foreground)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]',
+                      insertMode === 'link' && 'pk:border-[var(--editor-primary)] pk:text-[var(--editor-primary)]',
+                    )}
+                  >
+                    嵌入链接
+                  </Tabs.Tab>
+                </Tabs.List>
+              </div>
+
+              <Tabs.Panel value="upload" className="pk:p-4 pk:outline-none">
+                <Button
+                  type="button"
+                  className="pk:h-10 pk:w-full pk:justify-center pk:gap-2"
+                  disabled={!options.onUpload || progress !== null}
+                  onClick={() => inputRef.current?.click()}
+                >
+                  {progress !== null ? (
+                    <span className="pk:h-4 pk:w-4 pk:shrink-0 pk:animate-spin pk:rounded-full pk:border-2 pk:border-white/45 pk:border-t-white" />
+                  ) : (
+                    <ImageLineIcon className="pk:text-lg" />
+                  )}
+                  {progress !== null ? '图片上传中...' : '选择图片文件'}
+                </Button>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="link" className="pk:flex pk:flex-col pk:gap-4 pk:p-4 pk:outline-none">
+                <input
+                  type="url"
+                  value={linkValue}
+                  placeholder="输入图片的 URL"
+                  aria-label="图片链接"
+                  className="pk:h-10 pk:w-full pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-3 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:transition-colors pk:placeholder:text-[var(--editor-muted-foreground)] pk:focus:border-[var(--editor-primary)] pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
+                  onChange={(event) => setLinkValue(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape') {
+                      event.preventDefault()
+                      setPanelOpen(false)
+                    }
+
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      void submitLink()
+                    }
+                  }}
+                />
+                <input
+                  type="text"
+                  value={titleValue}
+                  placeholder="输入图片描述（可选）"
+                  aria-label="图片描述"
+                  className="pk:h-10 pk:w-full pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-3 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:transition-colors pk:placeholder:text-[var(--editor-muted-foreground)] pk:focus:border-[var(--editor-primary)] pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
+                  onChange={(event) => setTitleValue(event.target.value)}
+                />
+                <Button
+                  type="button"
+                  className="pk:h-10 pk:w-full pk:justify-center pk:gap-2"
+                  onClick={() => void submitLink()}
+                  disabled={!linkValue.trim() || progress !== null}
+                >
+                  <LinkIcon className="pk:text-base" />
+                  嵌入图片
+                </Button>
+              </Tabs.Panel>
+            </Tabs.Root>
+          </div>
+        )}
+      />
     </div>
   )
 }

@@ -1,5 +1,42 @@
 import type { Extension, Union } from 'prosekit/core'
 
+export type MediaUploadProgress = {
+  progress: number
+}
+
+export type ImageUploadFunction = (
+  file: File,
+  onProgress: (event: MediaUploadProgress) => void,
+) => string | Promise<string>
+
+export type ImageUploadUrlFunction = (
+  url: string,
+  signal: AbortSignal,
+) => string | Promise<string>
+
+export type MediaValidateUrlFunction = (
+  url: string,
+  kind: 'image' | 'video' | 'audio',
+) => string | Promise<string>
+
+export type ImageOptions = {
+  onUpload?: ImageUploadFunction
+  onUploadUrl?: ImageUploadUrlFunction
+  onValidateUrl?: MediaValidateUrlFunction
+  onError?: (error: Error) => void
+}
+
+export type MediaExtensionOptions = {
+  image?: ImageOptions
+}
+
+export type ImageAttrs = {
+  src?: string | null
+  width?: number | null
+  height?: number | null
+  title?: string | null
+}
+
 export type VideoAttrs = {
   src?: string | null
   width?: string | null

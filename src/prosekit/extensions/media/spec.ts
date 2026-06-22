@@ -1,7 +1,8 @@
-import { defineNodeSpec, union } from 'prosekit/core'
+import { defineNodeAttr, defineNodeSpec, union } from 'prosekit/core'
 
 import type {
   AudioAttrs,
+  ImageAttrs,
   MediaSpecExtension,
   VideoAttrs,
 } from './types'
@@ -12,6 +13,17 @@ function normalizeText(value: unknown): string {
 
 export function defineMediaSpec(): MediaSpecExtension {
   return union(
+    defineNodeAttr<'image', 'title', ImageAttrs['title']>({
+      type: 'image',
+      attr: 'title',
+      default: null,
+      parseDOM: (element) => {
+        return element.getAttribute('title') || element.getAttribute('alt') || null
+      },
+      toDOM: (value) => {
+        return value ? ['title', value] : null
+      },
+    }),
     defineNodeSpec<'video', VideoAttrs>({
       name: 'video',
       group: 'block',
