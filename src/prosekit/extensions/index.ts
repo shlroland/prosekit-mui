@@ -1,6 +1,7 @@
 export * from './basic/'
 export * from './alert-panel/'
 export * from './attachment/'
+export * from './image/'
 export * from './link/'
 export * from './media/'
 export * from './table-cell-vertical-align/'

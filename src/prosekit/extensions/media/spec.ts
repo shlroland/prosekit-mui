@@ -1,8 +1,7 @@
-import { defineNodeAttr, defineNodeSpec, union } from 'prosekit/core'
+import { defineNodeSpec, union } from 'prosekit/core'
 
 import type {
   AudioAttrs,
-  ImageAttrs,
   MediaSpecExtension,
   VideoAttrs,
 } from './types'
@@ -11,39 +10,8 @@ function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
-function normalizeImageAlign(value: string | null | undefined): ImageAttrs['align'] {
-  if (value === 'left' || value === 'center' || value === 'right') {
-    return value
-  }
-
-  return null
-}
-
 export function defineMediaSpec(): MediaSpecExtension {
   return union(
-    defineNodeAttr<'image', 'title', ImageAttrs['title']>({
-      type: 'image',
-      attr: 'title',
-      default: null,
-      parseDOM: (element) => {
-        return element.getAttribute('title') || element.getAttribute('alt') || null
-      },
-      toDOM: (value) => {
-        return value ? ['title', value] : null
-      },
-    }),
-    defineNodeAttr<'image', 'align', ImageAttrs['align']>({
-      type: 'image',
-      attr: 'align',
-      default: null,
-      parseDOM: (element) => {
-        return normalizeImageAlign(element.getAttribute('data-image-align'))
-      },
-      toDOM: (value) => {
-        const align = normalizeImageAlign(value)
-        return align ? ['data-image-align', align] : null
-      },
-    }),
     defineNodeSpec<'video', VideoAttrs>({
       name: 'video',
       group: 'block',

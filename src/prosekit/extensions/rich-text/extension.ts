@@ -13,7 +13,7 @@ import { defineAlertPanelExtension } from '../alert-panel'
 import { defineAttachmentExtension, type AttachmentExtensionOptions } from '../attachment'
 import { defineBasicExtension } from '../basic'
 import { defineFlipGridExtension } from '../flip-grid'
-import { defineMediaExtension, type MediaExtensionOptions } from '../media'
+import { defineImageExtension, type ImageExtensionOptions } from '../image'
 import { defineTableCellVerticalAlignExtension } from '../table-cell-vertical-align'
 import { defineTooltipExtension } from '../tooltip'
 import { defineTrailingNode } from '../trailing-node'
@@ -21,7 +21,7 @@ import { defineTrailingNode } from '../trailing-node'
 export type RichTextExtensionOptions = {
   placeholder?: string
   attachment?: AttachmentExtensionOptions
-  media?: MediaExtensionOptions
+  image?: ImageExtensionOptions
 }
 
 export function defineRichTextExtension(options: RichTextExtensionOptions = {}) {
@@ -48,7 +48,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineSubscript(),
     defineAlertPanelExtension(),
     defineAttachmentExtension(options.attachment),
-    defineMediaExtension(options.media),
+    defineImageExtension(options.image),
     defineTableCellVerticalAlignExtension(),
     defineFlipGridExtension(),
     defineTooltipExtension(),

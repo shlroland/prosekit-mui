@@ -6,7 +6,6 @@ import { Button, EditorFloatingPopover, EditorHoverPopover } from '../../../ui'
 import type { EditorFloatingPopoverProps } from '../../../ui'
 import { TooltipEditPopover } from './edit-popover'
 import { createTooltipId, getTooltipId, getTooltipText, updateTooltipMark } from './utils'
-import './tooltip-view.css'
 
 const ALLOWED_TOOLTIP_TAGS = new Set([
   'A',
@@ -187,21 +186,21 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
   const popupContent = tooltip ? (
     <div className="pk:flex pk:max-w-[20rem] pk:items-center pk:gap-1.5 pk:px-2.5 pk:py-1.5 pk:text-[12px] pk:leading-5 pk:text-[var(--editor-muted-foreground)]">
       <span
-        className="prosekit-tooltip-mark-text"
+        className="pk:whitespace-pre-wrap pk:break-words"
         dangerouslySetInnerHTML={{ __html: tooltipHtml }}
       />
       {isEditable ? (
         <Button
           variant="ghost"
           size="icon"
-          className="prosekit-tooltip-mark-edit-button"
+          className="pk:h-5 pk:w-5 pk:shrink-0 pk:rounded-md pk:p-0 pk:text-neutral-500 pk:hover:bg-neutral-100 pk:hover:text-neutral-800"
           onClick={(event) => {
             event.preventDefault()
             event.stopPropagation()
             handleOpenEdit()
           }}
         >
-          <PencilLine className="prosekit-tooltip-mark-edit-icon" />
+          <PencilLine className="pk:h-3 pk:w-3 [stroke-width:1.9]" />
         </Button>
       ) : null}
     </div>
@@ -233,26 +232,26 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
           side="top"
           align="center"
           sideOffset={8}
-          popupClassName="prosekit-tooltip-mark-popup"
+          popupClassName="pk:z-[1500] pk:flex pk:max-w-[20rem] pk:items-center pk:gap-1.5 pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-2.5 pk:py-1.5 pk:text-[12px] pk:leading-5 pk:text-[var(--editor-muted-foreground)] pk:shadow-md pk:outline-none"
           content={popupContent}
         >
           <span
             ref={anchorRef}
-            className="prosekit-tooltip-mark"
+            className="pk:inline pk:cursor-help pk:border-b pk:border-dotted pk:border-neutral-400 pk:transition-colors pk:hover:border-neutral-600"
             data-tooltip-id={tooltipId}
             onFocus={handleOpen}
             onBlur={handleClose}
           >
             <span
               ref={contentRef}
-              className="prosekit-tooltip-mark-content"
+              className="pk:inline"
             />
           </span>
         </EditorHoverPopover>
       ) : (
         <span
           ref={anchorRef}
-          className="prosekit-tooltip-mark"
+          className="pk:inline pk:cursor-help pk:border-b pk:border-dotted pk:border-neutral-400 pk:transition-colors pk:hover:border-neutral-600"
           data-tooltip-id={tooltipId}
           onClick={isTouchReadonly ? handleToggle : undefined}
           onMouseEnter={handleOpen}
@@ -262,7 +261,7 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
         >
           <span
             ref={contentRef}
-            className="prosekit-tooltip-mark-content"
+            className="pk:inline"
           />
         </span>
       )}
@@ -278,7 +277,7 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
           side="top"
           align="center"
           sideOffset={8}
-          popupClassName="prosekit-tooltip-mark-popup"
+          popupClassName="pk:z-[1500] pk:flex pk:max-w-[20rem] pk:items-center pk:gap-1.5 pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-2.5 pk:py-1.5 pk:text-[12px] pk:leading-5 pk:text-[var(--editor-muted-foreground)] pk:shadow-md pk:outline-none"
           content={popupContent}
         />
       ) : null}
