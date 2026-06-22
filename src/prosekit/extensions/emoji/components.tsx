@@ -7,13 +7,25 @@ import {
   AutocompleteRoot,
 } from 'prosekit/react/autocomplete'
 import { useEditor } from 'prosekit/react'
-import { useMemo, useState, type ReactElement } from 'react'
+import { useMemo, useState, type CSSProperties, type ReactElement } from 'react'
 
 import { Button, EditorFloatingPopover } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import { emojiCategories, searchEmojis, type EmojiItem } from './data'
 
 const EMOJI_AUTOCOMPLETE_REGEX = /(?<!\S):([a-zA-Z0-9_+-]*)$/u
+
+const emojiAutocompletePopupStyle = {
+  display: 'block',
+  backgroundColor: 'var(--editor-surface, #ffffff)',
+  borderColor: 'var(--editor-border, rgb(15 23 42 / 0.12))',
+  color: 'var(--editor-foreground, rgb(15 23 42))',
+  boxShadow: '0 18px 48px rgb(15 23 42 / 18%)',
+} satisfies CSSProperties
+
+const emojiAutocompleteItemStyle = {
+  backgroundColor: 'var(--editor-surface, #ffffff)',
+} satisfies CSSProperties
 
 type EmojiGridProps = {
   items: EmojiItem[]
@@ -85,13 +97,21 @@ export function EmojiAutocomplete() {
         }
       }}
     >
-      <AutocompletePositioner placement="bottom-start" offset={{ mainAxis: 6, crossAxis: 0 }}>
-        <AutocompletePopup className="pk:z-[1500] pk:w-[300px] pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none">
+      <AutocompletePositioner
+        className="emoji-autocomplete-positioner"
+        placement="bottom-start"
+        offset={{ mainAxis: 6, crossAxis: 0 }}
+      >
+        <AutocompletePopup
+          className="emoji-autocomplete-popup pk:z-[1500] pk:w-[300px] pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:text-[var(--editor-foreground)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none"
+          style={emojiAutocompletePopupStyle}
+        >
           {items.map((item) => (
             <AutocompleteItem
               key={item.id}
               value={item.id}
-              className="pk:flex pk:cursor-pointer pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-2 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:transition data-[highlighted]:bg-[var(--editor-muted)]"
+              className="emoji-autocomplete-item pk:flex pk:cursor-pointer pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-2 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:transition data-[highlighted]:bg-[var(--editor-muted)]"
+              style={emojiAutocompleteItemStyle}
             >
               <span className="pk:flex pk:h-6 pk:w-6 pk:items-center pk:justify-center pk:text-xl pk:leading-none">
                 {item.native}
@@ -104,7 +124,7 @@ export function EmojiAutocomplete() {
               </span>
             </AutocompleteItem>
           ))}
-          <AutocompleteEmpty className="pk:flex pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-2 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
+          <AutocompleteEmpty className="emoji-autocomplete-empty pk:flex pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-2 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
             <span>😕</span>
             未找到匹配的 emoji
           </AutocompleteEmpty>

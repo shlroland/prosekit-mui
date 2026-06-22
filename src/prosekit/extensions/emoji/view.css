@@ -4,4 +4,37 @@
   .ProseMirror [data-type="emoji"] {
     @apply inline-flex align-[-0.125em] leading-none;
   }
+
+  prosekit-autocomplete-positioner.emoji-autocomplete-positioner,
+  .emoji-autocomplete-positioner {
+    background: none !important;
+    background-color: transparent !important;
+  }
+
+  prosekit-autocomplete-popup.emoji-autocomplete-popup,
+  .emoji-autocomplete-popup {
+    @apply block z-[1500] w-[300px] overflow-hidden rounded-xl border p-1 shadow-[0_18px_48px_rgb(15_23_42_/_18%)] outline-none;
+    border-color: var(--editor-border, rgb(15 23 42 / 0.12)) !important;
+    background: var(--editor-surface, #fff) !important;
+    background-color: var(--editor-surface, #fff) !important;
+    color: var(--editor-foreground, rgb(15 23 42)) !important;
+  }
+
+  prosekit-autocomplete-item.emoji-autocomplete-item,
+  .emoji-autocomplete-item {
+    @apply flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm outline-none transition;
+    background-color: var(--editor-surface, #fff);
+    color: var(--editor-foreground);
+  }
+
+  prosekit-autocomplete-item.emoji-autocomplete-item[data-highlighted],
+  .emoji-autocomplete-item[data-highlighted] {
+    background-color: var(--editor-muted, rgb(241 245 249)) !important;
+  }
+
+  prosekit-autocomplete-empty.emoji-autocomplete-empty,
+  .emoji-autocomplete-empty {
+    @apply flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm;
+    color: var(--editor-muted-foreground);
+  }
 }
