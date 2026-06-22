@@ -1,6 +1,7 @@
+import { Menu } from '@base-ui/react/menu'
+import { ChevronDown } from 'lucide-react'
 import { NodeSelection } from 'prosekit/pm/state'
 import type { ReactNodeViewProps } from 'prosekit/react'
-import { PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTrigger } from 'prosekit/react/popover'
 import {
   useCallback,
   useEffect,
@@ -21,9 +22,11 @@ import {
   EditLineIcon,
   EyeLineIcon,
   FileIcon,
+  LinkIcon,
   ScrollToBottomLineIcon,
+  UploadCloud2LineIcon,
 } from '../../../icons'
-import { Button, Separator, Tooltip } from '../../../ui'
+import { Button, EditorFloatingPopover, EditorHoverPopover, Separator, Tooltip } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import type {
   AttachmentAttrs,
@@ -149,6 +152,23 @@ function openPreview(url: string) {
   }
 }
 
+function getAttachmentTitleFromUrl(url: string) {
+  try {
+    const parsed = new URL(url)
+    const pathname = parsed.pathname.split('/').filter(Boolean)
+    const lastSegment = pathname.at(-1)
+
+    if (lastSegment) {
+      return decodeURIComponent(lastSegment)
+    }
+  } catch {
+    // Ignore URL parsing failures and fallback to raw text handling.
+  }
+
+  const normalized = url.trim().split('/').filter(Boolean).at(-1)
+  return normalized || '附件'
+}
+
 function AttachmentActionButton({
   active = false,
   children,
@@ -179,6 +199,104 @@ function AttachmentActionButton({
   )
 }
 
+type AttachmentDisplayOption = {
+  value: AttachmentRenderType
+  label: string
+  icon: React.ReactNode
+}
+
+function AttachmentDisplayMenu({
+  displayType,
+  isPdf,
+  onChangeDisplay,
+}: {
+  displayType: AttachmentRenderType
+  isPdf: boolean
+  onChangeDisplay: (type: AttachmentRenderType) => void
+}) {
+  const options: AttachmentDisplayOption[] = [
+    {
+      value: 'icon',
+      label: '图标文字',
+      icon: <ScrollToBottomLineIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />,
+    },
+    {
+      value: 'block',
+      label: '文字卡片',
+      icon: <CarouselViewIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />,
+    },
+  ]
+
+  if (isPdf) {
+    options.push({
+      value: 'view',
+      label: '预览卡片',
+      icon: <CarouselViewIcon className="pk:text-base" />,
+    })
+  }
+
+  const selectedOption = options.find((option) => option.value === displayType) ?? options[0]
+
+  if (!selectedOption) {
+    return null
+  }
+
+  return (
+    <Menu.Root modal={false}>
+      <Tooltip content="切换展示方式">
+        <Menu.Trigger
+          render={(
+            <Button
+              variant="ghost"
+              size="default"
+              className={cn(
+                'pk:h-8 pk:min-w-[92px] pk:justify-start pk:gap-1.5 pk:rounded-lg pk:px-2',
+                'pk:bg-[var(--editor-primary)] pk:text-white pk:hover:bg-[var(--editor-primary-hover)]',
+              )}
+            >
+              <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center">
+                {selectedOption.icon}
+              </span>
+              <span className="pk:min-w-0 pk:flex-1 pk:truncate pk:text-left pk:text-xs pk:font-bold">
+                {selectedOption.label}
+              </span>
+              <ChevronDown className="pk:h-3.5 pk:w-3.5 pk:shrink-0" strokeWidth={1.85} />
+            </Button>
+          )}
+        />
+      </Tooltip>
+      <Menu.Portal>
+        <Menu.Positioner side="bottom" align="start" sideOffset={6}>
+          <Menu.Popup className="pk:z-[1400] pk:min-w-[160px] pk:rounded-xl pk:border pk:border-black/6 pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(23,23,23,0.08)] pk:outline-none">
+            {options.map((option) => {
+              const selected = option.value === displayType
+
+              return (
+                <Menu.Item
+                  key={option.value}
+                  className={cn(
+                    'pk:flex pk:min-h-8 pk:w-full pk:items-center pk:gap-2 pk:rounded-md pk:px-2 pk:text-left pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none',
+                    'pk:hover:bg-[var(--editor-muted)]',
+                    selected && 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]',
+                  )}
+                  onClick={() => onChangeDisplay(option.value)}
+                >
+                  <span className="pk:inline-flex pk:h-4 pk:w-4 pk:shrink-0 pk:items-center pk:justify-center">
+                    {option.icon}
+                  </span>
+                  <span className="pk:min-w-0 pk:flex-1 pk:truncate">
+                    {option.label}
+                  </span>
+                </Menu.Item>
+              )
+            })}
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
+  )
+}
+
 function AttachmentActionBar({
   attrs,
   displayType,
@@ -191,15 +309,14 @@ function AttachmentActionBar({
   attrs: AttachmentAttrs
   displayType: AttachmentRenderType
   isPdf: boolean
-  onChangeDisplay: (type: AttachmentRenderType, event: MouseEvent<HTMLButtonElement>) => void
+  onChangeDisplay: (type: AttachmentRenderType) => void
   onDelete: (event: MouseEvent<HTMLButtonElement>) => void
   onDownload: (event: MouseEvent<HTMLButtonElement>) => void
   onEdit: (event: MouseEvent<HTMLButtonElement>) => void
 }) {
   return (
     <div
-      className="pk:flex pk:items-center pk:gap-1 pk:rounded-lg pk:bg-[var(--editor-surface)] pk:p-1.5"
-      data-editor-floating
+      className="pk:flex pk:items-center pk:gap-1 pk:p-1.5"
     >
       <span className="pk:w-[180px] pk:overflow-hidden pk:truncate pk:whitespace-nowrap pk:px-2 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
         {attrs.title || attrs.url}
@@ -211,29 +328,11 @@ function AttachmentActionBar({
         <DownloadLineIcon className="pk:text-base" />
       </AttachmentActionButton>
       <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
-      <AttachmentActionButton
-        label="图标文字"
-        active={displayType === 'icon'}
-        onClick={(event) => onChangeDisplay('icon', event)}
-      >
-        <ScrollToBottomLineIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />
-      </AttachmentActionButton>
-      <AttachmentActionButton
-        label="文字卡片"
-        active={displayType === 'block'}
-        onClick={(event) => onChangeDisplay('block', event)}
-      >
-        <CarouselViewIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />
-      </AttachmentActionButton>
-      {isPdf ? (
-        <AttachmentActionButton
-          label="预览卡片"
-          active={displayType === 'view'}
-          onClick={(event) => onChangeDisplay('view', event)}
-        >
-          <CarouselViewIcon className="pk:text-base" />
-        </AttachmentActionButton>
-      ) : null}
+      <AttachmentDisplayMenu
+        displayType={displayType}
+        isPdf={isPdf}
+        onChangeDisplay={onChangeDisplay}
+      />
       <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
       <AttachmentActionButton label="删除" onClick={onDelete}>
         <DeleteLineIcon className="pk:text-base" />
@@ -275,8 +374,7 @@ function AttachmentTitlePanel({
 
   return (
     <div
-      className="pk:grid pk:w-[320px] pk:gap-3 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-white pk:p-4 pk:shadow-[0_12px_32px_rgba(23,23,23,0.14)]"
-      data-editor-floating
+      className="pk:grid pk:w-[320px] pk:gap-3 pk:p-4"
     >
       <label className="pk:flex pk:items-center pk:gap-3">
         <span className="pk:w-10 pk:shrink-0 pk:text-sm pk:text-[var(--editor-muted-foreground)]">标题</span>
@@ -309,19 +407,24 @@ function AttachmentTitlePanel({
 
 function AttachmentUploadPlaceholder({
   onUploadFiles,
+  onInsertLink,
   selected,
 }: {
   onUploadFiles: (
     files: File[],
     onProgress: (progress: number, current: number) => void,
   ) => Promise<void>
+  onInsertLink: (url: string) => void
   selected: boolean
 }) {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [current, setCurrent] = useState(0)
   const [total, setTotal] = useState(0)
+  const [linkValue, setLinkValue] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const anchorRef = useRef<HTMLSpanElement | null>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
 
   async function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files || [])
@@ -330,6 +433,7 @@ function AttachmentUploadPlaceholder({
       return
     }
 
+    setPanelOpen(false)
     setUploading(true)
     setProgress(0)
     setCurrent(1)
@@ -341,8 +445,36 @@ function AttachmentUploadPlaceholder({
     setUploading(false)
   }
 
+  function handleOpenPanel() {
+    if (uploading) {
+      return
+    }
+
+    setPanelOpen(true)
+  }
+
+  function handleClosePanel() {
+    setPanelOpen(false)
+  }
+
+  function handleOpenFileDialog() {
+    inputRef.current?.click()
+  }
+
+  function handleInsertLink() {
+    const url = linkValue.trim()
+    if (!url) {
+      return
+    }
+
+    onInsertLink(url)
+    setLinkValue('')
+    setPanelOpen(false)
+  }
+
   return (
-    <span className="pk:my-2 pk:inline-flex pk:max-w-full">
+    <>
+    <span ref={anchorRef} className="pk:my-2 pk:inline-flex pk:max-w-full">
       <input
         ref={inputRef}
         type="file"
@@ -361,7 +493,7 @@ function AttachmentUploadPlaceholder({
         )}
         style={uploading ? { '--attachment-upload-progress': `${progress}%` } as CSSProperties : undefined}
         disabled={uploading}
-        onClick={() => inputRef.current?.click()}
+        onClick={handleOpenPanel}
       >
         {uploading ? (
           <span
@@ -384,6 +516,79 @@ function AttachmentUploadPlaceholder({
         )}
       </button>
     </span>
+    <EditorFloatingPopover
+      anchor={anchorRef}
+      open={panelOpen}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          handleClosePanel()
+        }
+      }}
+      side="bottom"
+      align="start"
+      sideOffset={8}
+      popupClassName="pk:z-[1310] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_20%)]"
+      content={(
+        <div className="pk:flex pk:w-[min(360px,calc(100vw-2rem))] pk:flex-col pk:gap-3 pk:p-3">
+          <div className="pk:text-sm pk:font-semibold pk:text-[var(--editor-foreground)]">
+            插入附件
+          </div>
+          <div className="pk:flex pk:flex-wrap pk:items-center pk:gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleOpenFileDialog}
+            >
+              <UploadCloud2LineIcon className="pk:text-base" />
+              上传文件
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleClosePanel}
+            >
+              取消
+            </Button>
+          </div>
+          <div className="pk:flex pk:flex-col pk:gap-2 pk:sm:flex-row">
+            <input
+              type="url"
+              value={linkValue}
+              placeholder="粘贴附件链接"
+              className="pk:min-h-8 pk:min-w-0 pk:flex-1 pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-2.5 pk:py-1.5 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:focus:border-[var(--editor-primary)] pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
+              onChange={(event) => setLinkValue(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.preventDefault()
+                  handleClosePanel()
+                }
+
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  handleInsertLink()
+                }
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="pk:shrink-0"
+              onClick={handleInsertLink}
+              disabled={!linkValue.trim()}
+            >
+              <LinkIcon className="pk:text-base" />
+              插入链接
+            </Button>
+          </div>
+          <div className="pk:text-xs pk:leading-5 pk:text-[var(--editor-muted-foreground)]">
+            选择文件或粘贴链接后，会在当前位置后插入附件卡片并自动移除占位块。
+          </div>
+        </div>
+      )}
+    />
+    </>
   )
 }
 
@@ -567,21 +772,12 @@ export function AttachmentView({
   getPos,
   options = {},
 }: AttachmentViewProps) {
-  const [actionsOpen, setActionsOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
-  const actionsCloseTimerRef = useRef<number | null>(null)
+  const anchorRef = useRef<HTMLSpanElement | null>(null)
   const attrs = useMemo(() => getNodeAttrs(node), [node])
   const isEditable = view.editable
   const isPdf = isPdfFile(attrs)
   const displayType = getDisplayType(node.type.name, attrs)
-
-  useEffect(() => {
-    return () => {
-      if (actionsCloseTimerRef.current !== null) {
-        window.clearTimeout(actionsCloseTimerRef.current)
-      }
-    }
-  }, [])
 
   function getPosition() {
     const pos = getPos()
@@ -710,6 +906,33 @@ export function AttachmentView({
     view.focus()
   }
 
+  function insertAttachmentFromUrl(url: string) {
+    const pos = getPosition()
+    if (pos === null) {
+      return
+    }
+
+    const nextNode = createAttachmentNode(view, 'blockAttachment', {
+      url,
+      title: getAttachmentTitleFromUrl(url),
+      size: '0',
+      type: 'block',
+      view: '0',
+      height: 300,
+    })
+
+    if (!nextNode) {
+      return
+    }
+
+    const tr = view.state.tr
+      .insert(pos + node.nodeSize, nextNode)
+      .delete(pos, pos + node.nodeSize)
+
+    view.dispatch(tr.scrollIntoView())
+    view.focus()
+  }
+
   function deleteAttachment(event?: MouseEvent<HTMLButtonElement>) {
     event?.preventDefault()
     event?.stopPropagation()
@@ -723,17 +946,13 @@ export function AttachmentView({
     view.focus()
   }
 
-  function handleChangeDisplay(nextType: AttachmentRenderType, event: MouseEvent<HTMLButtonElement>) {
-    event.preventDefault()
-    event.stopPropagation()
-
+  function handleChangeDisplay(nextType: AttachmentRenderType) {
     if (nextType === 'icon') {
       replaceNode('inlineAttachment', {
         ...attrs,
         type: 'icon',
         view: '0',
       })
-      setActionsOpen(false)
       return
     }
 
@@ -743,7 +962,6 @@ export function AttachmentView({
       view: nextType === 'view' ? '1' : '0',
       height: attrs.height || 300,
     })
-    setActionsOpen(false)
   }
 
   function handleDownload(event: MouseEvent) {
@@ -765,30 +983,7 @@ export function AttachmentView({
   function openEdit(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault()
     event.stopPropagation()
-    setActionsOpen(false)
     setEditOpen(true)
-  }
-
-  function keepActionsOpen() {
-    if (!isEditable || !attrs.title) {
-      return
-    }
-
-    if (actionsCloseTimerRef.current !== null) {
-      window.clearTimeout(actionsCloseTimerRef.current)
-      actionsCloseTimerRef.current = null
-    }
-    setActionsOpen(true)
-  }
-
-  function scheduleActionsClose() {
-    if (actionsCloseTimerRef.current !== null) {
-      window.clearTimeout(actionsCloseTimerRef.current)
-    }
-    actionsCloseTimerRef.current = window.setTimeout(() => {
-      setActionsOpen(false)
-      actionsCloseTimerRef.current = null
-    }, 500)
   }
 
   if ((!attrs.url || attrs.url === 'error') && !isEditable) {
@@ -798,6 +993,7 @@ export function AttachmentView({
   if (isEditable && !attrs.title) {
     return (
       <AttachmentUploadPlaceholder
+        onInsertLink={insertAttachmentFromUrl}
         selected={selected}
         onUploadFiles={uploadFiles}
       />
@@ -818,15 +1014,12 @@ export function AttachmentView({
 
   const content = (
     <span
+      ref={anchorRef}
       className={cn(
         'pk:inline-flex pk:max-w-full pk:align-baseline pk:leading-none',
         node.type.name === 'blockAttachment' && 'pk:my-4 pk:block pk:w-full pk:leading-normal',
       )}
       data-drag-handle={node.type.name === 'blockAttachment' ? 'true' : undefined}
-      onMouseEnter={keepActionsOpen}
-      onMouseLeave={scheduleActionsClose}
-      onPointerEnter={keepActionsOpen}
-      onPointerLeave={scheduleActionsClose}
     >
       <AttachmentContent
         attrs={attrs}
@@ -845,85 +1038,43 @@ export function AttachmentView({
     return content
   }
 
-  const isBlock = node.type.name === 'blockAttachment'
-
-  if (isBlock) {
-    return (
-      <span
-        className="pk:relative pk:my-4 pk:block pk:w-full"
-        onMouseEnter={keepActionsOpen}
-        onMouseLeave={scheduleActionsClose}
-        onPointerEnter={keepActionsOpen}
-        onPointerLeave={scheduleActionsClose}
-      >
-        {content}
-        {actionsOpen && !editOpen ? (
-          <span
-            className="pk:absolute pk:left-0 pk:top-[-0.5rem] pk:z-[1305] pk:-translate-y-full pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
-            contentEditable={false}
-            onMouseEnter={keepActionsOpen}
-            onMouseLeave={scheduleActionsClose}
-            onPointerEnter={keepActionsOpen}
-            onPointerLeave={scheduleActionsClose}
-          >
-            {actionBar}
-          </span>
-        ) : null}
-        {editOpen ? (
-          <span
-            className="pk:absolute pk:left-0 pk:top-[calc(100%+0.5rem)] pk:z-[1310]"
-            contentEditable={false}
-            onMouseEnter={keepActionsOpen}
-            onMouseLeave={scheduleActionsClose}
-          >
-            <AttachmentTitlePanel
-              initialTitle={attrs.title}
-              onCancel={() => setEditOpen(false)}
-              onSave={(title) => {
-                updateAttrs({ title })
-                setEditOpen(false)
-              }}
-            />
-          </span>
-        ) : null}
-      </span>
-    )
-  }
-
   return (
-    <PopoverRoot style={{ display: 'contents' }} open={editOpen || actionsOpen}>
-      <PopoverTrigger
-        style={{ display: 'inline-flex', maxWidth: '100%' }}
-        onMouseEnter={keepActionsOpen}
-        onMouseLeave={scheduleActionsClose}
+    <>
+      <EditorHoverPopover
+        disabled={!attrs.title || editOpen}
+        hoverDelay={500}
+        closeDelay={300}
+        side="top"
+        align="start"
+        sideOffset={8}
+        popupClassName="pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
+        content={actionBar}
       >
         {content}
-      </PopoverTrigger>
-      <PopoverPositioner
-        placement={editOpen ? 'bottom' : 'top'}
-        offset={6}
-        hoist
-        strategy="fixed"
-      >
-        <PopoverPopup
-          className="pk:z-[1400] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
-          onMouseEnter={keepActionsOpen}
-          onMouseLeave={scheduleActionsClose}
-        >
-          {editOpen ? (
-            <AttachmentTitlePanel
-              initialTitle={attrs.title}
-              onCancel={() => setEditOpen(false)}
-              onSave={(title) => {
-                updateAttrs({ title })
-                setEditOpen(false)
-              }}
-            />
-          ) : (
-            actionBar
-          )}
-        </PopoverPopup>
-      </PopoverPositioner>
-    </PopoverRoot>
+      </EditorHoverPopover>
+      <EditorFloatingPopover
+        anchor={anchorRef}
+        open={editOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setEditOpen(false)
+          }
+        }}
+        side="bottom"
+        align={node.type.name === 'blockAttachment' ? 'start' : 'center'}
+        sideOffset={8}
+        popupClassName="pk:z-[1310] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
+        content={(
+          <AttachmentTitlePanel
+            initialTitle={attrs.title}
+            onCancel={() => setEditOpen(false)}
+            onSave={(title) => {
+              updateAttrs({ title })
+              setEditOpen(false)
+            }}
+          />
+        )}
+      />
+    </>
   )
 }

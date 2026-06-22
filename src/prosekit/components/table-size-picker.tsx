@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { EditorFloatingPopover } from '../../ui'
 import './toolbar.css'
 
 export type TableSize = {
@@ -28,8 +29,6 @@ export function TableSizePicker({
   onClose,
   onSelect,
 }: TableSizePickerProps) {
-  const popupRef = useRef<HTMLDivElement | null>(null)
-  const [position, setPosition] = useState({ top: 0, left: 0 })
   const [hoveredSize, setHoveredSize] = useState<TableSize>({
     rows: defaultRows,
     columns: defaultColumns,
@@ -40,62 +39,40 @@ export function TableSizePicker({
   const activeRows = Math.min(hoveredSize.rows, rows)
   const activeColumns = Math.min(hoveredSize.columns, columns)
 
-  useLayoutEffect(() => {
-    if (!open || !anchorEl) {
-      return
-    }
-
-    const rect = anchorEl.getBoundingClientRect()
-    setPosition({
-      top: rect.bottom + 6,
-      left: rect.left,
-    })
-  }, [anchorEl, open])
-
   useEffect(() => {
     if (!open) {
       return
     }
 
-    function handlePointerDown(event: PointerEvent) {
-      const target = event.target
-
-      if (!(target instanceof Node)) {
-        return
-      }
-
-      if (popupRef.current?.contains(target) || anchorEl?.contains(target)) {
-        return
-      }
-
-      onClose()
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-    }
-  }, [anchorEl, onClose, open])
+    setHoveredSize({
+      rows: defaultRows,
+      columns: defaultColumns,
+    })
+  }, [defaultColumns, defaultRows, open])
 
   function handleSelect(size: TableSize) {
     onSelect(size)
     onClose()
   }
 
-  if (!open || !anchorEl) {
+  if (!anchorEl) {
     return null
   }
 
   return (
-    <div
-      ref={popupRef}
-      className="table-size-picker-popper"
-      style={{
-        top: position.top,
-        left: position.left,
+    <EditorFloatingPopover
+      anchor={anchorEl}
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose()
+        }
       }}
-    >
-      <div className="table-size-picker-surface">
+      side="bottom"
+      align="start"
+      sideOffset={6}
+      popupClassName="table-size-picker-popper table-size-picker-surface"
+      content={(
         <div className="pk:grid pk:gap-2">
           <span className="table-size-picker-label">
             {activeRows} x {activeColumns}
@@ -126,7 +103,7 @@ export function TableSizePicker({
             })}
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    />
   )
 }

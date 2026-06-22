@@ -16,7 +16,7 @@ export type LinkActionBarProps = {
   onEdit: (event: React.MouseEvent<HTMLButtonElement>) => void
   onCopy: (event: React.MouseEvent<HTMLButtonElement>) => void
   onRemove: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onChangeDisplay: (type: LinkDisplayType, event: React.MouseEvent<HTMLButtonElement>) => void
+  onChangeDisplay: (type: LinkDisplayType) => void
 }
 
 type LinkActionButtonProps = {
@@ -60,7 +60,7 @@ export function LinkActionBar({
   onChangeDisplay,
 }: LinkActionBarProps) {
   return (
-    <div className="pk:flex pk:items-center pk:gap-1 pk:rounded-lg pk:bg-[var(--editor-surface)] pk:p-1.5">
+    <div className="pk:flex pk:items-center pk:gap-1 pk:p-1.5">
       <span className="pk:w-[200px] pk:overflow-hidden pk:truncate pk:whitespace-nowrap pk:px-2 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
         {href}
       </span>
@@ -77,21 +77,21 @@ export function LinkActionBar({
       <LinkActionButton
         label="文字"
         active={type === 'text'}
-        onClick={(event) => onChangeDisplay('text', event)}
+        onClick={() => onChangeDisplay('text')}
       >
         <TextIcon className="pk:text-base" />
       </LinkActionButton>
       <LinkActionButton
         label="图标文字"
         active={type === 'icon'}
-        onClick={(event) => onChangeDisplay('icon', event)}
+        onClick={() => onChangeDisplay('icon')}
       >
         <ScrollToBottomLineIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />
       </LinkActionButton>
       <LinkActionButton
         label="卡片"
         active={type === 'block'}
-        onClick={(event) => onChangeDisplay('block', event)}
+        onClick={() => onChangeDisplay('block')}
       >
         <CarouselViewIcon className="pk:text-base" style={{ transform: 'rotate(90deg)' }} />
       </LinkActionButton>

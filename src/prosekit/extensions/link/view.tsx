@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NodeSelection } from 'prosekit/pm/state'
 import type { ReactNodeViewProps } from 'prosekit/react'
-import { PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTrigger } from 'prosekit/react/popover'
 
 import { ChromeIcon, LinkIcon } from '../../../icons'
+import { EditorFloatingPopover, EditorHoverPopover } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import { LinkActionBar } from '../../components/link-action-bar'
 import { LinkEditorPanel } from '../../components/link-editor-popover'
@@ -67,17 +67,8 @@ export function LinkView({
   view,
 }: ReactNodeViewProps) {
   const [editOpen, setEditOpen] = useState(false)
-  const [actionsOpen, setActionsOpen] = useState(false)
-  const actionsCloseTimerRef = useRef<number | null>(null)
+  const anchorRef = useRef<HTMLSpanElement | null>(null)
   const attrs = useMemo(() => getNodeAttrs(node), [node])
-
-  useEffect(() => {
-    return () => {
-      if (actionsCloseTimerRef.current !== null) {
-        window.clearTimeout(actionsCloseTimerRef.current)
-      }
-    }
-  }, [])
 
   useEffect(() => {
     if (view.editable && !attrs.href && !editOpen) {
@@ -110,7 +101,6 @@ export function LinkView({
   function handleEditOpen(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault()
     event.stopPropagation()
-    setActionsOpen(false)
     setEditOpen(true)
   }
 
@@ -210,10 +200,7 @@ export function LinkView({
     setEditOpen(false)
   }
 
-  function handleChangeDisplay(nextType: LinkDisplayType, event: React.MouseEvent<HTMLButtonElement>) {
-    event.preventDefault()
-    event.stopPropagation()
-
+  function handleChangeDisplay(nextType: LinkDisplayType) {
     const nextAttrs = toLinkAttrs(attrs.href, {
       ...attrs,
       type: nextType,
@@ -228,24 +215,6 @@ export function LinkView({
     })
   }
 
-  function keepActionsOpen() {
-    if (actionsCloseTimerRef.current !== null) {
-      window.clearTimeout(actionsCloseTimerRef.current)
-      actionsCloseTimerRef.current = null
-    }
-    setActionsOpen(true)
-  }
-
-  function scheduleActionsClose() {
-    if (actionsCloseTimerRef.current !== null) {
-      window.clearTimeout(actionsCloseTimerRef.current)
-    }
-    actionsCloseTimerRef.current = window.setTimeout(() => {
-      setActionsOpen(false)
-      actionsCloseTimerRef.current = null
-    }, 500)
-  }
-
   const actionBar = (
     <LinkActionBar
       href={attrs.href}
@@ -257,25 +226,14 @@ export function LinkView({
     />
   )
 
-  const contentHoverProps = isEditable
-    ? {
-        onMouseEnter: keepActionsOpen,
-        onMouseLeave: scheduleActionsClose,
-        onPointerEnter: keepActionsOpen,
-        onPointerLeave: scheduleActionsClose,
-        onFocus: keepActionsOpen,
-        onBlur: scheduleActionsClose,
-      }
-    : {}
-
   const content = (
     <span
+      ref={anchorRef}
       className={cn(
         'pk:inline-flex pk:max-w-full pk:items-center pk:gap-1 pk:align-baseline',
         isBlock && 'pk:block',
       )}
       data-drag-handle={isBlock ? 'true' : undefined}
-      {...contentHoverProps}
     >
       {!attrs.href && isEditable ? (
         <button
@@ -325,39 +283,32 @@ export function LinkView({
 
   if (isEditable && isBlock) {
     return (
-      <div
-        className="pk:relative pk:block"
-        onMouseEnter={keepActionsOpen}
-        onMouseLeave={scheduleActionsClose}
-        onPointerEnter={keepActionsOpen}
-        onPointerLeave={scheduleActionsClose}
-        onFocus={keepActionsOpen}
-        onBlur={scheduleActionsClose}
-      >
-        {content}
-        {actionsOpen && !editOpen ? (
-          <div
-            className="pk:absolute pk:left-0 pk:top-[-0.375rem] pk:z-[1305] pk:w-max pk:max-w-[min(420px,calc(100vw-2rem))] pk:-translate-y-full pk:rounded-lg pk:border pk:bg-white pk:text-xs pk:shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
-            style={{ borderColor: 'rgb(15 23 42 / 24%)' }}
-            contentEditable={false}
-            onMouseEnter={keepActionsOpen}
-            onMouseLeave={scheduleActionsClose}
-            onPointerEnter={keepActionsOpen}
-            onPointerLeave={scheduleActionsClose}
-          >
-            {actionBar}
-          </div>
-        ) : null}
-        {editOpen ? (
-          <div
-            className="pk:absolute pk:left-0 pk:top-[-0.375rem] pk:z-[1305] pk:w-max pk:max-w-[min(420px,calc(100vw-2rem))] pk:-translate-y-full pk:rounded-lg pk:border pk:bg-white pk:shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
-            style={{ borderColor: 'rgb(15 23 42 / 24%)' }}
-            contentEditable={false}
-            onMouseEnter={keepActionsOpen}
-            onMouseLeave={scheduleActionsClose}
-            onPointerEnter={keepActionsOpen}
-            onPointerLeave={scheduleActionsClose}
-          >
+      <>
+        <EditorHoverPopover
+          disabled={editOpen}
+          hoverDelay={500}
+          closeDelay={300}
+          side="top"
+          align="start"
+          sideOffset={6}
+          popupClassName="pk:max-w-[min(420px,calc(100vw-2rem))] pk:rounded-lg pk:border pk:border-[rgb(15_23_42_/_24%)] pk:bg-[var(--editor-surface)] pk:text-xs pk:shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
+          content={actionBar}
+        >
+          {content}
+        </EditorHoverPopover>
+        <EditorFloatingPopover
+          anchor={anchorRef}
+          open={editOpen}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) {
+              handleEditClose()
+            }
+          }}
+          side="top"
+          align="start"
+          sideOffset={6}
+          popupClassName="pk:max-w-[min(420px,calc(100vw-2rem))] pk:rounded-lg pk:border pk:border-[rgb(15_23_42_/_24%)] pk:bg-[var(--editor-surface)] pk:shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
+          content={(
             <LinkEditorPanel
               open={editOpen}
               initialHref={attrs.href}
@@ -379,77 +330,62 @@ export function LinkView({
                 handleEditClose()
               }}
             />
-          </div>
-        ) : null}
-      </div>
+          )}
+        />
+      </>
     )
   }
 
-  const popoverTriggerStyle = {
-    display: isBlock ? 'block' : 'inline-flex',
-    maxWidth: '100%',
-    width: isBlock ? '100%' : undefined,
-  }
-
-  const contentWithPopover = isEditable ? (
-    <PopoverRoot style={{ display: 'contents' }} open={editOpen || actionsOpen}>
-      <PopoverTrigger
-        style={popoverTriggerStyle}
-        onMouseEnter={keepActionsOpen}
-        onMouseLeave={scheduleActionsClose}
+  return isEditable ? (
+    <>
+      <EditorHoverPopover
+        disabled={editOpen}
+        hoverDelay={500}
+        closeDelay={300}
+        side="top"
+        align="start"
+        sideOffset={6}
+        popupClassName="pk:max-w-[min(420px,calc(100vw-2rem))] pk:rounded-lg pk:border pk:border-[rgb(15_23_42_/_24%)] pk:bg-[var(--editor-surface)] pk:text-xs pk:shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
+        content={actionBar}
       >
         {content}
-      </PopoverTrigger>
-      <PopoverPositioner
-        className="pk:z-[1305] pk:h-auto pk:min-h-0 pk:min-w-0 pk:max-w-max pk:overflow-visible pk:p-0"
-        style={{ position: 'fixed', width: 'max-content', maxHeight: 'none', lineHeight: 'normal', margin: 0 }}
-        placement={editOpen ? 'bottom' : 'top'}
-        offset={6}
-        hoist
-        strategy="fixed"
-      >
-        <PopoverPopup
-          className={cn(
-            'pk:block pk:h-auto pk:min-h-0 pk:w-max pk:rounded-[8px] pk:bg-white pk:p-0',
-            editOpen
-              ? 'pk:shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]'
-              : 'pk:text-xs pk:shadow-[0_24px_64px_rgb(15_23_42_/_24%),0_8px_20px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]',
-          )}
-          style={{ border: '1px solid rgb(15 23 42 / 24%)', zIndex: 1300 }}
-          onMouseEnter={keepActionsOpen}
-          onMouseLeave={scheduleActionsClose}
-        >
-          {editOpen ? (
-            <LinkEditorPanel
-              open={editOpen}
-              initialHref={attrs.href}
-              initialTitle={attrs.title ?? ''}
-              initialType={displayType}
-              initialTarget={attrs.target ?? '_blank'}
-              showAdvancedOptions
-              submitLabel={attrs.href ? '修改链接' : '插入链接'}
-              onClose={handleEditClose}
-              onSubmit={(value) => {
-                handleSaveWithValue(value)
-              }}
-              onRemove={() => {
-                const fakeEvent = {
-                  preventDefault() {},
-                  stopPropagation() {},
-                } as React.MouseEvent<HTMLButtonElement>
-                handleRemove(fakeEvent)
-                handleEditClose()
-              }}
-            />
-          ) : (
-            actionBar
-          )}
-        </PopoverPopup>
-      </PopoverPositioner>
-    </PopoverRoot>
-  ) : (
-    content
-  )
-
-  return contentWithPopover
+      </EditorHoverPopover>
+      <EditorFloatingPopover
+        anchor={anchorRef}
+        open={editOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            handleEditClose()
+          }
+        }}
+        side="bottom"
+        align="start"
+        sideOffset={6}
+        popupClassName="pk:max-w-[min(420px,calc(100vw-2rem))] pk:rounded-lg pk:border pk:border-[rgb(15_23_42_/_24%)] pk:bg-[var(--editor-surface)] pk:shadow-[0_28px_72px_rgb(15_23_42_/_26%),0_10px_24px_rgb(15_23_42_/_16%),inset_0_0_0_1px_rgb(255_255_255_/_80%)]"
+        content={(
+          <LinkEditorPanel
+            open={editOpen}
+            initialHref={attrs.href}
+            initialTitle={attrs.title ?? ''}
+            initialType={displayType}
+            initialTarget={attrs.target ?? '_blank'}
+            showAdvancedOptions
+            submitLabel={attrs.href ? '修改链接' : '插入链接'}
+            onClose={handleEditClose}
+            onSubmit={(value) => {
+              handleSaveWithValue(value)
+            }}
+            onRemove={() => {
+              const fakeEvent = {
+                preventDefault() {},
+                stopPropagation() {},
+              } as React.MouseEvent<HTMLButtonElement>
+              handleRemove(fakeEvent)
+              handleEditClose()
+            }}
+          />
+        )}
+      />
+    </>
+  ) : content
 }

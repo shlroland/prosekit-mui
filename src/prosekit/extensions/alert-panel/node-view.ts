@@ -9,6 +9,11 @@ export function defineAlertPanelNodeView() {
       component: AlertView,
       as: 'div',
       contentAs: 'div',
+      stopEvent: (event) => {
+        return event.target instanceof HTMLElement
+          ? Boolean(event.target.closest('button, [role="dialog"], [data-editor-floating]'))
+          : false
+      },
     }),
     defineReactNodeView({
       name: 'details',

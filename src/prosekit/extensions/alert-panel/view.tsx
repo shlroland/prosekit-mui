@@ -1,14 +1,18 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { ReactNodeViewProps } from 'prosekit/react'
 
 import {
   CheckboxCircleFillIcon,
   CloseCircleFillIcon,
+  DeleteLineIcon,
   ErrorWarningFillIcon,
   Information2FillIcon,
   PlayLineIcon,
+  ScrollToBottomLineIcon,
+  TextIcon,
   UserSmileFillIcon,
 } from '../../../icons'
+import { Button, EditorHoverPopover, Separator, Tooltip } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import type { AlertType, AlertVariant } from './types'
 
@@ -62,7 +66,61 @@ const alertViewState: Record<AlertVariant, AlertViewState> = {
   },
 }
 
-export function AlertView({ node, contentRef, selected }: ReactNodeViewProps) {
+type AlertVariantOption = {
+  value: AlertVariant
+  label: string
+  icon: ReactNode
+}
+
+type AlertTypeOption = {
+  value: AlertType
+  label: string
+  icon: ReactNode
+}
+
+const alertVariantOptions: AlertVariantOption[] = [
+  { value: 'info', label: '提示', icon: <Information2FillIcon className="pk:h-4 pk:w-4 pk:text-[var(--primary)]" /> },
+  { value: 'success', label: '成功', icon: <CheckboxCircleFillIcon className="pk:h-4 pk:w-4 pk:text-[#2e7d32]" /> },
+  { value: 'warning', label: '警告', icon: <ErrorWarningFillIcon className="pk:h-4 pk:w-4 pk:text-[#ed6c02]" /> },
+  { value: 'error', label: '错误', icon: <CloseCircleFillIcon className="pk:h-4 pk:w-4 pk:text-[var(--destructive)]" /> },
+  { value: 'default', label: '默认', icon: <UserSmileFillIcon className="pk:h-4 pk:w-4 pk:text-[var(--editor-muted-foreground)]" /> },
+]
+
+const alertTypeOptions: AlertTypeOption[] = [
+  { value: 'text', label: '纯文字', icon: <TextIcon className="pk:h-4 pk:w-4" /> },
+  { value: 'icon', label: '图标文字', icon: <ScrollToBottomLineIcon className="pk:h-4 pk:w-4 pk:rotate-90" /> },
+]
+
+function AlertToolbarButton({
+  active = false,
+  label,
+  icon,
+  onClick,
+}: {
+  active?: boolean
+  label: string
+  icon: ReactNode
+  onClick: () => void
+}) {
+  return (
+    <Tooltip content={label}>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={label}
+        className={cn(
+          'pk:h-7 pk:w-7 pk:rounded-md pk:text-[var(--editor-muted-foreground)] pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]',
+          active && 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]',
+        )}
+        onClick={onClick}
+      >
+        {icon}
+      </Button>
+    </Tooltip>
+  )
+}
+
+export function AlertView({ node, contentRef, selected, view, getPos }: ReactNodeViewProps) {
   const variant = normalizeAlertVariant(node.attrs.variant)
   const type = normalizeAlertType(node.attrs.type)
   const showIcon = type !== 'text'
@@ -73,7 +131,40 @@ export function AlertView({ node, contentRef, selected }: ReactNodeViewProps) {
     background: state.background,
   } satisfies CSSProperties
 
-  return (
+  function updateAlertAttrs(nextAttrs: Partial<{ variant: AlertVariant, type: AlertType }>) {
+    if (!view.editable) {
+      return
+    }
+
+    const pos = getPos()
+    if (typeof pos !== 'number') {
+      return
+    }
+
+    const tr = view.state.tr.setNodeMarkup(pos, undefined, {
+      ...node.attrs,
+      ...nextAttrs,
+    })
+    view.dispatch(tr)
+    view.focus()
+  }
+
+  function deleteAlert() {
+    if (!view.editable) {
+      return
+    }
+
+    const pos = getPos()
+    if (typeof pos !== 'number') {
+      return
+    }
+
+    const tr = view.state.tr.delete(pos, pos + node.nodeSize)
+    view.dispatch(tr.scrollIntoView())
+    view.focus()
+  }
+
+  const content = (
     <div
       className={cn(
         'pk:my-4 pk:flex pk:items-start pk:gap-4 pk:rounded-[var(--radius)] pk:border pk:px-4 pk:py-3',
@@ -102,6 +193,52 @@ export function AlertView({ node, contentRef, selected }: ReactNodeViewProps) {
         style={{ '--pk-alert-color': state.color } as CSSProperties}
       />
     </div>
+  )
+
+  if (!view.editable) {
+    return content
+  }
+
+  return (
+    <EditorHoverPopover
+      hoverDelay={500}
+      closeDelay={300}
+      side="top"
+      align="start"
+      sideOffset={6}
+      popupClassName="pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
+      content={(
+        <div className="pk:flex pk:items-center pk:gap-1 pk:p-1">
+          {alertVariantOptions.map((option) => (
+            <AlertToolbarButton
+              key={option.value}
+              label={option.label}
+              icon={option.icon}
+              active={option.value === variant}
+              onClick={() => updateAlertAttrs({ variant: option.value })}
+            />
+          ))}
+          <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
+          {alertTypeOptions.map((option) => (
+            <AlertToolbarButton
+              key={option.value}
+              label={option.label}
+              icon={option.icon}
+              active={option.value === type}
+              onClick={() => updateAlertAttrs({ type: option.value })}
+            />
+          ))}
+          <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
+          <AlertToolbarButton
+            label="删除提示块"
+            icon={<DeleteLineIcon className="pk:h-4 pk:w-4" />}
+            onClick={deleteAlert}
+          />
+        </div>
+      )}
+    >
+      {content}
+    </EditorHoverPopover>
   )
 }
 

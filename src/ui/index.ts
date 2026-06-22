@@ -1,4 +1,6 @@
 export { Button, type ButtonProps } from './button'
+export { EditorFloatingPopover, type EditorFloatingPopoverProps } from './editor-floating-popover'
+export { EditorHoverPopover, type EditorHoverPopoverProps } from './editor-hover-popover'
 export { Separator, type SeparatorProps } from './separator'
 export { SvgIcon, type SvgIconProps } from './svg-icon'
 export { Tooltip, type TooltipProps } from './tooltip'

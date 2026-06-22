@@ -1,8 +1,7 @@
-import { PopoverPopup, PopoverPositioner, PopoverRoot, PopoverTrigger } from 'prosekit/react/popover'
 import type { CSSProperties, ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
-import { Button } from '../../ui'
+import { Button, EditorFloatingPopover } from '../../ui'
 
 export type LinkEditorType = 'text' | 'icon' | 'block'
 export type LinkEditorTarget = '_blank' | '_self'
@@ -138,10 +137,7 @@ export function LinkEditorPanel({
   }
 
   return (
-    <div
-      className="pk:grid pk:w-[350px] pk:gap-3 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-white pk:p-4 pk:shadow-[0_12px_32px_rgba(23,23,23,0.14)]"
-      data-editor-floating
-    >
+    <div className="pk:grid pk:w-[350px] pk:gap-3 pk:p-4">
       <label className="pk:flex pk:items-start pk:gap-3">
         <FieldLabel>地址</FieldLabel>
         <div className="pk:grid pk:min-w-0 pk:flex-1 pk:gap-1">
@@ -235,22 +231,27 @@ export function LinkEditorPopover({
   onClose,
   ...panelProps
 }: LinkEditorPopoverProps) {
+  const anchorRef = useRef<HTMLSpanElement | null>(null)
+
   return (
-      <PopoverRoot
-      style={{ display: 'contents' }}
+    <>
+      <span ref={anchorRef} style={triggerStyle}>
+        {children}
+      </span>
+      <EditorFloatingPopover
+      anchor={anchorRef}
       open={open}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
           onClose()
         }
       }}
-    >
-      <PopoverTrigger style={triggerStyle}>{children}</PopoverTrigger>
-      <PopoverPositioner placement="bottom" offset={8} hoist>
-        <PopoverPopup className="prosekit-link-editor-popover">
-          <LinkEditorPanel open={open} onClose={onClose} {...panelProps} />
-        </PopoverPopup>
-      </PopoverPositioner>
-    </PopoverRoot>
+      side="bottom"
+      align="start"
+      sideOffset={8}
+      popupClassName="pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_12px_32px_rgba(23,23,23,0.14)]"
+      content={<LinkEditorPanel open={open} onClose={onClose} {...panelProps} />}
+      />
+    </>
   )
 }

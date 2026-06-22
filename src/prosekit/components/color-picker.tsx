@@ -1,15 +1,11 @@
 import {
-  useEffect,
-  useLayoutEffect,
   useMemo,
-  useRef,
-  useState,
   type ChangeEvent,
   type ReactNode,
 } from 'react'
 import { HexAlphaColorPicker } from 'react-colorful'
 
-import { Button } from '../../ui'
+import { Button, EditorFloatingPopover } from '../../ui'
 import { cn } from '../../utils/cn'
 import './color-picker.css'
 
@@ -59,46 +55,7 @@ export function ColorPicker({
   resetLabel = '默认',
   className,
 }: ColorPickerProps) {
-  const popupRef = useRef<HTMLDivElement | null>(null)
-  const [position, setPosition] = useState({ top: 0, left: 0 })
   const canSubmit = useMemo(() => isValidHexColor(value), [value])
-
-  useLayoutEffect(() => {
-    if (!open || !anchorEl) {
-      return
-    }
-
-    const rect = anchorEl.getBoundingClientRect()
-    setPosition({
-      top: rect.bottom + 8,
-      left: rect.left,
-    })
-  }, [anchorEl, open])
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    function handlePointerDown(event: PointerEvent) {
-      const target = event.target
-
-      if (!(target instanceof Node)) {
-        return
-      }
-
-      if (popupRef.current?.contains(target) || anchorEl?.contains(target)) {
-        return
-      }
-
-      onClose()
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-    }
-  }, [anchorEl, onClose, open])
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     onChange(event.target.value)
@@ -118,20 +75,24 @@ export function ColorPicker({
     onClose()
   }
 
-  if (!open || !anchorEl) {
+  if (!anchorEl) {
     return null
   }
 
   return (
-    <div
-      ref={popupRef}
-      className={cn('prosekit-color-picker-popper', className)}
-      style={{
-        top: position.top,
-        left: position.left,
+    <EditorFloatingPopover
+      anchor={anchorEl}
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose()
+        }
       }}
-    >
-      <div className="prosekit-color-picker-paper">
+      side="bottom"
+      align="start"
+      sideOffset={8}
+      popupClassName={cn('prosekit-color-picker-popper prosekit-color-picker-paper', className)}
+      content={
         <div className="pk:grid pk:gap-3">
           <div className="prosekit-color-picker-header">
             <button
@@ -195,7 +156,7 @@ export function ColorPicker({
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      }
+    />
   )
 }

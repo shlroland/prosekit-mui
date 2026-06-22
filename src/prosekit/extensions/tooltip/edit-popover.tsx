@@ -1,13 +1,12 @@
 import {
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
   type RefObject,
 } from 'react'
 
-import { Button } from '../../../ui'
+import { Button, EditorFloatingPopover } from '../../../ui'
 
 export type TooltipEditPopoverProps = {
   anchorEl: HTMLElement | null
@@ -28,22 +27,8 @@ export function TooltipEditPopover({
   onSubmit,
   onRemove,
 }: TooltipEditPopoverProps) {
-  const popupRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
-  const [position, setPosition] = useState({ top: 0, left: 0 })
   const [value, setValue] = useState(initialValue)
-
-  useLayoutEffect(() => {
-    if (!open || !anchorEl) {
-      return
-    }
-
-    const rect = anchorEl.getBoundingClientRect()
-    setPosition({
-      top: rect.bottom + 8,
-      left: rect.left,
-    })
-  }, [anchorEl, open])
 
   useEffect(() => {
     if (!open) {
@@ -56,31 +41,6 @@ export function TooltipEditPopover({
       textareaRef.current?.select()
     })
   }, [initialValue, open])
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    function handlePointerDown(event: PointerEvent) {
-      const target = event.target
-
-      if (!(target instanceof Node)) {
-        return
-      }
-
-      if (popupRef.current?.contains(target) || anchorEl?.contains(target)) {
-        return
-      }
-
-      handleClose()
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-    }
-  }, [anchorEl, open])
 
   function handleSubmit() {
     onSubmit(value)
@@ -110,21 +70,26 @@ export function TooltipEditPopover({
     focusRef.current?.focus()
   }
 
-  if (!open || !anchorEl) {
+  if (!anchorEl) {
     return null
   }
 
   return (
-    <div
-      ref={popupRef}
-      className="prosekit-tooltip-edit-popper"
-      style={{
-        top: position.top,
-        left: position.left,
+    <EditorFloatingPopover
+      anchor={anchorEl}
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          handleClose()
+        }
       }}
-      data-editor-floating
-    >
-      <div className="prosekit-tooltip-edit-paper">
+      side="bottom"
+      align="start"
+      sideOffset={8}
+      popupClassName="prosekit-tooltip-edit-popper prosekit-tooltip-edit-paper"
+      initialFocus={textareaRef}
+      finalFocus={false}
+      content={
         <div className="pk:grid pk:gap-3">
           <textarea
             ref={textareaRef}
@@ -163,7 +128,7 @@ export function TooltipEditPopover({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      }
+    />
   )
 }
