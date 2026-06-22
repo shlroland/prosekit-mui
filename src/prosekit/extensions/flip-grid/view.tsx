@@ -3,7 +3,7 @@ import type { Node as ProseMirrorNode } from 'prosekit/pm/model'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { DeleteLineIcon, FlipLeftLineIcon, FlipRightLineIcon } from '../../../icons'
-import { Button, Separator, Tooltip } from '../../../ui'
+import { Button, EditorHoverPopover, Separator, Tooltip } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import {
   applyFlipGridWidths,
@@ -125,12 +125,14 @@ export function FlipGridView({
   }, [])
 
   const layout = useMemo(() => {
+    const gapsTotal = gapPx * Math.max(0, safeWidths.length - 1)
+    const availableWidth = Math.max(1, containerWidth - gapsTotal)
     const handlePercents: number[] = []
     const labelPercents: number[] = []
     let accPx = 0
 
     safeWidths.forEach((width, index) => {
-      const widthPx = (width / 100) * containerWidth
+      const widthPx = (width / 100) * availableWidth
       const labelPx = accPx + widthPx
       labelPercents.push((labelPx / containerWidth) * 100)
       accPx += widthPx
@@ -233,24 +235,14 @@ export function FlipGridView({
     <div
       ref={wrapperRef}
       className={cn(
-        'node-flipGrid pk:my-2.5 pk:block pk:w-full pk:rounded-md pk:border pk:px-3 pk:py-3',
-        selected
-          ? 'pk:border-[color:var(--editor-primary)]'
-          : 'pk:border-[color:var(--editor-border)]',
+        'node-flipGrid pk:relative pk:my-4 pk:block pk:w-full',
+        selected && 'pk:ring-2 pk:ring-[var(--editor-ring)]',
       )}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => {
         if (dragIndex === null) {
           setHovering(false)
         }
-      }}
-      style={{
-        position: 'relative',
-        background:
-          'linear-gradient(180deg, rgba(252,250,245,0.98) 0%, rgba(248,245,238,0.96) 100%)',
-        boxShadow: selected
-          ? '0 0 0 1px rgba(25,118,210,0.18), 0 14px 30px rgba(23,23,23,0.05)'
-          : '0 10px 24px rgba(23,23,23,0.04)',
       }}
     >
       <div ref={contentRef} />
@@ -287,8 +279,8 @@ export function FlipGridView({
                     width: 2,
                     borderRadius: '4px',
                     backgroundColor: active
-                      ? 'rgba(25, 118, 210, 0.72)'
-                      : 'rgba(25, 118, 210, 0.34)',
+                      ? 'color-mix(in srgb, var(--editor-primary) 70%, transparent)'
+                      : 'color-mix(in srgb, var(--editor-primary) 34%, transparent)',
                     cursor: 'ew-resize',
                     opacity: showHandles || active ? 1 : 0,
                     transition: 'opacity 0.18s ease, background-color 0.18s ease',
@@ -337,7 +329,6 @@ export function FlipGridColumnView({
 }: ReactNodeViewProps) {
   const width = Math.max(MIN_WIDTH, Number(node.attrs.width) || 50)
   const wrapperRef = useRef<HTMLDivElement | null>(null)
-  const toolbarCloseTimerRef = useRef<number | null>(null)
   const [toolbarOpen, setToolbarOpen] = useState(false)
   const isEditable = view.editable
 
@@ -365,14 +356,6 @@ export function FlipGridColumnView({
 
     return normalizeWithMin(list, MIN_WIDTH)
   }, [getPos, node, view.state.doc])
-
-  useEffect(() => {
-    return () => {
-      if (toolbarCloseTimerRef.current !== null) {
-        window.clearTimeout(toolbarCloseTimerRef.current)
-      }
-    }
-  }, [])
 
   useEffect(() => {
     const wrapper = wrapperRef.current
@@ -478,6 +461,10 @@ export function FlipGridColumnView({
       return
     }
 
+    if (found.node.childCount <= 2) {
+      return
+    }
+
     const colIndex = findChildIndex(found.node, node)
 
     if (colIndex < 0) {
@@ -491,46 +478,18 @@ export function FlipGridColumnView({
     applyWidths(nextWidths, undefined, colIndex, targetFocus)
   }
 
-  function keepToolbarOpen() {
-    if (!isEditable) {
-      return
-    }
-
-    if (toolbarCloseTimerRef.current !== null) {
-      window.clearTimeout(toolbarCloseTimerRef.current)
-      toolbarCloseTimerRef.current = null
-    }
-
-    setToolbarOpen(true)
-  }
-
-  function scheduleToolbarClose() {
-    if (!isEditable) {
-      return
-    }
-
-    if (toolbarCloseTimerRef.current !== null) {
-      window.clearTimeout(toolbarCloseTimerRef.current)
-    }
-
-    toolbarCloseTimerRef.current = window.setTimeout(() => {
-      setToolbarOpen(false)
-      toolbarCloseTimerRef.current = null
-    }, 300)
-  }
-
   const toolbar = (
     <div
       data-flip-grid-controls="true"
-      onMouseEnter={keepToolbarOpen}
-      onMouseLeave={scheduleToolbarClose}
-      className="pk:absolute pk:right-2 pk:top-2 pk:z-[4] pk:flex pk:w-max pk:min-w-max pk:items-center pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.18),0_3px_10px_rgba(15,23,42,0.12)]"
+      className="pk:flex pk:w-max pk:min-w-max pk:items-center pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.18),0_3px_10px_rgba(15,23,42,0.12)]"
+      onMouseDown={(event) => event.preventDefault()}
     >
       <Tooltip content="左侧插入">
         <Button
           variant="ghost"
           size="icon"
           aria-label="左侧插入"
+          disabled={widths.length >= MAX_COLUMNS}
           onClick={() => handleInsert('left')}
           className="pk:h-7 pk:w-7 pk:rounded-sm"
         >
@@ -542,6 +501,7 @@ export function FlipGridColumnView({
           variant="ghost"
           size="icon"
           aria-label="右侧插入"
+          disabled={widths.length >= MAX_COLUMNS}
           onClick={() => handleInsert('right')}
           className="pk:h-7 pk:w-7 pk:rounded-sm"
         >
@@ -574,27 +534,36 @@ export function FlipGridColumnView({
     <div
       ref={wrapperRef}
       className={cn(
-        'flip-grid-column relative h-full w-full min-w-0 rounded-sm border px-4 py-4',
+        'node-flipGridColumn flip-grid-column pk:relative pk:h-full pk:w-full pk:min-w-0 pk:rounded-[var(--radius)] pk:p-1 pk:transition-colors',
+        isEditable && (toolbarOpen || selected) && 'pk:bg-[var(--editor-surface-muted)]',
         selected
-          ? 'pk:border-[color:var(--editor-primary)]'
-          : 'pk:border-[rgba(23,23,23,0.12)]',
+          ? 'pk:ring-2 pk:ring-[var(--editor-ring)]'
+          : 'pk:ring-0',
       )}
-      onMouseEnter={keepToolbarOpen}
-      onMouseLeave={scheduleToolbarClose}
       style={{
-        width: isEditable ? '100%' : `${width}%`,
-        flex: isEditable ? '1 1 auto' : `0 0 ${width}%`,
+        width: `${width}%`,
+        flex: `0 0 ${width}%`,
         minWidth: 0,
-        backgroundColor: 'rgba(255,255,255,0.94)',
-        boxShadow: selected
-          ? '0 0 0 1px rgba(25,118,210,0.18)'
-          : 'inset 0 1px 0 rgba(255,255,255,0.65)',
       }}
     >
-      {isEditable && (toolbarOpen || selected) ? toolbar : null}
-      <div ref={contentRef} className="pk:min-h-6 pk:w-full" />
+      <div ref={contentRef} className="flip-grid-column-inner pk:min-h-6 pk:h-full pk:w-full" />
     </div>
   )
 
-  return column
+  return (
+    <EditorHoverPopover
+      content={toolbar}
+      disabled={!isEditable}
+      keepOpen={selected}
+      hoverDelay={120}
+      closeDelay={180}
+      side="top"
+      align="center"
+      sideOffset={4}
+      popupClassName="pk:z-[1400]"
+      onOpenChange={(open) => setToolbarOpen(open)}
+    >
+      {column}
+    </EditorHoverPopover>
+  )
 }

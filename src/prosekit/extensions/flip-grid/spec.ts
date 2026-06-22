@@ -30,7 +30,7 @@ export function defineFlipGridSpec(): FlipGridSpecExtension {
     defineNodeSpec<'flipGrid', FlipGridAttrs>({
       name: 'flipGrid',
       group: 'block',
-      content: `flipGridColumn{1,${MAX_COLUMNS}}`,
+      content: `flipGridColumn{2,${MAX_COLUMNS}}`,
       isolating: true,
       defining: true,
       attrs: {
