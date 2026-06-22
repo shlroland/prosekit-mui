@@ -4,6 +4,7 @@ import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
 import type { CSSProperties } from 'react'
+import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 
 const lightThemeStyle = {
@@ -54,7 +55,37 @@ const lightThemeStyle = {
   color: 'var(--ink-950)',
 } satisfies CSSProperties
 
+function useDocumentThemeVariables(style: CSSProperties) {
+  useEffect(() => {
+    const targets = [document.documentElement, document.body]
+    const entries = Object.entries(style).filter(([key]) => key.startsWith('--'))
+    const previous = targets.map((target) => {
+      return entries.map(([key]) => [key, target.style.getPropertyValue(key)] as const)
+    })
+
+    for (const target of targets) {
+      for (const [key, value] of entries) {
+        target.style.setProperty(key, String(value))
+      }
+    }
+
+    return () => {
+      targets.forEach((target, targetIndex) => {
+        for (const [key, value] of previous[targetIndex] ?? []) {
+          if (value) {
+            target.style.setProperty(key, value)
+          } else {
+            target.style.removeProperty(key)
+          }
+        }
+      })
+    }
+  }, [style])
+}
+
 export function BaseUiPlaygroundProvider({ children }: { children?: ReactNode }) {
+  useDocumentThemeVariables(lightThemeStyle)
+
   return (
     <div
       className="pk-mui-theme pk-demo-page pk:min-h-screen pk:w-full"

@@ -1,4 +1,5 @@
 import { Menu } from '@base-ui/react/menu'
+import { Tabs } from '@base-ui/react/tabs'
 import { ChevronDown } from 'lucide-react'
 import { NodeSelection } from 'prosekit/pm/state'
 import type { ReactNodeViewProps } from 'prosekit/react'
@@ -36,6 +37,7 @@ import type {
 
 type AttachmentNodeName = 'inlineAttachment' | 'blockAttachment'
 type AttachmentRenderType = AttachmentDisplayType | 'view'
+type AttachmentInsertMode = 'upload' | 'link'
 type AttachmentViewProps = ReactNodeViewProps & {
   options?: AttachmentExtensionOptions
 }
@@ -422,6 +424,7 @@ function AttachmentUploadPlaceholder({
   const [current, setCurrent] = useState(0)
   const [total, setTotal] = useState(0)
   const [linkValue, setLinkValue] = useState('')
+  const [insertMode, setInsertMode] = useState<AttachmentInsertMode>('upload')
   const inputRef = useRef<HTMLInputElement | null>(null)
   const anchorRef = useRef<HTMLSpanElement | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
@@ -453,6 +456,12 @@ function AttachmentUploadPlaceholder({
     setPanelOpen(true)
   }
 
+  function handleChangeInsertMode(value: unknown) {
+    if (value === 'upload' || value === 'link') {
+      setInsertMode(value)
+    }
+  }
+
   function handleClosePanel() {
     setPanelOpen(false)
   }
@@ -474,120 +483,140 @@ function AttachmentUploadPlaceholder({
 
   return (
     <>
-    <span ref={anchorRef} className="pk:my-2 pk:inline-flex pk:max-w-full">
-      <input
-        ref={inputRef}
-        type="file"
-        multiple
-        accept="*/*"
-        className="pk:hidden"
-        data-attachment-upload-control
-        onChange={handleChange}
-      />
-      <button
-        type="button"
-        className={cn(
-          'pk:relative pk:inline-flex pk:min-h-11 pk:max-w-full pk:items-center pk:gap-4 pk:overflow-hidden pk:rounded-lg pk:border pk:border-dashed pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-4 pk:py-3 pk:text-sm pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors',
-          !uploading && 'pk:cursor-pointer pk:hover:bg-[var(--editor-muted)]',
-          selected && 'pk:border-[var(--editor-primary)] pk:bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
-        )}
-        style={uploading ? { '--attachment-upload-progress': `${progress}%` } as CSSProperties : undefined}
-        disabled={uploading}
-        onClick={handleOpenPanel}
-      >
-        {uploading ? (
-          <span
-            className="pk:pointer-events-none pk:absolute pk:inset-y-0 pk:left-0 pk:bg-[var(--editor-primary)] pk:opacity-10 pk:transition-[width] pk:duration-300"
-            style={{ width: 'var(--attachment-upload-progress)' }}
-          />
-        ) : null}
-        {uploading ? (
-          <span className="pk:relative pk:z-[1] pk:h-4 pk:w-4 pk:shrink-0 pk:animate-spin pk:rounded-full pk:border-2 pk:border-[var(--editor-border)] pk:border-t-[var(--editor-primary)]" />
-        ) : (
-          <Attachment2Icon className="pk:relative pk:z-[1] pk:shrink-0 pk:text-base" />
-        )}
-        {uploading ? (
-          <span className="pk:relative pk:z-[1]">
-            正在上传第 <strong>{current}</strong> / {total} 个附件
-            <span className="pk:ml-2 pk:inline-block pk:w-10 pk:text-right pk:text-xs">{progress}%</span>
-          </span>
-        ) : (
-          <span className="pk:relative pk:z-[1]">添加附件</span>
-        )}
-      </button>
-    </span>
-    <EditorFloatingPopover
-      anchor={anchorRef}
-      open={panelOpen}
-      onOpenChange={(nextOpen) => {
-        if (!nextOpen) {
-          handleClosePanel()
-        }
-      }}
-      side="bottom"
-      align="start"
-      sideOffset={8}
-      popupClassName="pk:z-[1310] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_20%)]"
-      content={(
-        <div className="pk:flex pk:w-[min(360px,calc(100vw-2rem))] pk:flex-col pk:gap-3 pk:p-3">
-          <div className="pk:text-sm pk:font-semibold pk:text-[var(--editor-foreground)]">
-            插入附件
-          </div>
-          <div className="pk:flex pk:flex-wrap pk:items-center pk:gap-2">
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleOpenFileDialog}
-            >
-              <UploadCloud2LineIcon className="pk:text-base" />
-              上传文件
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleClosePanel}
-            >
-              取消
-            </Button>
-          </div>
-          <div className="pk:flex pk:flex-col pk:gap-2 pk:sm:flex-row">
-            <input
-              type="url"
-              value={linkValue}
-              placeholder="粘贴附件链接"
-              className="pk:min-h-8 pk:min-w-0 pk:flex-1 pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-2.5 pk:py-1.5 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:focus:border-[var(--editor-primary)] pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
-              onChange={(event) => setLinkValue(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Escape') {
-                  event.preventDefault()
-                  handleClosePanel()
-                }
-
-                if (event.key === 'Enter') {
-                  event.preventDefault()
-                  handleInsertLink()
-                }
-              }}
+      <span ref={anchorRef} className="pk:my-2 pk:inline-flex pk:max-w-full">
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          accept="*/*"
+          className="pk:hidden"
+          data-attachment-upload-control
+          onChange={handleChange}
+        />
+        <button
+          type="button"
+          className={cn(
+            'pk:relative pk:inline-flex pk:min-h-11 pk:max-w-full pk:items-center pk:gap-4 pk:overflow-hidden pk:rounded-lg pk:border pk:border-dashed pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-4 pk:py-3 pk:text-sm pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors',
+            !uploading && 'pk:cursor-pointer pk:hover:bg-[var(--editor-muted)]',
+            selected && 'pk:border-[var(--editor-primary)] pk:bg-[color-mix(in_srgb,var(--editor-primary)_6%,var(--editor-surface))]',
+          )}
+          style={uploading ? { '--attachment-upload-progress': `${progress}%` } as CSSProperties : undefined}
+          disabled={uploading}
+          onClick={handleOpenPanel}
+        >
+          {uploading ? (
+            <span
+              className="pk:pointer-events-none pk:absolute pk:inset-y-0 pk:left-0 pk:bg-[var(--editor-primary)] pk:opacity-10 pk:transition-[width] pk:duration-300"
+              style={{ width: 'var(--attachment-upload-progress)' }}
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="pk:shrink-0"
-              onClick={handleInsertLink}
-              disabled={!linkValue.trim()}
+          ) : null}
+          {uploading ? (
+            <span className="pk:relative pk:z-[1] pk:h-4 pk:w-4 pk:shrink-0 pk:animate-spin pk:rounded-full pk:border-2 pk:border-[var(--editor-border)] pk:border-t-[var(--editor-primary)]" />
+          ) : (
+            <Attachment2Icon className="pk:relative pk:z-[1] pk:shrink-0 pk:text-base" />
+          )}
+          {uploading ? (
+            <span className="pk:relative pk:z-[1]">
+              正在上传第 <strong>{current}</strong> / {total} 个附件
+              <span className="pk:ml-2 pk:inline-block pk:w-10 pk:text-right pk:text-xs">{progress}%</span>
+            </span>
+          ) : (
+            <span className="pk:relative pk:z-[1]">添加附件</span>
+          )}
+        </button>
+      </span>
+      <EditorFloatingPopover
+        anchor={anchorRef}
+        open={panelOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            handleClosePanel()
+          }
+        }}
+        side="bottom"
+        align="start"
+        sideOffset={8}
+        popupClassName="pk:z-[1310] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_20%)]"
+        content={(
+          <div className="pk:w-[min(350px,calc(100vw-2rem))] pk:overflow-hidden pk:rounded-lg pk:bg-[var(--editor-surface)]">
+            <Tabs.Root
+              value={insertMode}
+              onValueChange={handleChangeInsertMode}
+              className="pk:flex pk:flex-col"
             >
-              <LinkIcon className="pk:text-base" />
-              插入链接
-            </Button>
+              <div className="pk:flex pk:h-12 pk:items-center pk:justify-center pk:border-b pk:border-[var(--editor-border)]">
+                <Tabs.List className="pk:inline-flex pk:h-12 pk:items-center pk:justify-center">
+                  <Tabs.Tab
+                    value="upload"
+                    className={cn(
+                      'pk:flex pk:h-12 pk:min-w-20 pk:items-center pk:justify-center pk:border-b-2 pk:border-transparent pk:px-4 pk:text-sm pk:font-medium pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors pk:hover:text-[var(--editor-foreground)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]',
+                      insertMode === 'upload' && 'pk:border-[var(--editor-primary)] pk:text-[var(--editor-primary)]',
+                    )}
+                  >
+                    上传
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                    value="link"
+                    className={cn(
+                      'pk:flex pk:h-12 pk:min-w-24 pk:items-center pk:justify-center pk:border-b-2 pk:border-transparent pk:px-4 pk:text-sm pk:font-medium pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors pk:hover:text-[var(--editor-foreground)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]',
+                      insertMode === 'link' && 'pk:border-[var(--editor-primary)] pk:text-[var(--editor-primary)]',
+                    )}
+                  >
+                    嵌入链接
+                  </Tabs.Tab>
+                </Tabs.List>
+              </div>
+
+              <Tabs.Panel value="upload" className="pk:p-4 pk:outline-none">
+                <Button
+                  type="button"
+                  className="pk:h-10 pk:w-full pk:justify-center pk:gap-2"
+                  disabled={uploading}
+                  onClick={handleOpenFileDialog}
+                >
+                  {uploading ? (
+                    <span className="pk:h-4 pk:w-4 pk:shrink-0 pk:animate-spin pk:rounded-full pk:border-2 pk:border-white/45 pk:border-t-white" />
+                  ) : (
+                    <UploadCloud2LineIcon className="pk:text-lg" />
+                  )}
+                  {uploading ? '附件上传中...' : '选择附件文件'}
+                </Button>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="link" className="pk:flex pk:flex-col pk:gap-4 pk:p-4 pk:outline-none">
+                <input
+                  type="url"
+                  value={linkValue}
+                  placeholder="输入附件的 URL"
+                  aria-label="附件链接"
+                  className="pk:h-10 pk:w-full pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-3 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:transition-colors pk:placeholder:text-[var(--editor-muted-foreground)] pk:focus:border-[var(--editor-primary)] pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
+                  onChange={(event) => setLinkValue(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape') {
+                      event.preventDefault()
+                      handleClosePanel()
+                    }
+
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      handleInsertLink()
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  className="pk:h-10 pk:w-full pk:justify-center pk:gap-2"
+                  onClick={handleInsertLink}
+                  disabled={!linkValue.trim()}
+                >
+                  <LinkIcon className="pk:text-base" />
+                  嵌入附件
+                </Button>
+              </Tabs.Panel>
+            </Tabs.Root>
           </div>
-          <div className="pk:text-xs pk:leading-5 pk:text-[var(--editor-muted-foreground)]">
-            选择文件或粘贴链接后，会在当前位置后插入附件卡片并自动移除占位块。
-          </div>
-        </div>
-      )}
-    />
+        )}
+      />
     </>
   )
 }

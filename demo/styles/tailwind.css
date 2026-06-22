@@ -44,6 +44,7 @@
 }
 
 @layer base {
+  :root,
   .pk-mui-theme {
     --radius: 0.25rem;
     --background: oklch(1 0 0);
@@ -92,6 +93,8 @@
     --pk-editor-code-bg: var(--muted);
   }
 
+  :root.dark,
+  :root[data-theme="dark"],
   .pk-mui-theme[data-theme="dark"] {
     --background: oklch(0.182 0 0);
     --foreground: oklch(1 0 0);
