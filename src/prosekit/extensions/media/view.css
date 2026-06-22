@@ -11,8 +11,41 @@
     background-color: color-mix(in srgb, var(--editor-primary) 5%, transparent);
   }
 
+  .ProseMirror .prosekit-image-shell {
+    @apply w-fit max-w-full p-1;
+  }
+
+  .ProseMirror .prosekit-media-image-frame {
+    @apply relative block max-w-full;
+  }
+
   .ProseMirror .prosekit-media-image {
     @apply block max-h-[480px] max-w-full rounded-[10px] object-contain;
+  }
+
+  .ProseMirror .prosekit-media-image-resize-handle {
+    @apply absolute z-[2] h-3 w-3 rounded-full border-2 bg-[var(--editor-background)] transition-colors;
+    border-color: color-mix(in srgb, var(--editor-primary) 35%, transparent);
+
+    &:hover {
+      border-color: var(--editor-primary);
+    }
+  }
+
+  .ProseMirror .prosekit-media-image-resize-handle-top-left {
+    @apply -left-1 -top-1 cursor-nwse-resize;
+  }
+
+  .ProseMirror .prosekit-media-image-resize-handle-top-right {
+    @apply -right-1 -top-1 cursor-nesw-resize;
+  }
+
+  .ProseMirror .prosekit-media-image-resize-handle-bottom-left {
+    @apply -bottom-1 -left-1 cursor-nesw-resize;
+  }
+
+  .ProseMirror .prosekit-media-image-resize-handle-bottom-right {
+    @apply -bottom-1 -right-1 cursor-nwse-resize;
   }
 
   .ProseMirror .prosekit-media-video,
@@ -88,6 +121,11 @@
       @apply text-[var(--editor-foreground)];
       background-color: var(--editor-muted);
     }
+  }
+
+  .ProseMirror .prosekit-media-toolbar-button-active {
+    @apply text-[var(--editor-primary)];
+    background-color: var(--editor-primary-soft);
   }
 
   .ProseMirror .prosekit-media-toolbar-icon {

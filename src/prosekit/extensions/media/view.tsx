@@ -1,8 +1,11 @@
 import { Tabs } from '@base-ui/react/tabs'
 import type { ReactNodeViewProps } from 'prosekit/react'
-import { useRef, useState, type ChangeEvent, type CSSProperties, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type FormEvent, type MouseEvent as ReactMouseEvent } from 'react'
 
 import {
+  AlignCenterIcon,
+  AlignLeftIcon,
+  AlignRightIcon,
   CopyIcon,
   DeleteLineIcon,
   EditLineIcon,
@@ -19,6 +22,8 @@ import './view.css'
 
 type MediaKind = 'image' | 'video' | 'audio'
 type MediaInsertMode = 'upload' | 'link'
+type ImageAlign = NonNullable<ImageAttrs['align']>
+type ImageResizeCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 type ImageViewProps = ReactNodeViewProps & {
   options?: ImageOptions
 }
@@ -57,6 +62,22 @@ function normalizeNumber(value: unknown): number | null {
   }
 
   return null
+}
+
+function normalizeImageAlign(value: unknown): ImageAlign {
+  return value === 'center' || value === 'right' ? value : 'left'
+}
+
+function getImageShellStyle(align: ImageAlign): CSSProperties {
+  if (align === 'center') {
+    return { marginLeft: 'auto', marginRight: 'auto' }
+  }
+
+  if (align === 'right') {
+    return { marginLeft: 'auto', marginRight: 0 }
+  }
+
+  return { marginLeft: 0, marginRight: 'auto' }
 }
 
 function getImageDimensions(src: string): Promise<{ width: number; height: number }> {
@@ -306,13 +327,71 @@ export function ImageView(props: ImageViewProps) {
   const [titleValue, setTitleValue] = useState('')
   const [insertMode, setInsertMode] = useState<MediaInsertMode>(options.onUpload ? 'upload' : 'link')
   const [progress, setProgress] = useState<number | null>(null)
+  const [dragCorner, setDragCorner] = useState<ImageResizeCorner | null>(null)
+  const [isResizing, setIsResizing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const anchorRef = useRef<HTMLDivElement | null>(null)
+  const imageRef = useRef<HTMLImageElement | null>(null)
+  const dragStartXRef = useRef(0)
+  const dragStartWidthRef = useRef(0)
   const src = normalizeText(node.attrs.src)
   const title = normalizeText(node.attrs.title)
   const width = normalizeNumber(node.attrs.width)
   const height = normalizeNumber(node.attrs.height)
+  const align = normalizeImageAlign(node.attrs.align)
   const { updateAttrs, deleteNode } = useMediaNodeActions(props)
+
+  function getCurrentDisplayWidth() {
+    if (!imageRef.current) {
+      return width || 400
+    }
+
+    return imageRef.current.offsetWidth || width || 400
+  }
+
+  function handleResizeStart(event: ReactMouseEvent<HTMLSpanElement>, corner: ImageResizeCorner) {
+    event.preventDefault()
+    event.stopPropagation()
+    setIsResizing(true)
+    setDragCorner(corner)
+    dragStartXRef.current = event.clientX
+    dragStartWidthRef.current = getCurrentDisplayWidth()
+  }
+
+  const handleResizeMove = useCallback((event: MouseEvent) => {
+    if (!isResizing || !dragCorner) {
+      return
+    }
+
+    const deltaX = event.clientX - dragStartXRef.current
+    const nextWidth = dragCorner === 'top-left' || dragCorner === 'bottom-left'
+      ? dragStartWidthRef.current - deltaX
+      : dragStartWidthRef.current + deltaX
+
+    updateAttrs({
+      width: Math.max(100, Math.min(1200, Math.round(nextWidth))),
+      height: null,
+    })
+  }, [dragCorner, isResizing, updateAttrs])
+
+  const handleResizeEnd = useCallback(() => {
+    setIsResizing(false)
+    setDragCorner(null)
+  }, [])
+
+  useEffect(() => {
+    if (!isResizing) {
+      return
+    }
+
+    document.addEventListener('mousemove', handleResizeMove)
+    document.addEventListener('mouseup', handleResizeEnd)
+
+    return () => {
+      document.removeEventListener('mousemove', handleResizeMove)
+      document.removeEventListener('mouseup', handleResizeEnd)
+    }
+  }, [handleResizeEnd, handleResizeMove, isResizing])
 
   async function updateImageAttrs(nextSrc: string, nextTitle?: string) {
     const attrs: ImageAttrs = {
@@ -409,6 +488,18 @@ export function ImageView(props: ImageViewProps) {
     }
   }
 
+  async function copyImageSource() {
+    try {
+      await navigator.clipboard.writeText(src)
+    } catch {
+      // Ignore unsupported clipboard environments.
+    }
+  }
+
+  function changeAlign(nextAlign: ImageAlign) {
+    updateAttrs({ align: nextAlign })
+  }
+
   return (
     <div
       ref={anchorRef}
@@ -416,6 +507,7 @@ export function ImageView(props: ImageViewProps) {
         'prosekit-media-shell prosekit-image-shell',
         selected && 'ProseMirror-selectednode',
       )}
+      style={src ? getImageShellStyle(align) : undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -427,24 +519,111 @@ export function ImageView(props: ImageViewProps) {
         className="prosekit-media-upload-control"
         onChange={handleFileChange}
       />
-      {hovered ? (
-        <MediaToolbar kind="image" src={src} onEdit={openPanel} onDelete={deleteNode} />
+      {hovered && src ? (
+        <div className="prosekit-media-toolbar" contentEditable={false}>
+          <Tooltip content="修改地址">
+            <Button variant="ghost" size="icon" aria-label="修改地址" className="prosekit-media-toolbar-button" onClick={openPanel}>
+              <EditLineIcon className="prosekit-media-toolbar-icon" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="复制地址">
+            <Button variant="ghost" size="icon" aria-label="复制地址" className="prosekit-media-toolbar-button" onClick={copyImageSource}>
+              <CopyIcon className="prosekit-media-toolbar-icon" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="左侧对齐">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="左侧对齐"
+              className={cn('prosekit-media-toolbar-button', align === 'left' && 'prosekit-media-toolbar-button-active')}
+              onClick={() => changeAlign('left')}
+            >
+              <AlignLeftIcon className="prosekit-media-toolbar-icon" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="居中对齐">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="居中对齐"
+              className={cn('prosekit-media-toolbar-button', align === 'center' && 'prosekit-media-toolbar-button-active')}
+              onClick={() => changeAlign('center')}
+            >
+              <AlignCenterIcon className="prosekit-media-toolbar-icon" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="右侧对齐">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="右侧对齐"
+              className={cn('prosekit-media-toolbar-button', align === 'right' && 'prosekit-media-toolbar-button-active')}
+              onClick={() => changeAlign('right')}
+            >
+              <AlignRightIcon className="prosekit-media-toolbar-icon" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="打开图片">
+            <a
+              aria-label="打开图片"
+              className="prosekit-media-toolbar-button"
+              href={src}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExportLineIcon className="prosekit-media-toolbar-icon" />
+            </a>
+          </Tooltip>
+          <Tooltip content="删除">
+            <Button variant="ghost" size="icon" aria-label="删除" className="prosekit-media-toolbar-button" onClick={deleteNode}>
+              <DeleteLineIcon className="prosekit-media-toolbar-icon" />
+            </Button>
+          </Tooltip>
+        </div>
       ) : null}
       {src ? (
         <>
-          <img
-            className="prosekit-media-image"
-            src={src}
-            alt={title || ''}
-            title={title || undefined}
-            style={{
-              width: width ? `${width}px` : undefined,
-              height: width ? 'auto' : height ? `${height}px` : undefined,
-            }}
-            onError={(event) => {
-              options.onError?.(event instanceof Error ? event : new Error('图片加载失败'))
-            }}
-          />
+          <span className="prosekit-media-image-frame" contentEditable={false}>
+            <img
+              ref={imageRef}
+              className="prosekit-media-image"
+              src={src}
+              alt={title || ''}
+              title={title || undefined}
+              style={{
+                width: width ? `${width}px` : undefined,
+                height: width ? 'auto' : height ? `${height}px` : undefined,
+              }}
+              onError={(event) => {
+                options.onError?.(event instanceof Error ? event : new Error('图片加载失败'))
+              }}
+            />
+            {hovered || isResizing ? (
+              <>
+                <span
+                  className="prosekit-media-image-resize-handle prosekit-media-image-resize-handle-top-left"
+                  data-media-resize-handle
+                  onMouseDown={(event) => handleResizeStart(event, 'top-left')}
+                />
+                <span
+                  className="prosekit-media-image-resize-handle prosekit-media-image-resize-handle-top-right"
+                  data-media-resize-handle
+                  onMouseDown={(event) => handleResizeStart(event, 'top-right')}
+                />
+                <span
+                  className="prosekit-media-image-resize-handle prosekit-media-image-resize-handle-bottom-left"
+                  data-media-resize-handle
+                  onMouseDown={(event) => handleResizeStart(event, 'bottom-left')}
+                />
+                <span
+                  className="prosekit-media-image-resize-handle prosekit-media-image-resize-handle-bottom-right"
+                  data-media-resize-handle
+                  onMouseDown={(event) => handleResizeStart(event, 'bottom-right')}
+                />
+              </>
+            ) : null}
+          </span>
           {title ? (
             <span className="pk:mt-1 pk:block pk:w-full pk:text-center pk:text-xs pk:leading-5 pk:text-[var(--editor-muted-foreground)]">
               {title}

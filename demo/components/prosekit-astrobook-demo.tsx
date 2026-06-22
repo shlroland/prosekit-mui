@@ -117,9 +117,10 @@ const demoContent: NodeJSON = {
       type: 'image',
       attrs: {
         src: demoImageSrc,
-        width: 960,
+        width: 420,
         height: 360,
         title: 'Image block preview',
+        align: 'center',
       },
     },
     {

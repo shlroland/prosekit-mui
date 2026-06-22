@@ -35,6 +35,7 @@ export type ImageAttrs = {
   width?: number | null
   height?: number | null
   title?: string | null
+  align?: 'left' | 'center' | 'right' | null
 }
 
 export type VideoAttrs = {

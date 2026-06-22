@@ -12,7 +12,7 @@ export function defineMediaNodeView(options: MediaExtensionOptions = {}) {
       as: 'div',
       stopEvent: (event) => {
         return event.target instanceof HTMLElement
-          ? Boolean(event.target.closest('.prosekit-media-toolbar, .prosekit-media-placeholder, .prosekit-media-insert-panel, .prosekit-media-upload-control'))
+          ? Boolean(event.target.closest('.prosekit-media-toolbar, .prosekit-media-placeholder, .prosekit-media-insert-panel, .prosekit-media-upload-control, [data-media-resize-handle]'))
           : false
       },
     }),
