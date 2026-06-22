@@ -1,26 +1,36 @@
 import type { Extension, Union } from 'prosekit/core'
 
-export type AlertBoxKind = 'info' | 'success' | 'warning' | 'error'
+export type AlertVariant = 'info' | 'success' | 'warning' | 'error' | 'default'
 
-export type AlertBoxAttrs = {
-  variant?: AlertBoxKind
+export type AlertType = 'text' | 'icon'
+
+export type AlertAttrs = {
+  id?: string | null
+  variant?: AlertVariant
+  type?: AlertType
 }
 
-export type CollapsiblePanelAttrs = {
+export type DetailsAttrs = {
   open?: boolean
-  title?: string
 }
 
 export type AlertPanelSpecExtension = Extension<{
   Nodes: {
-    alertBox: AlertBoxAttrs
-    collapsiblePanel: CollapsiblePanelAttrs
+    alert: AlertAttrs
+    details: DetailsAttrs
+    detailsSummary: Record<string, never>
+    detailsContent: Record<string, never>
   }
 }>
 
 export type AlertPanelCommandsExtension = Extension<{
   Commands: {
-    insertAlertBox: [kind?: AlertBoxKind]
+    setAlert: [attrs?: Partial<AlertAttrs>]
+    setAlertVariant: [variant: AlertVariant]
+    setAlertType: [type: AlertType]
+    toggleAlert: [attrs?: Partial<AlertAttrs>]
+    setDetails: [title?: string]
+    insertAlertBox: [variant?: AlertVariant]
     insertCollapsiblePanel: [title?: string]
   }
 }>

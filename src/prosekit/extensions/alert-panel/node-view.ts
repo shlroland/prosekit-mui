@@ -1,25 +1,37 @@
 import { defineReactNodeView } from 'prosekit/react'
 
-import { AlertBoxView, CollapsiblePanelView } from './view'
+import { AlertView, DetailsContentView, DetailsSummaryView, DetailsView } from './view'
 
 export function defineAlertPanelNodeView() {
   return [
     defineReactNodeView({
-      name: 'alertBox',
-      component: AlertBoxView,
+      name: 'alert',
+      component: AlertView,
       as: 'div',
       contentAs: 'div',
     }),
     defineReactNodeView({
-      name: 'collapsiblePanel',
-      component: CollapsiblePanelView,
-      as: 'section',
+      name: 'details',
+      component: DetailsView,
+      as: 'details',
       contentAs: 'div',
       stopEvent: (event) => {
         return event.target instanceof HTMLElement
-          ? Boolean(event.target.closest('[data-type="collapsible-panel"] button'))
+          ? Boolean(event.target.closest('[data-node="details"] button'))
           : false
       },
+    }),
+    defineReactNodeView({
+      name: 'detailsSummary',
+      component: DetailsSummaryView,
+      as: 'summary',
+      contentAs: 'summary',
+    }),
+    defineReactNodeView({
+      name: 'detailsContent',
+      component: DetailsContentView,
+      as: 'div',
+      contentAs: 'div',
     }),
   ] as const
 }
