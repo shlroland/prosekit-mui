@@ -6,10 +6,14 @@ import {
   type RefObject,
 } from 'react'
 
-import { Button, EditorFloatingPopover } from '../../../ui'
+import {
+  Button,
+  EditorFloatingPopover,
+  type EditorFloatingPopoverProps,
+} from '../../../ui'
 
 export type TooltipEditPopoverProps = {
-  anchorEl: HTMLElement | null
+  anchor: EditorFloatingPopoverProps['anchor']
   open: boolean
   initialValue: string
   focusRef: RefObject<HTMLElement | null>
@@ -19,7 +23,7 @@ export type TooltipEditPopoverProps = {
 }
 
 export function TooltipEditPopover({
-  anchorEl,
+  anchor,
   open,
   initialValue,
   focusRef,
@@ -43,7 +47,12 @@ export function TooltipEditPopover({
   }, [initialValue, open])
 
   function handleSubmit() {
-    onSubmit(value)
+    const nextValue = value.trim()
+    if (nextValue) {
+      onSubmit(nextValue)
+    } else if (initialValue) {
+      onRemove()
+    }
     onClose()
   }
 
@@ -70,13 +79,13 @@ export function TooltipEditPopover({
     focusRef.current?.focus()
   }
 
-  if (!anchorEl) {
+  if (!anchor) {
     return null
   }
 
   return (
     <EditorFloatingPopover
-      anchor={anchorEl}
+      anchor={anchor}
       open={open}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
@@ -97,7 +106,7 @@ export function TooltipEditPopover({
             value={value}
             onChange={(event) => setValue(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Input tooltip text"
+            placeholder="输入鼠标悬停时显示的提示文本"
             className="prosekit-tooltip-edit-input"
           />
           <div className="pk:flex pk:items-center pk:justify-between pk:gap-2">
@@ -107,7 +116,7 @@ export function TooltipEditPopover({
               className="prosekit-tooltip-edit-remove"
               onClick={handleRemove}
             >
-              Remove
+              移除
             </Button>
             <div className="pk:flex pk:items-center pk:gap-2">
               <Button
@@ -116,14 +125,15 @@ export function TooltipEditPopover({
                 className="prosekit-tooltip-edit-cancel"
                 onClick={handleClose}
               >
-                Cancel
+                取消
               </Button>
               <Button
                 size="sm"
                 className="prosekit-tooltip-edit-submit"
                 onClick={handleSubmit}
+                disabled={!value.trim() && !initialValue}
               >
-                Save
+                {value.trim() ? '应用' : '移除'}
               </Button>
             </div>
           </div>

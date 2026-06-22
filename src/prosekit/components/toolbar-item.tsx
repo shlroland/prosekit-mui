@@ -14,6 +14,7 @@ export type ToolbarItemProps = {
   icon?: ReactNode
   className?: string
   disabled?: boolean
+  onMouseDown?: (event: MouseEvent<HTMLButtonElement>) => void
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void
 }
 
@@ -60,6 +61,7 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
       icon,
       text,
       onClick,
+      onMouseDown,
       className,
       disabled,
       ...rest
@@ -83,6 +85,10 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
           ref={ref}
           variant="ghost"
           size="icon"
+          onMouseDown={(event) => {
+            event.preventDefault()
+            onMouseDown?.(event)
+          }}
           onClick={onClick}
           className={cn('toolbar-item', className)}
           disabled={disabled}

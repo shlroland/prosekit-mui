@@ -3,9 +3,83 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactMarkViewProps } from 'prosekit/react'
 
 import { Button, EditorFloatingPopover, EditorHoverPopover } from '../../../ui'
+import type { EditorFloatingPopoverProps } from '../../../ui'
 import { TooltipEditPopover } from './edit-popover'
-import { updateTooltipMark } from './utils'
+import { createTooltipId, getTooltipId, getTooltipText, updateTooltipMark } from './utils'
 import './tooltip-view.css'
+
+const ALLOWED_TOOLTIP_TAGS = new Set([
+  'A',
+  'B',
+  'BLOCKQUOTE',
+  'BR',
+  'CODE',
+  'DIV',
+  'EM',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'I',
+  'LI',
+  'OL',
+  'P',
+  'PRE',
+  'S',
+  'SPAN',
+  'STRIKE',
+  'STRONG',
+  'U',
+  'UL',
+])
+
+function sanitizeTooltipHtml(value: string) {
+  if (typeof document === 'undefined') {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+  }
+
+  const template = document.createElement('template')
+  template.innerHTML = value
+
+  const walk = (node: Node) => {
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType !== Node.ELEMENT_NODE) {
+        continue
+      }
+
+      const element = child as HTMLElement
+      if (!ALLOWED_TOOLTIP_TAGS.has(element.tagName)) {
+        element.replaceWith(...Array.from(element.childNodes))
+        continue
+      }
+
+      for (const attr of Array.from(element.attributes)) {
+        const name = attr.name.toLowerCase()
+        const currentValue = attr.value
+        const isAllowedHref = element.tagName === 'A'
+          && (name === 'href' || name === 'title' || name === 'target')
+          && !currentValue.trim().toLowerCase().startsWith('javascript:')
+        const isAllowedStyle = name === 'style'
+          && !/url\s*\(|expression\s*\(|javascript:/i.test(currentValue)
+        const isAllowedClass = name === 'class'
+
+        if (!isAllowedHref && !isAllowedStyle && !isAllowedClass) {
+          element.removeAttribute(attr.name)
+        }
+      }
+
+      walk(element)
+    }
+  }
+
+  walk(template.content)
+  return template.innerHTML.trim()
+}
 
 function isTouchLikeDevice() {
   if (typeof window === 'undefined') {
@@ -20,17 +94,54 @@ function isTouchLikeDevice() {
 
 export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
   const anchorRef = useRef<HTMLSpanElement | null>(null)
+  const [editAnchor, setEditAnchor] = useState<EditorFloatingPopoverProps['anchor']>(null)
   const [open, setOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
 
-  const tooltip = useMemo(() => {
-    const value = mark.attrs.tooltip
-    return typeof value === 'string' ? value.trim() : ''
-  }, [mark.attrs.tooltip])
+  const tooltip = useMemo(() => getTooltipText(mark.attrs), [mark.attrs])
+  const tooltipId = useMemo(() => getTooltipId(mark.attrs) ?? createTooltipId(), [mark.attrs])
+  const tooltipHtml = useMemo(() => sanitizeTooltipHtml(tooltip), [tooltip])
 
   const isEditable = view.editable
   const isTouchReadonly = !isEditable && isTouchDevice
+
+  function setEditAnchorFromRect(rect: DOMRect | DOMRectReadOnly, element?: Element | null) {
+    const anchorRect = new DOMRect(rect.x, rect.y, rect.width, rect.height)
+    setEditAnchor(element
+      ? {
+          contextElement: element,
+          getBoundingClientRect: () => anchorRect,
+        }
+      : {
+          getBoundingClientRect: () => anchorRect,
+        })
+  }
+
+  function setEditAnchorFromSelection() {
+    const { from } = view.state.selection
+    const coords = view.coordsAtPos(from)
+    const selectionRect = new DOMRect(
+      coords.left,
+      coords.top,
+      Math.max(coords.right - coords.left, 1),
+      Math.max(coords.bottom - coords.top, 1),
+    )
+
+    setEditAnchorFromRect(selectionRect, view.dom)
+  }
+
+  function captureEditAnchor() {
+    const element = anchorRef.current
+    const rect = element?.getBoundingClientRect()
+
+    if (!rect || (rect.width === 0 && rect.height === 0) || (rect.left === 0 && rect.top === 0)) {
+      setEditAnchorFromSelection()
+      return
+    }
+
+    setEditAnchorFromRect(rect, element)
+  }
 
   useEffect(() => {
     setIsTouchDevice(isTouchLikeDevice())
@@ -38,7 +149,11 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
 
   useEffect(() => {
     if (isEditable && tooltip === '') {
-      setEditOpen(true)
+      const frame = requestAnimationFrame(() => {
+        captureEditAnchor()
+        setEditOpen(true)
+      })
+      return () => cancelAnimationFrame(frame)
     }
   }, [isEditable, tooltip])
 
@@ -59,19 +174,22 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
   }
 
   function handleOpenEdit() {
+    captureEditAnchor()
     setOpen(false)
     setEditOpen(true)
   }
 
   function handleCloseEdit() {
     setEditOpen(false)
+    setEditAnchor(null)
   }
 
   const popupContent = tooltip ? (
     <div className="pk:flex pk:max-w-[20rem] pk:items-center pk:gap-1.5 pk:px-2.5 pk:py-1.5 pk:text-[12px] pk:leading-5 pk:text-[var(--editor-muted-foreground)]">
-      <span className="prosekit-tooltip-mark-text">
-        {tooltip}
-      </span>
+      <span
+        className="prosekit-tooltip-mark-text"
+        dangerouslySetInnerHTML={{ __html: tooltipHtml }}
+      />
       {isEditable ? (
         <Button
           variant="ghost"
@@ -121,6 +239,7 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
           <span
             ref={anchorRef}
             className="prosekit-tooltip-mark"
+            data-tooltip-id={tooltipId}
             onFocus={handleOpen}
             onBlur={handleClose}
           >
@@ -134,6 +253,7 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
         <span
           ref={anchorRef}
           className="prosekit-tooltip-mark"
+          data-tooltip-id={tooltipId}
           onClick={isTouchReadonly ? handleToggle : undefined}
           onMouseEnter={handleOpen}
           onMouseLeave={handleClose}
@@ -163,7 +283,7 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
         />
       ) : null}
       <TooltipEditPopover
-        anchorEl={anchorRef.current}
+        anchor={editAnchor}
         open={editOpen}
         initialValue={tooltip}
         focusRef={anchorRef}

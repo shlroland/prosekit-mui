@@ -42,6 +42,7 @@ import {
   TableFloatingToolbar,
   TableSizePicker,
   ToolbarItem,
+  TooltipLineIcon,
   UnderlineIcon,
   defineRichTextExtension,
   getCurrentLinkAttrs,
@@ -94,6 +95,27 @@ const demoContent: NodeJSON = {
           },
         },
         { type: 'text', text: '.' },
+      ],
+    },
+    {
+      type: 'paragraph',
+      attrs: { textAlign: null },
+      content: [
+        { type: 'text', text: 'Tooltip mark 示例：把鼠标移到 ' },
+        {
+          type: 'text',
+          text: '这段文本',
+          marks: [
+            {
+              type: 'tooltip',
+              attrs: {
+                id: 'demo-tooltip-mark',
+                text: '<strong>文本提示</strong><br />支持简单 HTML 内容。',
+              },
+            },
+          ],
+        },
+        { type: 'text', text: ' 上，可以看到悬浮提示；选中文本后点击工具栏的文本提示可以新建或移除 tooltip。' },
       ],
     },
     {
@@ -349,6 +371,7 @@ type ToolbarState = {
   blockquote: boolean
   codeBlock: boolean
   link: boolean
+  tooltip: boolean
 }
 
 function getToolbarState(editor: Editor<any>): ToolbarState {
@@ -364,6 +387,7 @@ function getToolbarState(editor: Editor<any>): ToolbarState {
     blockquote: editor.nodes.blockquote?.isActive() ?? false,
     codeBlock: editor.nodes.codeBlock?.isActive() ?? false,
     link: isLinkActive(editor.state),
+    tooltip: editor.marks.tooltip?.isActive() ?? false,
   }
 }
 
@@ -471,6 +495,19 @@ function ProseKitAstrobookToolbar() {
         <DemoToolbarButton tip="删除线" active={state.strike} icon={<StrikethroughIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleStrike() }} />
         <DemoToolbarButton tip="行内代码" active={state.code} icon={<CodeLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleCode() }} />
         <DemoToolbarButton tip="高亮" active={state.highlight} icon={<MarkPenLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleHighlight() }} />
+        <DemoToolbarButton
+          tip="文本提示"
+          active={state.tooltip}
+          icon={<TooltipLineIcon {...iconProps} />}
+          onClick={() => {
+            focus()
+            if (state.tooltip) {
+              editor.commands.unsetTooltip()
+            } else {
+              editor.commands.toggleTooltip()
+            }
+          }}
+        />
         <DemoToolbarButton tip="上标" active={state.superscript} icon={<SuperscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
         <DemoToolbarButton tip="下标" active={state.subscript} icon={<SubscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
 

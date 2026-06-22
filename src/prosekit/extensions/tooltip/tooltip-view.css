@@ -13,7 +13,7 @@
 }
 
 .prosekit-tooltip-mark-popup {
-  @apply fixed z-[1500] flex max-w-[20rem] -translate-x-1/2 -translate-y-full items-center gap-1.5 rounded-md border bg-white px-2.5 py-1.5 text-[12px] leading-5 shadow-md;
+  @apply z-[1500] flex max-w-[20rem] items-center gap-1.5 rounded-md border bg-[var(--editor-surface)] px-2.5 py-1.5 text-[12px] leading-5 shadow-md outline-none;
   border-color: var(--editor-border);
   color: var(--editor-muted-foreground);
 }
@@ -42,18 +42,18 @@
 }
 
 .prosekit-tooltip-edit-popper {
-  @apply fixed z-[1500];
+  @apply z-[1500] outline-none;
 }
 
 .prosekit-tooltip-edit-paper {
-  @apply w-[320px] rounded-xl border bg-white p-3 shadow-[0_12px_32px_rgba(15,23,42,0.14)];
+  @apply w-[320px] rounded-xl border bg-[var(--editor-surface)] p-3 shadow-[0_12px_32px_rgba(15,23,42,0.14)];
   border-color: var(--editor-border);
 }
 
 .prosekit-tooltip-edit-input {
-  @apply max-h-48 min-h-20 resize-y rounded-lg border bg-white px-2.5 py-2 text-[13px] leading-5 outline-none focus:ring-2 focus:ring-[var(--editor-ring)];
+  @apply max-h-48 min-h-20 resize-y rounded-lg border bg-[var(--editor-surface)] px-2.5 py-2 text-[13px] leading-5 outline-none focus:ring-2 focus:ring-[var(--editor-ring)];
   border-color: var(--editor-border);
-  color: rgb(23 23 23 / 0.82);
+  color: var(--editor-foreground);
 }
 
 .prosekit-tooltip-edit-remove {
