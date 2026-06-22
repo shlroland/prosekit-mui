@@ -19,6 +19,7 @@ export type ImageValidateUrlFunction = (
 ) => string | Promise<string>
 
 export type ImageOptions = {
+  baseUrl?: string
   onUpload?: ImageUploadFunction
   onUploadUrl?: ImageUploadUrlFunction
   onValidateUrl?: ImageValidateUrlFunction
@@ -37,8 +38,18 @@ export type ImageAttrs = {
 
 export type ImageSpecExtension = Extension
 
+export type ImageCommandsExtension = Extension<{
+  Commands: {
+    setImage: [attrs?: ImageAttrs]
+    updateImage: [attrs: Partial<ImageAttrs>]
+    removeImage: []
+  }
+}>
+
+export type ImagePasteExtension = Extension
+
 export type ImageViewExtension = Extension
 
 export type ImageExtension = Union<
-  [ImageSpecExtension, ImageViewExtension]
+  [ImageSpecExtension, ImageCommandsExtension, ImagePasteExtension, ImageViewExtension]
 >

@@ -585,7 +585,7 @@ function ProseKitAstrobookToolbar() {
             editor.commands.insertTable({ row: rows, col: columns })
           }}
         />
-        <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertImage({ src: '' }) }} />
+        <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setImage({ src: '', width: 760, align: 'center' }) }} />
         <EmojiPickerPopover>
           <EmotionLineIcon {...iconProps} />
         </EmojiPickerPopover>

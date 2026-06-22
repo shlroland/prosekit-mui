@@ -1,4 +1,6 @@
+export * from './commands'
 export * from './extension'
 export * from './node-view'
+export * from './paste'
 export * from './spec'
 export * from './types'

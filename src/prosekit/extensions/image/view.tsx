@@ -523,7 +523,7 @@ export function ImageView(props: ImageViewProps) {
                 <Button
                   type="button"
                   className="pk:h-10 pk:w-full pk:justify-center pk:gap-2"
-                  disabled={!options.onUpload || progress !== null}
+                  disabled={progress !== null}
                   onClick={() => inputRef.current?.click()}
                 >
                   {progress !== null ? (
