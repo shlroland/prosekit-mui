@@ -18,6 +18,9 @@ import {
   CollapseIcon,
   EditorContent,
   EditorShell,
+  EmojiAutocomplete,
+  EmojiPickerPopover,
+  EmotionLineIcon,
   ErrorWarningFillIcon,
   FlipGridIcon,
   ImageAddLineIcon,
@@ -114,6 +117,23 @@ const demoContent: NodeJSON = {
           ],
         },
         { type: 'text', text: ' 上，可以看到悬浮提示；选中文本后点击工具栏的文本提示可以新建或移除 tooltip。' },
+      ],
+    },
+    {
+      type: 'paragraph',
+      attrs: { textAlign: null },
+      content: [
+        { type: 'text', text: 'Emoji 示例：输入 ' },
+        { type: 'text', text: ':smile' },
+        { type: 'text', text: ' 会出现 autocomplete，也可以用工具栏插入 ' },
+        {
+          type: 'emoji',
+          attrs: {
+            name: 'sparkles',
+            native: '✨',
+          },
+        },
+        { type: 'text', text: '。' },
       ],
     },
     {
@@ -566,6 +586,9 @@ function ProseKitAstrobookToolbar() {
           }}
         />
         <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertImage({ src: '' }) }} />
+        <EmojiPickerPopover>
+          <EmotionLineIcon {...iconProps} />
+        </EmojiPickerPopover>
         <DemoToolbarButton tip="附件" icon={<AttachmentLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAttachment() }} />
         <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setFlipGrid(2) }} />
         <LinkEditorPopover
@@ -654,6 +677,7 @@ export function ProseKitAstrobookDemo() {
         <AlertBlockToolbar />
         <TableFloatingToolbar />
         <TableCellFloatingToolbar />
+        <EmojiAutocomplete />
         <div className="pk:mt-2">
           <p className="pk:m-0 pk:text-sm pk:leading-6 pk:text-[var(--editor-muted-foreground)]">
             This demo intentionally uses ProseKit built-in extensions for repeated

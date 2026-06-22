@@ -17,8 +17,6 @@ import { Button, EditorFloatingPopover, Tooltip } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import type { ImageAttrs, ImageOptions } from './types'
 
-import './view.css'
-
 type MediaInsertMode = 'upload' | 'link'
 type ImageAlign = NonNullable<ImageAttrs['align']>
 type ImageResizeCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
@@ -43,6 +41,17 @@ function normalizeNumber(value: unknown): number | null {
 function normalizeImageAlign(value: unknown): ImageAlign {
   return value === 'center' || value === 'right' ? value : 'left'
 }
+
+function getSelectedShellClassName(selected: boolean) {
+  return selected
+    ? 'pk:border-[var(--editor-primary)] pk:bg-[color-mix(in_srgb,var(--editor-primary)_5%,transparent)]'
+    : 'pk:border-[var(--editor-border)]'
+}
+
+const toolbarButtonClassName = 'pk:inline-flex pk:h-7 pk:w-7 pk:items-center pk:justify-center pk:rounded-md pk:text-[var(--editor-muted-foreground)] pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]'
+const activeToolbarButtonClassName = 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]'
+const toolbarIconClassName = 'pk:text-base'
+const resizeHandleClassName = 'pk:absolute pk:z-[2] pk:h-3 pk:w-3 pk:rounded-full pk:border-2 pk:border-[color-mix(in_srgb,var(--editor-primary)_35%,transparent)] pk:bg-[var(--editor-background)] pk:transition-colors pk:hover:border-[var(--editor-primary)]'
 
 function getImageShellStyle(align: ImageAlign): CSSProperties {
   if (align === 'center') {
@@ -314,9 +323,10 @@ export function ImageView(props: ImageViewProps) {
     <div
       ref={anchorRef}
       className={cn(
-        'prosekit-media-shell prosekit-image-shell',
-        selected && 'ProseMirror-selectednode',
+        'pk:relative pk:my-3 pk:block pk:w-fit pk:max-w-full pk:rounded-[10px] pk:border pk:p-1',
+        getSelectedShellClassName(selected),
       )}
+      data-image-shell
       style={src ? getImageShellStyle(align) : undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -326,19 +336,23 @@ export function ImageView(props: ImageViewProps) {
         type="file"
         accept="image/*"
         hidden
-        className="prosekit-media-upload-control"
+        data-image-upload-control
         onChange={handleFileChange}
       />
       {hovered && src ? (
-        <div className="prosekit-media-toolbar" contentEditable={false}>
+        <div
+          className="pk:absolute pk:left-2 pk:top-2 pk:z-[1305] pk:flex pk:items-center pk:gap-1 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)]"
+          contentEditable={false}
+          data-image-toolbar
+        >
           <Tooltip content="修改地址">
-            <Button variant="ghost" size="icon" aria-label="修改地址" className="prosekit-media-toolbar-button" onClick={openPanel}>
-              <EditLineIcon className="prosekit-media-toolbar-icon" />
+            <Button variant="ghost" size="icon" aria-label="修改地址" className={toolbarButtonClassName} onClick={openPanel}>
+              <EditLineIcon className={toolbarIconClassName} />
             </Button>
           </Tooltip>
           <Tooltip content="复制地址">
-            <Button variant="ghost" size="icon" aria-label="复制地址" className="prosekit-media-toolbar-button" onClick={copyImageSource}>
-              <CopyIcon className="prosekit-media-toolbar-icon" />
+            <Button variant="ghost" size="icon" aria-label="复制地址" className={toolbarButtonClassName} onClick={copyImageSource}>
+              <CopyIcon className={toolbarIconClassName} />
             </Button>
           </Tooltip>
           <Tooltip content="左侧对齐">
@@ -346,10 +360,10 @@ export function ImageView(props: ImageViewProps) {
               variant="ghost"
               size="icon"
               aria-label="左侧对齐"
-              className={cn('prosekit-media-toolbar-button', align === 'left' && 'prosekit-media-toolbar-button-active')}
+              className={cn(toolbarButtonClassName, align === 'left' && activeToolbarButtonClassName)}
               onClick={() => changeAlign('left')}
             >
-              <AlignLeftIcon className="prosekit-media-toolbar-icon" />
+              <AlignLeftIcon className={toolbarIconClassName} />
             </Button>
           </Tooltip>
           <Tooltip content="居中对齐">
@@ -357,10 +371,10 @@ export function ImageView(props: ImageViewProps) {
               variant="ghost"
               size="icon"
               aria-label="居中对齐"
-              className={cn('prosekit-media-toolbar-button', align === 'center' && 'prosekit-media-toolbar-button-active')}
+              className={cn(toolbarButtonClassName, align === 'center' && activeToolbarButtonClassName)}
               onClick={() => changeAlign('center')}
             >
-              <AlignCenterIcon className="prosekit-media-toolbar-icon" />
+              <AlignCenterIcon className={toolbarIconClassName} />
             </Button>
           </Tooltip>
           <Tooltip content="右侧对齐">
@@ -368,36 +382,36 @@ export function ImageView(props: ImageViewProps) {
               variant="ghost"
               size="icon"
               aria-label="右侧对齐"
-              className={cn('prosekit-media-toolbar-button', align === 'right' && 'prosekit-media-toolbar-button-active')}
+              className={cn(toolbarButtonClassName, align === 'right' && activeToolbarButtonClassName)}
               onClick={() => changeAlign('right')}
             >
-              <AlignRightIcon className="prosekit-media-toolbar-icon" />
+              <AlignRightIcon className={toolbarIconClassName} />
             </Button>
           </Tooltip>
           <Tooltip content="打开图片">
             <a
               aria-label="打开图片"
-              className="prosekit-media-toolbar-button"
+              className={toolbarButtonClassName}
               href={src}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <ExportLineIcon className="prosekit-media-toolbar-icon" />
+              <ExportLineIcon className={toolbarIconClassName} />
             </a>
           </Tooltip>
           <Tooltip content="删除">
-            <Button variant="ghost" size="icon" aria-label="删除" className="prosekit-media-toolbar-button" onClick={deleteNode}>
-              <DeleteLineIcon className="prosekit-media-toolbar-icon" />
+            <Button variant="ghost" size="icon" aria-label="删除" className={toolbarButtonClassName} onClick={deleteNode}>
+              <DeleteLineIcon className={toolbarIconClassName} />
             </Button>
           </Tooltip>
         </div>
       ) : null}
       {src ? (
         <>
-          <span className="prosekit-media-image-frame" contentEditable={false}>
+          <span className="pk:relative pk:block pk:max-w-full" contentEditable={false}>
             <img
               ref={imageRef}
-              className="prosekit-media-image"
+              className="pk:block pk:max-h-[480px] pk:max-w-full pk:rounded-[10px] pk:object-contain"
               src={src}
               alt={title || ''}
               title={title || undefined}
@@ -412,23 +426,23 @@ export function ImageView(props: ImageViewProps) {
             {hovered || isResizing ? (
               <>
                 <span
-                  className="prosekit-media-image-resize-handle prosekit-media-image-resize-handle-top-left"
-                  data-media-resize-handle
+                  className={cn(resizeHandleClassName, 'pk:-left-1 pk:-top-1 pk:cursor-nwse-resize')}
+                  data-image-resize-handle
                   onMouseDown={(event) => handleResizeStart(event, 'top-left')}
                 />
                 <span
-                  className="prosekit-media-image-resize-handle prosekit-media-image-resize-handle-top-right"
-                  data-media-resize-handle
+                  className={cn(resizeHandleClassName, 'pk:-right-1 pk:-top-1 pk:cursor-nesw-resize')}
+                  data-image-resize-handle
                   onMouseDown={(event) => handleResizeStart(event, 'top-right')}
                 />
                 <span
-                  className="prosekit-media-image-resize-handle prosekit-media-image-resize-handle-bottom-left"
-                  data-media-resize-handle
+                  className={cn(resizeHandleClassName, 'pk:-bottom-1 pk:-left-1 pk:cursor-nesw-resize')}
+                  data-image-resize-handle
                   onMouseDown={(event) => handleResizeStart(event, 'bottom-left')}
                 />
                 <span
-                  className="prosekit-media-image-resize-handle prosekit-media-image-resize-handle-bottom-right"
-                  data-media-resize-handle
+                  className={cn(resizeHandleClassName, 'pk:-bottom-1 pk:-right-1 pk:cursor-nwse-resize')}
+                  data-image-resize-handle
                   onMouseDown={(event) => handleResizeStart(event, 'bottom-right')}
                 />
               </>

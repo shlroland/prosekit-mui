@@ -1,0 +1,7 @@
+@reference "tailwindcss";
+
+@layer components {
+  .ProseMirror [data-type="emoji"] {
+    @apply inline-flex align-[-0.125em] leading-none;
+  }
+}

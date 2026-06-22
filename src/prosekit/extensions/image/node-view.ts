@@ -11,7 +11,7 @@ export function defineImageNodeView(options: ImageExtensionOptions = {}) {
     as: 'div',
     stopEvent: (event) => {
       return event.target instanceof HTMLElement
-        ? Boolean(event.target.closest('.prosekit-media-toolbar, .prosekit-media-placeholder, .prosekit-media-insert-panel, .prosekit-media-upload-control, [data-media-resize-handle]'))
+        ? Boolean(event.target.closest('[data-image-toolbar], [data-image-upload-control], [data-image-resize-handle]'))
         : false
     },
   })

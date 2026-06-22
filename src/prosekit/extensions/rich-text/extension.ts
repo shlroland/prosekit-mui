@@ -12,6 +12,7 @@ import { defineTextColor } from 'prosekit/extensions/text-color'
 import { defineAlertPanelExtension } from '../alert-panel'
 import { defineAttachmentExtension, type AttachmentExtensionOptions } from '../attachment'
 import { defineBasicExtension } from '../basic'
+import { defineEmojiExtension } from '../emoji'
 import { defineFlipGridExtension } from '../flip-grid'
 import { defineImageExtension, type ImageExtensionOptions } from '../image'
 import { defineTableCellVerticalAlignExtension } from '../table-cell-vertical-align'
@@ -46,6 +47,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineHighlight(),
     defineSuperscript(),
     defineSubscript(),
+    defineEmojiExtension(),
     defineAlertPanelExtension(),
     defineAttachmentExtension(options.attachment),
     defineImageExtension(options.image),

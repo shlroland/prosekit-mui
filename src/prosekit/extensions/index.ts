@@ -1,6 +1,7 @@
 export * from './basic/'
 export * from './alert-panel/'
 export * from './attachment/'
+export * from './emoji/'
 export * from './image/'
 export * from './link/'
 export * from './media/'
