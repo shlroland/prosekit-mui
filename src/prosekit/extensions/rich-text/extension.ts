@@ -17,6 +17,7 @@ import { defineEmojiExtension } from '../emoji'
 import { defineFlipGridExtension } from '../flip-grid'
 import { defineImageExtension, type ImageExtensionOptions } from '../image'
 import { defineTableCellVerticalAlignExtension } from '../table-cell-vertical-align'
+import { defineTableCellAttrsExtension } from '../table-cell-attrs'
 import { defineTooltipExtension } from '../tooltip'
 import { defineTrailingNode } from '../trailing-node'
 
@@ -59,6 +60,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineDetailsExtension(),
     defineAttachmentExtension(options.attachment),
     defineImageExtension(options.image),
+    defineTableCellAttrsExtension(),
     defineTableCellVerticalAlignExtension(),
     defineFlipGridExtension(),
     defineTooltipExtension(),

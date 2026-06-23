@@ -612,6 +612,9 @@ importers:
       prosekit:
         specifier: ^0.21.4
         version: 0.21.4(react@19.2.7)(react-dom@19.2.7(react@19.2.7))(yjs@13.6.31)
+      prosemirror-tables:
+        specifier: ^1.8.5
+        version: 1.8.5
       react:
         specifier: ^19.2.5
         version: 19.2.7

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 import { EditorFloatingPopover } from '../../ui'
-import './toolbar.css'
 
 export type TableSize = {
   rows: number
@@ -71,14 +70,14 @@ export function TableSizePicker({
       side="bottom"
       align="start"
       sideOffset={6}
-      popupClassName="table-size-picker-popper table-size-picker-surface"
+      popupClassName="pk:fixed pk:z-[1300] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-2.5 pk:shadow-[0_12px_32px_rgba(23,23,23,0.12)]"
       content={(
         <div className="pk:grid pk:gap-2">
-          <span className="table-size-picker-label">
+          <span className="pk:text-center pk:text-xs pk:font-semibold pk:text-[var(--editor-muted-foreground)]">
             {activeRows} x {activeColumns}
           </span>
           <div
-            className="table-size-picker-grid"
+            className="pk:grid pk:gap-1"
             style={{
               gridTemplateColumns: `repeat(${columns}, 18px)`,
             }}
@@ -96,8 +95,12 @@ export function TableSizePicker({
                   onMouseEnter={() => setHoveredSize({ rows: row, columns: column })}
                   onFocus={() => setHoveredSize({ rows: row, columns: column })}
                   onClick={() => handleSelect({ rows: row, columns: column })}
-                  className="table-size-picker-cell"
+                  className="pk:h-[18px] pk:w-[18px] pk:cursor-pointer pk:rounded-sm pk:border pk:p-0 pk:outline-none pk:transition-colors focus:pk:shadow-[0_0_0_2px_var(--editor-ring)]"
                   data-active={active ? 'true' : undefined}
+                  style={{
+                    backgroundColor: active ? 'var(--editor-primary-soft)' : 'var(--editor-background)',
+                    borderColor: active ? 'var(--editor-primary)' : 'var(--editor-border)',
+                  }}
                 />
               )
             })}
