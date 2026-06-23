@@ -60,7 +60,8 @@ export function FlipGridView({
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [showPercents, setShowPercents] = useState(false)
   const [containerWidth, setContainerWidth] = useState(1)
-  const [contentOffsetX, setContentOffsetX] = useState(0)
+  const [handleOffsets, setHandleOffsets] = useState<number[]>([])
+  const [labelOffsets, setLabelOffsets] = useState<number[]>([])
   const [gapPx, setGapPx] = useState(() => {
     const parsed = Number.parseFloat(gap)
 
@@ -70,22 +71,6 @@ export function FlipGridView({
   const widths = useMemo(() => collectWidths(node), [node])
   const safeWidths = useMemo(() => normalizeWithMin(widths, MIN_WIDTH), [widths])
 
-  useEffect(() => {
-    const root = wrapperRef.current
-    const content = root?.querySelector<HTMLElement>('[data-node-view-content="true"]')
-
-    if (!content) {
-      return
-    }
-
-    content.style.display = 'flex'
-    content.style.width = '100%'
-    content.style.gap = gap
-    content.style.alignItems = 'stretch'
-    content.style.justifyContent = 'stretch'
-    content.style.position = 'relative'
-  }, [gap, node])
-
   useLayoutEffect(() => {
     const root = wrapperRef.current
 
@@ -93,30 +78,78 @@ export function FlipGridView({
       return
     }
 
-    const updateMetrics = () => {
+    const applyContentLayout = () => {
       const content = root.querySelector<HTMLElement>('[data-node-view-content="true"]')
+
+      if (!content) {
+        return null
+      }
+
+      content.style.display = 'grid'
+      content.style.width = '100%'
+      content.style.gap = gap
+      content.style.alignItems = 'stretch'
+      content.style.justifyContent = 'stretch'
+      content.style.position = 'relative'
+      content.style.gridTemplateColumns = safeWidths.map((width) => `minmax(0, ${width}fr)`).join(' ')
+
+      return content
+    }
+
+    const updateMetrics = () => {
+      const content = applyContentLayout()
       const rootRect = root.getBoundingClientRect()
       const rect = content?.getBoundingClientRect() ?? rootRect
       const computedGap = content ? getComputedStyle(content).gap : gap
       const parsedGap = Number.parseFloat(computedGap || '0')
       const nextGap = Number.isFinite(parsedGap) ? parsedGap : 0
       const nextWidth = Math.max(1, rect.width || 1)
-      const nextOffsetX = Math.max(0, rect.left - rootRect.left)
+      const columnRects = content
+        ? Array.from(content.children)
+            .map((child) => child.getBoundingClientRect())
+            .filter((childRect) => childRect.width > 0)
+        : []
+      const nextHandleOffsets = columnRects.slice(0, -1).map((childRect, index) => {
+        const nextRect = columnRects[index + 1]
+        const boundary = nextRect ? (childRect.right + nextRect.left) / 2 : childRect.right
+
+        return boundary - rootRect.left
+      })
+      const nextLabelOffsets = columnRects.map((childRect) => childRect.right - rootRect.left)
 
       setContainerWidth((current) => (current === nextWidth ? current : nextWidth))
-      setContentOffsetX((current) => (current === nextOffsetX ? current : nextOffsetX))
       setGapPx((current) => (current === nextGap ? current : nextGap))
+      setHandleOffsets((current) => (
+        current.length === nextHandleOffsets.length
+        && current.every((value, index) => Math.abs(value - (nextHandleOffsets[index] ?? 0)) < 0.5)
+          ? current
+          : nextHandleOffsets
+      ))
+      setLabelOffsets((current) => (
+        current.length === nextLabelOffsets.length
+        && current.every((value, index) => Math.abs(value - (nextLabelOffsets[index] ?? 0)) < 0.5)
+          ? current
+          : nextLabelOffsets
+      ))
     }
 
     updateMetrics()
 
     const observer = new ResizeObserver(updateMetrics)
     observer.observe(root)
+    const content = applyContentLayout()
+
+    if (content) {
+      observer.observe(content)
+      for (const child of Array.from(content.children)) {
+        observer.observe(child)
+      }
+    }
 
     return () => {
       observer.disconnect()
     }
-  }, [gap])
+  }, [gap, safeWidths])
 
   useEffect(() => {
     return () => {
@@ -144,7 +177,10 @@ export function FlipGridView({
       }
     })
 
-    return { handlePercents, labelPercents }
+    return {
+      handleOffsets: handlePercents.map((percent) => (percent / 100) * containerWidth),
+      labelOffsets: labelPercents.map((percent) => (percent / 100) * containerWidth),
+    }
   }, [containerWidth, gapPx, safeWidths])
 
   function applyWidths(nextWidths: number[]) {
@@ -183,7 +219,12 @@ export function FlipGridView({
 
     const startX = event.clientX
     const startWidths = [...safeWidths]
-    const width = wrapperRef.current?.getBoundingClientRect().width || containerWidth || 1
+    const content = wrapperRef.current?.querySelector<HTMLElement>('[data-node-view-content="true"]')
+    const contentWidth = content?.getBoundingClientRect().width || containerWidth || 1
+    const computedGap = content ? getComputedStyle(content).gap : gap
+    const parsedGap = Number.parseFloat(computedGap || '0')
+    const currentGapPx = Number.isFinite(parsedGap) ? parsedGap : 0
+    const width = Math.max(1, contentWidth - currentGapPx * Math.max(0, safeWidths.length - 1))
     setDragIndex(index)
     setShowPercents(true)
 
@@ -248,7 +289,7 @@ export function FlipGridView({
       <div ref={contentRef} />
       {isEditable ? (
         <>
-          {layout.handlePercents.map((percent, index) => {
+          {(handleOffsets.length === safeWidths.length - 1 ? handleOffsets : layout.handleOffsets).map((offset, index) => {
             const active = dragIndex === index || hoverGapIndex === index
 
             return (
@@ -257,7 +298,7 @@ export function FlipGridView({
                 data-flip-grid-controls="true"
                 style={{
                   position: 'absolute',
-                  left: `${contentOffsetX + (percent / 100) * containerWidth}px`,
+                  left: `${offset}px`,
                   width: Math.max(gapPx, 8),
                   top: 12,
                   bottom: 12,
@@ -291,13 +332,13 @@ export function FlipGridView({
             )
           })}
           {showPercents
-            ? layout.labelPercents.map((offset, index) => (
+            ? (labelOffsets.length === safeWidths.length ? labelOffsets : layout.labelOffsets).map((offset, index) => (
               <div
                 key={`percent-${index}`}
                 style={{
                   position: 'absolute',
                   top: 4,
-                  left: `${contentOffsetX + (offset / 100) * containerWidth - 4}px`,
+                  left: `${offset - 4}px`,
                   transform: 'translateX(-100%)',
                   padding: '1px 6px',
                   borderRadius: '4px',
@@ -327,7 +368,6 @@ export function FlipGridColumnView({
   view,
   getPos,
 }: ReactNodeViewProps) {
-  const width = Math.max(MIN_WIDTH, Number(node.attrs.width) || 50)
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const [toolbarOpen, setToolbarOpen] = useState(false)
   const isEditable = view.editable
@@ -364,10 +404,10 @@ export function FlipGridColumnView({
       return
     }
 
-    wrapper.style.width = `${width}%`
-    wrapper.style.flex = `0 0 ${width}%`
+    wrapper.style.width = '100%'
+    wrapper.style.flex = 'unset'
     wrapper.style.minWidth = '0'
-  }, [width])
+  }, [])
 
   function applyWidths(
     nextWidths: number[],
@@ -541,8 +581,8 @@ export function FlipGridColumnView({
           : 'pk:ring-0',
       )}
       style={{
-        width: `${width}%`,
-        flex: `0 0 ${width}%`,
+        width: '100%',
+        flex: 'unset',
         minWidth: 0,
       }}
     >

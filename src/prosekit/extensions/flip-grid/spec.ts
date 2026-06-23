@@ -55,6 +55,7 @@ export function defineFlipGridSpec(): FlipGridSpecExtension {
         {
           'data-type': 'flip-grid',
           'data-gap': node.attrs.gap || DEFAULT_GAP,
+          class: 'flip-grid',
         },
         0,
       ],
@@ -89,6 +90,7 @@ export function defineFlipGridSpec(): FlipGridSpecExtension {
           {
             'data-type': 'flip-grid-column',
             'data-width': width,
+            class: 'flip-grid-column',
             style: `width: ${width}%; flex: 0 0 ${width}%; min-width: 0;`,
           },
           0,
