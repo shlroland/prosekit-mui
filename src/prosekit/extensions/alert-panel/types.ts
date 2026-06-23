@@ -1,43 +1,29 @@
-import type { Extension, Union } from 'prosekit/core'
+import type { Union } from 'prosekit/core'
 
-export type AlertVariant = 'info' | 'success' | 'warning' | 'error' | 'default'
+import type {
+  AlertAttrs,
+  AlertCommandsExtension,
+  AlertExtension,
+  AlertSpecExtension,
+  AlertType,
+  AlertVariant,
+  AlertViewExtension,
+} from '../alert'
+import type {
+  DetailsAttrs,
+  DetailsCommandsExtension,
+  DetailsExtension,
+  DetailsSpecExtension,
+  DetailsViewExtension,
+} from '../details'
 
-export type AlertType = 'text' | 'icon'
+export type { AlertAttrs, AlertType, AlertVariant } from '../alert'
+export type { DetailsAttrs } from '../details'
 
-export type AlertAttrs = {
-  id?: string | null
-  variant?: AlertVariant
-  type?: AlertType
-}
+export type AlertPanelSpecExtension = Union<[AlertSpecExtension, DetailsSpecExtension]>
 
-export type DetailsAttrs = {
-  open?: boolean
-}
+export type AlertPanelCommandsExtension = Union<[AlertCommandsExtension, DetailsCommandsExtension]>
 
-export type AlertPanelSpecExtension = Extension<{
-  Nodes: {
-    alert: AlertAttrs
-    details: DetailsAttrs
-    detailsSummary: Record<string, never>
-    detailsContent: Record<string, never>
-  }
-}>
+export type AlertPanelViewExtension = Union<[AlertViewExtension, DetailsViewExtension]>
 
-export type AlertPanelCommandsExtension = Extension<{
-  Commands: {
-    setAlert: [attrs?: Partial<AlertAttrs>]
-    setAlertVariant: [variant: AlertVariant]
-    setAlertType: [type: AlertType]
-    toggleAlert: [attrs?: Partial<AlertAttrs>]
-    setDetails: [title?: string]
-    unsetDetails: []
-    insertAlertBox: [variant?: AlertVariant]
-    insertCollapsiblePanel: [title?: string]
-  }
-}>
-
-export type AlertPanelViewExtension = Extension
-
-export type AlertPanelExtension = Union<
-  [AlertPanelSpecExtension, AlertPanelCommandsExtension, AlertPanelViewExtension]
->
+export type AlertPanelExtension = Union<[AlertExtension, DetailsExtension]>

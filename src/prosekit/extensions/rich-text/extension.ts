@@ -9,9 +9,10 @@ import { defineSuperscript } from 'prosekit/extensions/superscript'
 import { defineTextAlign } from 'prosekit/extensions/text-align'
 import { defineTextColor } from 'prosekit/extensions/text-color'
 
-import { defineAlertPanelExtension } from '../alert-panel'
+import { defineAlertExtension } from '../alert'
 import { defineAttachmentExtension, type AttachmentExtensionOptions } from '../attachment'
 import { defineBasicExtension } from '../basic'
+import { defineDetailsExtension } from '../details'
 import { defineEmojiExtension } from '../emoji'
 import { defineFlipGridExtension } from '../flip-grid'
 import { defineImageExtension, type ImageExtensionOptions } from '../image'
@@ -54,7 +55,8 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineSuperscript(),
     defineSubscript(),
     defineEmojiExtension(),
-    defineAlertPanelExtension(),
+    defineAlertExtension(),
+    defineDetailsExtension(),
     defineAttachmentExtension(options.attachment),
     defineImageExtension(options.image),
     defineTableCellVerticalAlignExtension(),
