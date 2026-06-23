@@ -30,6 +30,7 @@ export type AlertPanelCommandsExtension = Extension<{
     setAlertType: [type: AlertType]
     toggleAlert: [attrs?: Partial<AlertAttrs>]
     setDetails: [title?: string]
+    unsetDetails: []
     insertAlertBox: [variant?: AlertVariant]
     insertCollapsiblePanel: [title?: string]
   }

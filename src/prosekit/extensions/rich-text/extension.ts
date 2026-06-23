@@ -33,7 +33,13 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
       width: 2,
     }),
     definePlaceholder({
-      placeholder: options.placeholder ?? '输入内容...',
+      placeholder: (state) => {
+        if (state.selection.$anchor.parent.type.name === 'detailsSummary') {
+          return '输入面板标题'
+        }
+
+        return options.placeholder ?? '输入内容...'
+      },
       strategy: 'block',
     }),
     defineTrailingNode(),

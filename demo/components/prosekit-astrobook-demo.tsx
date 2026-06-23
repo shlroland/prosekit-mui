@@ -176,14 +176,19 @@ const demoContent: NodeJSON = {
     },
     {
       type: 'alert',
-      attrs: { id: 'alert-demo-info', variant: 'info', type: 'icon' },
+      attrs: { id: 'alert_5ysakwbhvqv', variant: 'warning', type: 'icon' },
       content: [
         {
           type: 'paragraph',
           attrs: { textAlign: null },
-          content: [{ type: 'text', text: '这是一个提示块，可以在工具栏里插入不同语义的 alert。' }],
+          content: [{ type: 'text', text: '此时这是一个警告块。' }],
         },
       ],
+    },
+    {
+      type: 'heading',
+      attrs: { level: 6, textAlign: null },
+      content: [{ type: 'text', text: '折叠面板' }],
     },
     {
       type: 'details',
@@ -191,7 +196,7 @@ const demoContent: NodeJSON = {
       content: [
         {
           type: 'detailsSummary',
-          content: [{ type: 'text', text: '可折叠面板' }],
+          content: [{ type: 'text', text: 'PandaWiki 折叠说明' }],
         },
         {
           type: 'detailsContent',
@@ -199,7 +204,52 @@ const demoContent: NodeJSON = {
             {
               type: 'paragraph',
               attrs: { textAlign: null },
-              content: [{ type: 'text', text: '面板标题可点击展开和收起，内容区域仍然是可编辑的 ProseMirror block。' }],
+              content: [{ type: 'text', text: 'PandaWiki 是一款 AI 大模型驱动的开源知识库搭建系统，帮助你快速构建智能化的产品文档、技术文档、FAQ 和博客系统。' }],
+            },
+            {
+              type: 'details',
+              attrs: { open: true },
+              content: [
+                {
+                  type: 'detailsSummary',
+                  content: [{ type: 'text', text: '嵌套面板' }],
+                },
+                {
+                  type: 'detailsContent',
+                  content: [
+                    {
+                      type: 'paragraph',
+                      attrs: { textAlign: null },
+                      content: [{ type: 'text', text: '嵌套 details 用来检查内部面板的 0.5rem margin、三角指针和内容间距。' }],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'paragraph',
+              attrs: { textAlign: null },
+              content: [{ type: 'text', text: '点击左侧三角可以展开或收起，内容区域仍然保持可编辑。' }],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'details',
+      attrs: { open: false },
+      content: [
+        {
+          type: 'detailsSummary',
+          content: [{ type: 'text', text: '默认关闭的面板' }],
+        },
+        {
+          type: 'detailsContent',
+          content: [
+            {
+              type: 'paragraph',
+              attrs: { textAlign: null },
+              content: [{ type: 'text', text: '这个内容默认隐藏，用来检查关闭态三角方向和 open class。' }],
             },
           ],
         },

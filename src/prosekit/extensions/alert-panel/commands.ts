@@ -59,6 +59,10 @@ function getActiveAlert(state: EditorState) {
   return findAncestorNode(state, (node) => node.type.name === 'alert')
 }
 
+function getActiveDetails(state: EditorState) {
+  return findAncestorNode(state, (node) => node.type.name === 'details')
+}
+
 function updateAlertAttrs(nextAttrs: Partial<AlertAttrs>): Command {
   return (state, dispatch) => {
     const activeAlert = getActiveAlert(state)
@@ -109,7 +113,11 @@ function liftAlert(): Command {
   }
 }
 
-function createDetailsNode(state: EditorState, title = '输入面板标题') {
+function createDetailsNode(
+  state: EditorState,
+  title = '',
+  content?: readonly ProseMirrorNode[],
+) {
   const detailsType = state.schema.nodes.details
   const summaryType = state.schema.nodes.detailsSummary
   const contentType = state.schema.nodes.detailsContent
@@ -124,15 +132,18 @@ function createDetailsNode(state: EditorState, title = '输入面板标题') {
     null,
     summaryText ?? undefined,
   )
+  const contentNodes = content?.length
+    ? content
+    : [paragraphType.createAndFill()].filter((node): node is ProseMirrorNode => Boolean(node))
   const contentNode = contentType.create(
     null,
-    paragraphType.createAndFill() ?? undefined,
+    contentNodes.length ? contentNodes : undefined,
   )
 
   return detailsType.create({ open: true }, [summaryNode, contentNode])
 }
 
-export function insertCollapsiblePanel(title = '输入面板标题'): Command {
+export function insertCollapsiblePanel(title = ''): Command {
   return (state, dispatch) => {
     const detailsNode = createDetailsNode(state, title)
     if (!detailsNode) {
@@ -143,6 +154,91 @@ export function insertCollapsiblePanel(title = '输入面板标题'): Command {
     const startPos = tr.selection.$from.pos - detailsNode.nodeSize
     tr = focusInsertedBlock(tr, Math.max(0, startPos))
     dispatch?.(tr.scrollIntoView())
+    return true
+  }
+}
+
+export function setDetails(title = ''): Command {
+  return (state, dispatch) => {
+    const contentType = state.schema.nodes.detailsContent
+
+    if (!contentType) {
+      return false
+    }
+
+    const { $from, $to } = state.selection
+    const range = $from.blockRange($to)
+    if (!range) {
+      return false
+    }
+
+    const slice = state.doc.slice(range.start, range.end)
+    const match = contentType.contentMatch.matchFragment(slice.content)
+    if (!match) {
+      return false
+    }
+
+    const contentNodes: ProseMirrorNode[] = []
+    slice.content.forEach((child) => {
+      contentNodes.push(child)
+    })
+
+    const detailsNode = createDetailsNode(state, title, contentNodes)
+    if (!detailsNode) {
+      return false
+    }
+
+    if (!dispatch) {
+      return true
+    }
+
+    const tr = state.tr.replaceWith(range.start, range.end, detailsNode)
+    tr.setSelection(TextSelection.create(tr.doc, range.start + 2))
+    dispatch(tr.scrollIntoView())
+    return true
+  }
+}
+
+export function unsetDetails(): Command {
+  return (state, dispatch) => {
+    const activeDetails = getActiveDetails(state)
+    if (!activeDetails) {
+      return false
+    }
+
+    if (activeDetails.node.childCount < 2) {
+      return false
+    }
+
+    const detailsSummary = activeDetails.node.child(0)
+    const detailsContent = activeDetails.node.child(1)
+    const $detailsPos = state.doc.resolve(activeDetails.pos)
+    const defaultTypeForSummary = $detailsPos.parent.type.contentMatch.defaultType
+    const paragraphType = state.schema.nodes.paragraph
+    const summaryType = defaultTypeForSummary ?? paragraphType
+
+    if (!summaryType) {
+      return false
+    }
+
+    const contentNodes: ProseMirrorNode[] = [
+      summaryType.create(null, detailsSummary.content),
+    ]
+    detailsContent.content.forEach((child) => {
+      contentNodes.push(child)
+    })
+
+    if (!dispatch) {
+      return true
+    }
+
+    const tr = state.tr.replaceWith(
+      activeDetails.pos,
+      activeDetails.pos + activeDetails.node.nodeSize,
+      contentNodes,
+    )
+    tr.setSelection(TextSelection.near(tr.doc.resolve(activeDetails.pos + 1)))
+    dispatch(tr.scrollIntoView())
     return true
   }
 }
@@ -188,8 +284,11 @@ export function defineAlertPanelCommands(): AlertPanelCommandsExtension {
         return wrapIn(alertType, normalizeAlertAttrs(attrs))(state, dispatch)
       }
     },
-    setDetails: (title = '输入面板标题') => {
-      return insertCollapsiblePanel(title)
+    setDetails: (title = '') => {
+      return setDetails(title)
+    },
+    unsetDetails: () => {
+      return unsetDetails()
     },
     insertAlertBox: (variant: AlertVariant = 'info') => {
       return (state, dispatch) => {
@@ -201,7 +300,7 @@ export function defineAlertPanelCommands(): AlertPanelCommandsExtension {
         return wrapIn(alertType, normalizeAlertAttrs({ variant, type: 'icon' }))(state, dispatch)
       }
     },
-    insertCollapsiblePanel: (title = '输入面板标题') => {
+    insertCollapsiblePanel: (title = '') => {
       return insertCollapsiblePanel(title)
     },
   }) as AlertPanelCommandsExtension

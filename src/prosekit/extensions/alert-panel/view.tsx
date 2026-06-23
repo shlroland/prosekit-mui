@@ -1,4 +1,5 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { type CSSProperties, type ReactNode } from 'react'
+import { Menu } from '@base-ui/react/menu'
 import type { ReactNodeViewProps } from 'prosekit/react'
 
 import {
@@ -7,7 +8,6 @@ import {
   DeleteLineIcon,
   ErrorWarningFillIcon,
   Information2FillIcon,
-  PlayLineIcon,
   ScrollToBottomLineIcon,
   TextIcon,
   UserSmileFillIcon,
@@ -120,6 +120,62 @@ function AlertToolbarButton({
   )
 }
 
+function AlertTypeMenu({
+  value,
+  onChange,
+}: {
+  value: AlertType
+  onChange: (value: AlertType) => void
+}) {
+  const selectedOption = alertTypeOptions.find((option) => option.value === value) ?? alertTypeOptions[1]
+
+  if (!selectedOption) {
+    return null
+  }
+
+  return (
+    <Menu.Root modal={false}>
+      <Menu.Trigger
+        render={(
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="展示类型"
+            title="展示类型"
+            className="pk:h-7 pk:w-7 pk:rounded-md pk:text-[var(--editor-muted-foreground)] pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]"
+          >
+            {selectedOption.icon}
+          </Button>
+        )}
+      />
+      <Menu.Portal>
+        <Menu.Positioner side="bottom" align="start" sideOffset={6}>
+          <Menu.Popup
+            className="pk:z-[1410] pk:min-w-[136px] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)] pk:outline-none"
+            data-editor-floating
+          >
+            {alertTypeOptions.map((option) => (
+              <Menu.Item
+                key={option.value}
+                className={cn(
+                  'pk:flex pk:cursor-pointer pk:items-center pk:gap-2 pk:rounded-md pk:px-2.5 pk:py-1.5 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:hover:bg-[var(--editor-muted)] data-[highlighted]:bg-[var(--editor-muted)]',
+                  option.value === value && 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]',
+                )}
+                onClick={() => onChange(option.value)}
+              >
+                <span className="pk:flex pk:h-4 pk:w-4 pk:items-center pk:justify-center">
+                  {option.icon}
+                </span>
+                <span>{option.label}</span>
+              </Menu.Item>
+            ))}
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
+  )
+}
+
 export function AlertView({ node, contentRef, selected, view, getPos }: ReactNodeViewProps) {
   const variant = normalizeAlertVariant(node.attrs.variant)
   const type = normalizeAlertType(node.attrs.type)
@@ -167,9 +223,10 @@ export function AlertView({ node, contentRef, selected, view, getPos }: ReactNod
   const content = (
     <div
       className={cn(
-        'pk:my-4 pk:flex pk:items-start pk:gap-4 pk:rounded-[var(--radius)] pk:border pk:px-4 pk:py-3',
+        'alert-wrapper pk:my-4 pk:flex pk:items-start pk:gap-4 pk:rounded-[var(--radius)] pk:border pk:px-4 pk:py-3',
         selected && 'ProseMirror-selectednode',
       )}
+      data-drag-handle
       data-node="alert"
       data-variant={variant}
       data-type={type}
@@ -219,15 +276,10 @@ export function AlertView({ node, contentRef, selected, view, getPos }: ReactNod
             />
           ))}
           <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
-          {alertTypeOptions.map((option) => (
-            <AlertToolbarButton
-              key={option.value}
-              label={option.label}
-              icon={option.icon}
-              active={option.value === type}
-              onClick={() => updateAlertAttrs({ type: option.value })}
-            />
-          ))}
+          <AlertTypeMenu
+            value={type}
+            onChange={(nextType) => updateAlertAttrs({ type: nextType })}
+          />
           <Separator orientation="vertical" className="pk:mx-1 pk:h-4" />
           <AlertToolbarButton
             label="删除提示块"
@@ -239,89 +291,5 @@ export function AlertView({ node, contentRef, selected, view, getPos }: ReactNod
     >
       {content}
     </EditorHoverPopover>
-  )
-}
-
-export function DetailsView({
-  node,
-  contentRef,
-  selected,
-  view,
-  getPos,
-}: ReactNodeViewProps) {
-  const open = node.attrs.open !== false
-
-  function toggleOpen() {
-    if (!view.editable) {
-      return
-    }
-
-    const pos = getPos()
-    if (typeof pos !== 'number') {
-      return
-    }
-
-    const tr = view.state.tr.setNodeMarkup(pos, undefined, {
-      ...node.attrs,
-      open: !open,
-    })
-    view.dispatch(tr)
-    view.focus()
-  }
-
-  return (
-    <details
-      className={cn(
-        'pk:my-5 pk:flex pk:gap-1 pk:rounded-[var(--radius)] pk:border pk:border-[var(--editor-border)] pk:p-2',
-        'pk:[&_[data-node=\'details\']]:my-2 pk:[&_[data-node=\'details-content\']>_:last-child]:mb-2',
-        'pk:[&_[data-type=\'detailsContent\']]:min-w-0 pk:[&_[data-type=\'detailsContent\']]:flex-1 pk:[&_[data-type=\'detailsContent\']]:flex-col pk:[&_[data-type=\'detailsContent\']]:gap-4',
-        'pk:[&_summary]:relative pk:[&_summary]:cursor-text pk:[&_summary]:list-none pk:[&_summary]:font-semibold pk:[&_summary]:outline-none',
-        'pk:[&_summary::-webkit-details-marker]:hidden pk:[&_summary[data-empty=true]::before]:pointer-events-none pk:[&_summary[data-empty=true]::before]:absolute pk:[&_summary[data-empty=true]::before]:left-0 pk:[&_summary[data-empty=true]::before]:top-0 pk:[&_summary[data-empty=true]::before]:text-[var(--pk-editor-placeholder)] pk:[&_summary[data-empty=true]::before]:content-[attr(data-placeholder)]',
-        !open && 'pk:[&_[data-type=\'detailsContent\']]:hidden',
-        selected && 'ProseMirror-selectednode',
-      )}
-      data-node="details"
-      open={open}
-    >
-      <button
-        type="button"
-        className="pk:mt-[0.1rem] pk:inline-flex pk:h-6 pk:w-5 pk:shrink-0 pk:items-center pk:justify-center pk:rounded pk:bg-transparent pk:p-0 pk:text-[0.625rem] pk:text-[var(--editor-foreground)] pk:transition-colors pk:hover:bg-[var(--editor-muted)]"
-        contentEditable={false}
-        aria-label={open ? '收起面板' : '展开面板'}
-        onClick={toggleOpen}
-      >
-        <PlayLineIcon
-          className={cn(
-            'pk:h-3.5 pk:w-3.5 pk:transition-transform pk:duration-200 pk:ease-in-out',
-            open && 'pk:rotate-90',
-          )}
-        />
-      </button>
-      <div ref={contentRef} className="pk:flex pk:min-w-0 pk:flex-1 pk:flex-col pk:gap-4" />
-    </details>
-  )
-}
-
-export function DetailsSummaryView({ node, contentRef }: ReactNodeViewProps) {
-  const isEmpty = node.content.size === 0
-
-  return (
-    <summary
-      ref={contentRef}
-      data-placeholder="输入面板标题"
-      data-empty={isEmpty ? 'true' : 'false'}
-      className="pk:relative pk:list-none pk:font-semibold pk:outline-none pk:marker:hidden"
-    />
-  )
-}
-
-export function DetailsContentView({ contentRef }: ReactNodeViewProps) {
-  return (
-    <div
-      ref={contentRef}
-      data-type="detailsContent"
-      data-node="details-content"
-      className="pk:flex pk:min-w-0 pk:flex-1 pk:flex-col pk:gap-4"
-    />
   )
 }

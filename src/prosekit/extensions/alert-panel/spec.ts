@@ -22,7 +22,7 @@ export function defineAlertPanelSpec(): AlertPanelSpecExtension {
       group: 'block',
       content: 'block+',
       defining: true,
-      isolating: true,
+      draggable: true,
       attrs: {
         id: { default: null },
         variant: { default: 'default' },
@@ -67,6 +67,7 @@ export function defineAlertPanelSpec(): AlertPanelSpecExtension {
           'data-id': typeof node.attrs.id === 'string' && node.attrs.id ? node.attrs.id : null,
           'data-variant': normalizeAlertVariant(node.attrs.variant),
           'data-type': node.attrs.type === 'text' ? 'text' : 'icon',
+          class: 'alert-wrapper',
         },
         0,
       ],
@@ -97,7 +98,7 @@ export function defineAlertPanelSpec(): AlertPanelSpecExtension {
       toDOM: (node) => [
         'details',
         {
-          'data-node': 'details',
+          class: node.attrs.open === false ? 'cq-details' : 'cq-details is-open',
           open: node.attrs.open === false ? null : '',
         },
         0,
@@ -105,13 +106,15 @@ export function defineAlertPanelSpec(): AlertPanelSpecExtension {
     }),
     defineNodeSpec<'detailsSummary', Record<string, never>>({
       name: 'detailsSummary',
-      content: 'inline*',
+      content: 'text*',
       defining: true,
+      isolating: true,
+      selectable: false,
       parseDOM: [{ tag: 'summary' }],
       toDOM: () => [
         'summary',
         {
-          'data-placeholder': '输入面板标题',
+          class: 'cq-details-summary pk:relative pk:cursor-text pk:list-none pk:font-semibold pk:outline-none pk:marker:hidden',
         },
         0,
       ],
@@ -120,6 +123,7 @@ export function defineAlertPanelSpec(): AlertPanelSpecExtension {
       name: 'detailsContent',
       content: 'block+',
       defining: true,
+      selectable: false,
       parseDOM: [
         { tag: 'div[data-type="detailsContent"]' },
         { tag: 'div[data-node="details-content"]' },
@@ -127,8 +131,8 @@ export function defineAlertPanelSpec(): AlertPanelSpecExtension {
       toDOM: () => [
         'div',
         {
+          class: 'cq-details-content',
           'data-type': 'detailsContent',
-          'data-node': 'details-content',
         },
         0,
       ],
