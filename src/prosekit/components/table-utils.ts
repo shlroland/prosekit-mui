@@ -40,6 +40,16 @@ type CellWithRect = {
   rect: { left: number, right: number, top: number, bottom: number }
 }
 
+export type HoveringTableCellInfo = {
+  rowIndex: number
+  columnIndex: number
+  cellPos: number
+  tablePos: number
+  rowRect: DOMRect
+  columnRect: DOMRect
+  tableRect: DOMRect
+}
+
 const tableCellNodeNames = new Set(['tableCell', 'tableHeaderCell'])
 
 function clamp(value: number, min: number, max: number) {
@@ -48,6 +58,16 @@ function clamp(value: number, min: number, max: number) {
 
 function isWithinBounds(row: number, col: number, map: TableMap) {
   return row >= 0 && row < map.height && col >= 0 && col < map.width
+}
+
+function domCellAround(target: HTMLElement | null): HTMLTableCellElement | null {
+  while (target && target.nodeName !== 'TD' && target.nodeName !== 'TH') {
+    target = target.classList?.contains('ProseMirror')
+      ? null
+      : target.parentElement
+  }
+
+  return target as HTMLTableCellElement | null
 }
 
 function createCellInfo(
@@ -277,6 +297,84 @@ export function getAxisCells(
   }
 
   return { cells, mergedCells }
+}
+
+export function getAxisDomRect(
+  editor: any,
+  orientation: TableOrientation,
+  index?: number,
+  tablePos?: number,
+) {
+  const { cells } = getAxisCells(editor, orientation, index, tablePos)
+  const rects = cells
+    .map((cell) => editor.view.nodeDOM(cell.pos) as HTMLElement | null)
+    .map((element) => element?.getBoundingClientRect())
+    .filter((rect): rect is DOMRect => Boolean(rect && rect.width > 0 && rect.height > 0))
+
+  if (!rects.length) {
+    return null
+  }
+
+  const left = Math.min(...rects.map((rect) => rect.left))
+  const right = Math.max(...rects.map((rect) => rect.right))
+  const top = Math.min(...rects.map((rect) => rect.top))
+  const bottom = Math.max(...rects.map((rect) => rect.bottom))
+
+  return new DOMRect(left, top, right - left, bottom - top)
+}
+
+export function getHoveringTableCellInfo(
+  editor: any,
+  event: MouseEvent | PointerEvent,
+): HoveringTableCellInfo | null {
+  if (!editor?.view) {
+    return null
+  }
+
+  const domCell = domCellAround(event.target as HTMLElement | null)
+  if (!domCell) {
+    return null
+  }
+
+  const cellRect = domCell.getBoundingClientRect()
+  const eventPos = editor.view.posAtCoords({
+    left: cellRect.left + cellRect.width / 2,
+    top: cellRect.top + cellRect.height / 2,
+  })
+  if (!eventPos) {
+    return null
+  }
+
+  const $cell = cellAround(editor.state.doc.resolve(eventPos.pos))
+  if (!$cell) {
+    return null
+  }
+
+  const tableNode = $cell.node(-1)
+  const tableStart = $cell.start(-1)
+  const tablePos = tableStart - 1
+  const tableMap = TableMap.get(tableNode)
+  const rect = tableMap.findCell($cell.pos - tableStart)
+  const rowIndex = rect.top
+  const columnIndex = rect.left
+  const rowRect = getAxisDomRect(editor, 'row', rowIndex, tablePos)
+  const columnRect = getAxisDomRect(editor, 'column', columnIndex, tablePos)
+  const tableElement = domCell.closest('table')
+  const tableRect = tableElement?.getBoundingClientRect()
+
+  if (!rowRect || !columnRect || !tableRect) {
+    return null
+  }
+
+  return {
+    rowIndex,
+    columnIndex,
+    cellPos: $cell.pos,
+    tablePos,
+    rowRect,
+    columnRect,
+    tableRect,
+  }
 }
 
 export function isFirstAxis(editor: any, orientation: TableOrientation, index?: number, tablePos?: number) {
