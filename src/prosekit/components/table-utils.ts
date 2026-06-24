@@ -11,8 +11,7 @@ import {
   setCellAttr,
   splitCell,
   TableMap,
-  toggleHeaderColumn,
-  toggleHeaderRow,
+  toggleHeader,
 } from 'prosemirror-tables'
 
 export type TableCellVerticalAlign = 'top' | 'middle' | 'bottom'
@@ -530,7 +529,7 @@ export function selectAxis(
 }
 
 export function toggleSelectedHeader(editor: any, orientation: TableOrientation) {
-  const command = orientation === 'row' ? toggleHeaderRow : toggleHeaderColumn
+  const command = toggleHeader(orientation)
   return command(editor.state, editor.view.dispatch.bind(editor.view))
 }
 
