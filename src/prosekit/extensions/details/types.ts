@@ -14,6 +14,7 @@ export type DetailsSpecExtension = Extension<{
 
 export type DetailsCommandsExtension = Extension<{
   Commands: {
+    insertDetails: [title?: string]
     setDetails: [title?: string]
     unsetDetails: []
     insertCollapsiblePanel: [title?: string]

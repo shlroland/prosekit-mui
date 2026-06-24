@@ -21,6 +21,7 @@ export type FlipGridSpecExtension = Extension<{
 
 export type FlipGridCommandsExtension = Extension<{
   Commands: {
+    insertFlipGrid: [columns?: number]
     setFlipGrid: [columns?: number]
   }
 }>

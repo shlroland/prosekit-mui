@@ -4,7 +4,7 @@ import type { Command } from 'prosekit/pm/state'
 
 import type { ImageAttrs, ImageCommandsExtension } from './types'
 
-function setImage(attrs: ImageAttrs = {}): Command {
+export function insertImage(attrs: ImageAttrs = {}): Command {
   return insertNode({
     type: 'image',
     attrs: {
@@ -58,7 +58,10 @@ function removeImage(): Command {
 
 export function defineImageCommands(): ImageCommandsExtension {
   return defineCommands({
-    setImage,
+    insertImage,
+    setImage: (attrs?: ImageAttrs) => {
+      return insertImage(attrs)
+    },
     updateImage,
     removeImage,
   }) as ImageCommandsExtension

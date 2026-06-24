@@ -1,5 +1,5 @@
 import { defineCommands } from 'prosekit/core'
-import type { Node as ProseMirrorNode } from 'prosekit/pm/model'
+import type { Node as ProseMirrorNode, NodeType } from 'prosekit/pm/model'
 import { TextSelection, type Command, type EditorState, type Transaction } from 'prosekit/pm/state'
 
 import type { DetailsCommandsExtension } from './types'
@@ -28,6 +28,48 @@ function findAncestorNode(state: EditorState, predicate: (node: ProseMirrorNode)
 
 function getActiveDetails(state: EditorState) {
   return findAncestorNode(state, (node) => node.type.name === 'details')
+}
+
+function findInsertAfterPos(state: EditorState, nodeType: NodeType) {
+  const { $from } = state.selection
+
+  for (let depth = $from.depth; depth > 0; depth -= 1) {
+    const parentDepth = depth - 1
+    const parent = $from.node(parentDepth)
+    const index = $from.index(parentDepth)
+
+    if (parent.canReplaceWith(index + 1, index + 1, nodeType)) {
+      return $from.after(depth)
+    }
+  }
+
+  return null
+}
+
+function tryInsertDetailsNode(state: EditorState, detailsNode: ProseMirrorNode) {
+  try {
+    const tr = state.tr.replaceSelectionWith(detailsNode, false)
+    return {
+      tr,
+      startPos: tr.selection.$from.pos - detailsNode.nodeSize,
+    }
+  } catch {
+    const detailsType = state.schema.nodes.details
+    if (!detailsType) {
+      return null
+    }
+
+    const insertPos = findInsertAfterPos(state, detailsType)
+    if (insertPos == null) {
+      return null
+    }
+
+    const tr = state.tr.insert(insertPos, detailsNode)
+    return {
+      tr,
+      startPos: insertPos,
+    }
+  }
 }
 
 function createDetailsNode(
@@ -67,12 +109,20 @@ export function insertCollapsiblePanel(title = ''): Command {
       return false
     }
 
-    let tr = state.tr.replaceSelectionWith(detailsNode, false)
-    const startPos = tr.selection.$from.pos - detailsNode.nodeSize
-    tr = focusInsertedBlock(tr, Math.max(0, startPos))
+    const inserted = tryInsertDetailsNode(state, detailsNode)
+    if (!inserted) {
+      return false
+    }
+
+    let tr = inserted.tr
+    tr = focusInsertedBlock(tr, Math.max(0, inserted.startPos))
     dispatch?.(tr.scrollIntoView())
     return true
   }
+}
+
+export function insertDetails(title = ''): Command {
+  return insertCollapsiblePanel(title)
 }
 
 export function setDetails(title = ''): Command {
@@ -162,6 +212,9 @@ export function unsetDetails(): Command {
 
 export function defineDetailsCommands(): DetailsCommandsExtension {
   return defineCommands({
+    insertDetails: (title = '') => {
+      return insertDetails(title)
+    },
     setDetails: (title = '') => {
       return setDetails(title)
     },

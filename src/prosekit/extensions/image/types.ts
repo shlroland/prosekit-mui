@@ -40,6 +40,7 @@ export type ImageSpecExtension = Extension
 
 export type ImageCommandsExtension = Extension<{
   Commands: {
+    insertImage: [attrs?: ImageAttrs]
     setImage: [attrs?: ImageAttrs]
     updateImage: [attrs: Partial<ImageAttrs>]
     removeImage: []

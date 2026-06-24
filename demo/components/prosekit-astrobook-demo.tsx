@@ -616,7 +616,7 @@ function ProseKitAstrobookToolbar() {
         <DemoToolbarButton tip="引用" active={state.blockquote} icon={<QuoteTextIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
         <DemoToolbarButton tip="提示块" icon={<Information2LineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setAlert({ variant: 'info', type: 'icon' }) }} />
         <DemoToolbarButton tip="警告块" icon={<ErrorWarningFillIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setAlert({ variant: 'warning', type: 'icon' }) }} />
-        <DemoToolbarButton tip="折叠面板" icon={<CollapseIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setDetails() }} />
+        <DemoToolbarButton tip="折叠面板" icon={<CollapseIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertDetails() }} />
         <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
         <ToolbarItem
           tip="表格"
@@ -635,12 +635,12 @@ function ProseKitAstrobookToolbar() {
             editor.commands.insertTable({ row: rows, col: columns })
           }}
         />
-        <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setImage({ src: '', width: 760, align: 'center' }) }} />
+        <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertImage({ src: '', width: 760, align: 'center' }) }} />
         <EmojiPickerPopover>
           <EmotionLineIcon {...iconProps} />
         </EmojiPickerPopover>
         <DemoToolbarButton tip="附件" icon={<AttachmentLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAttachment() }} />
-        <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setFlipGrid(2) }} />
+        <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertFlipGrid(2) }} />
         <LinkEditorPopover
           triggerStyle={{ display: 'inline-flex' }}
           open={linkOpen}
