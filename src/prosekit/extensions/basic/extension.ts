@@ -23,12 +23,12 @@ import { defineList, type ListExtension } from 'prosekit/extensions/list'
 import { defineModClickPrevention, type ModClickPreventionExtension } from 'prosekit/extensions/mod-click-prevention'
 import { defineParagraph, type ParagraphExtension } from 'prosekit/extensions/paragraph'
 import { defineStrike, type StrikeExtension } from 'prosekit/extensions/strike'
-import { defineTable, type TableExtension } from 'prosekit/extensions/table'
 import { defineText, type TextExtension } from 'prosekit/extensions/text'
 import { defineUnderline, type UnderlineExtension } from 'prosekit/extensions/underline'
 import { defineVirtualSelection, type VirtualSelectionExtension } from 'prosekit/extensions/virtual-selection'
 
 import { defineLinkExtension, type LinkExtension } from '../link'
+import { defineTableExtension, type TableOverlayExtension } from '../table'
 
 export type BasicExtension = Union<
   [
@@ -41,7 +41,7 @@ export type BasicExtension = Union<
     ImageExtension,
     HorizontalRuleExtension,
     HardBreakExtension,
-    TableExtension,
+    TableOverlayExtension,
     CodeBlockExtension,
     ItalicExtension,
     BoldExtension,
@@ -69,7 +69,7 @@ export function defineBasicExtension(): BasicExtension {
     defineImage(),
     defineHorizontalRule(),
     defineHardBreak(),
-    defineTable(),
+    defineTableExtension(),
     defineCodeBlock(),
     defineItalic(),
     defineBold(),

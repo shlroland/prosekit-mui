@@ -5,7 +5,8 @@ import {
   MenuTrigger,
 } from 'prosekit/react/menu'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import {
   DeleteBack2LineIcon,
@@ -20,8 +21,10 @@ import {
   canMergeSelectedCells,
   canSplitSelectedCell,
   clearCurrentCellContent,
+  getSelectedCellElement,
   getSelectedCellAttr,
   getSingleSelectedCellRect,
+  getSelectedTableOverlayElement,
   isCellEmpty,
   isSelectionInTable,
   mergeSelectedCells,
@@ -46,6 +49,23 @@ type TableCellSnapshot = {
   open: boolean
   selectedTextAlign: TableCellTextAlign | null
   selectedVerticalAlign: TableCellVerticalAlign | null
+}
+
+function rectEquals(a: DOMRect | null, b: DOMRect | null) {
+  if (a === b) {
+    return true
+  }
+
+  if (!a || !b) {
+    return false
+  }
+
+  return (
+    Math.abs(a.left - b.left) < 0.5
+    && Math.abs(a.top - b.top) < 0.5
+    && Math.abs(a.width - b.width) < 0.5
+    && Math.abs(a.height - b.height) < 0.5
+  )
 }
 
 function normalizeTextAlign(value: string | null): TableCellTextAlign | null {
@@ -115,14 +135,94 @@ function getTableCellToolbarSnapshot(editor: any): string {
 export function TableCellFloatingToolbar() {
   const editor = useEditor<any>()
   const snapshot = useEditorDerivedValue<any, string>(getTableCellToolbarSnapshot)
-  const state = useMemo(() => JSON.parse(snapshot) as TableCellSnapshot, [snapshot])
-  const cellRect = useMemo(() => {
-    if (!state.open || !editor.mounted) {
-      return null
+  const selectionKey = useEditorDerivedValue<any, string>((currentEditor) => {
+    if (!currentEditor.mounted) {
+      return '0:0:closed'
     }
 
-    return getSingleSelectedCellRect(editor)
-  }, [editor, state.open, snapshot])
+    const { selection } = currentEditor.state
+    return `${selection.from}:${selection.to}:${isSelectionInTable(currentEditor.state) ? 'open' : 'closed'}`
+  })
+  const state = useMemo(() => JSON.parse(snapshot) as TableCellSnapshot, [snapshot])
+  const [cellRect, setCellRect] = useState<DOMRect | null>(null)
+  const [overlayRoot, setOverlayRoot] = useState<HTMLDivElement | null>(null)
+  const frameRef = useRef<number | null>(null)
+
+  const updateCellRect = useCallback(() => {
+    if (!state.open || !editor.mounted || !editor.view.editable) {
+      setCellRect((current) => (current ? null : current))
+      return
+    }
+
+    const nextRect = getSingleSelectedCellRect(editor)
+    setCellRect((current) => (rectEquals(current, nextRect) ? current : nextRect))
+  }, [editor, state.open])
+
+  useEffect(() => {
+    updateCellRect()
+  }, [selectionKey, updateCellRect])
+
+  useEffect(() => {
+    if (!state.open || !editor.mounted) {
+      setOverlayRoot(null)
+      return
+    }
+
+    const container = getSelectedTableOverlayElement(editor)
+    if (!container) {
+      setOverlayRoot(null)
+      return
+    }
+
+    setOverlayRoot((current) => (current === container ? current : container))
+  }, [editor, selectionKey, state.open])
+
+  useEffect(() => {
+    if (!state.open || !editor.mounted) {
+      return
+    }
+
+    const scheduleUpdate = () => {
+      if (frameRef.current != null) {
+        return
+      }
+
+      frameRef.current = window.requestAnimationFrame(() => {
+        frameRef.current = null
+        updateCellRect()
+      })
+    }
+
+    window.addEventListener('scroll', scheduleUpdate, true)
+    window.addEventListener('resize', scheduleUpdate)
+
+    const selectedCell = getSelectedCellElement(editor)
+    const selectedTable = selectedCell?.closest('table') as HTMLTableElement | null
+    const observer = typeof ResizeObserver === 'function'
+      ? new ResizeObserver(() => {
+          scheduleUpdate()
+        })
+      : null
+
+    if (observer && selectedCell) {
+      observer.observe(selectedCell)
+    }
+
+    if (observer && selectedTable) {
+      observer.observe(selectedTable)
+    }
+
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate, true)
+      window.removeEventListener('resize', scheduleUpdate)
+      observer?.disconnect()
+
+      if (frameRef.current != null) {
+        window.cancelAnimationFrame(frameRef.current)
+        frameRef.current = null
+      }
+    }
+  }, [editor, selectionKey, state.open, updateCellRect])
 
   function applyTextColor(color: string) {
     editor.focus()
@@ -148,28 +248,31 @@ export function TableCellFloatingToolbar() {
     return null
   }
 
-  return (
-    <>
-      {!state.hasMultiSelection ? (
-        <div
-          className="pk:pointer-events-none pk:fixed pk:z-[1302] pk:rounded-md pk:border-2 pk:border-[var(--editor-primary)] pk:shadow-[0_0_0_1px_rgba(255,255,255,0.85)]"
-          style={{
-            top: cellRect.top - 1,
-            left: cellRect.left - 1,
-            width: cellRect.width + 2,
-            height: cellRect.height + 2,
-          }}
-        />
-      ) : null}
+  const overlayRootRect = overlayRoot?.getBoundingClientRect() ?? null
 
+  if (!overlayRoot || !overlayRootRect) {
+    return null
+  }
+
+  const relativeTop = cellRect.top - overlayRootRect.top - 1
+  const relativeLeft = cellRect.left - overlayRootRect.left - 1
+  const overlay = (
+    <div
+      className="pk:pointer-events-none pk:absolute"
+      style={{
+        top: relativeTop,
+        left: relativeLeft,
+        width: cellRect.width + 2,
+        height: cellRect.height + 2,
+      }}
+    >
+      <div
+        className="pk:absolute pk:inset-0 pk:rounded-[2px] pk:border-2 pk:border-[var(--editor-primary)] pk:shadow-[0_0_0_1px_rgba(255,255,255,0.85)]"
+      />
       <MenuRoot>
         <MenuTrigger>
           <div
-            className="pk:fixed pk:z-[1303]"
-            style={{
-              top: cellRect.top + (cellRect.height / 2) - 7,
-              left: cellRect.right - 7,
-            }}
+            className="pk:pointer-events-auto pk:absolute pk:right-[-7px] pk:top-1/2 pk:z-[1303] pk:-translate-y-1/2"
           >
             <Tooltip content="单元格操作">
               <button
@@ -251,6 +354,8 @@ export function TableCellFloatingToolbar() {
           </MenuPopup>
         </MenuPositioner>
       </MenuRoot>
-    </>
+    </div>
   )
+
+  return createPortal(overlay, overlayRoot)
 }

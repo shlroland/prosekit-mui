@@ -706,6 +706,30 @@ export function duplicateAxis(
   return true
 }
 
+export function getSelectedCellElement(editor: any) {
+  const view = editor.view
+  const selectedCell = view.dom.querySelector('td.selectedCell, th.selectedCell') as HTMLTableCellElement | null
+  if (selectedCell) {
+    return selectedCell
+  }
+
+  const { node } = view.domAtPos(view.state.selection.from)
+  const element = node.nodeType === Node.ELEMENT_NODE
+    ? node as Element
+    : node.parentElement
+
+  return element?.closest('td, th') as HTMLTableCellElement | null
+}
+
+export function getSelectedTableWrapperElement(editor: any) {
+  return getSelectedCellElement(editor)?.closest('.tableWrapper') as HTMLDivElement | null
+}
+
+export function getSelectedTableOverlayElement(editor: any) {
+  return getSelectedTableWrapperElement(editor)
+    ?.querySelector<HTMLDivElement>(':scope > .pk-table-selection-overlay-container') ?? null
+}
+
 export function getSingleSelectedCellRect(editor: any) {
   const view = editor.view
   const selectedCells = Array.from(
@@ -726,23 +750,10 @@ export function getSingleSelectedCellRect(editor: any) {
     const top = Math.min(...rects.map((rect) => rect.top))
     const bottom = Math.max(...rects.map((rect) => rect.bottom))
 
-    return {
-      left,
-      right,
-      top,
-      bottom,
-      width: right - left,
-      height: bottom - top,
-      x: left,
-      y: top,
-    }
+    return new DOMRect(left, top, right - left, bottom - top)
   }
 
-  const { node } = view.domAtPos(view.state.selection.from)
-  const element = node.nodeType === Node.ELEMENT_NODE
-    ? node as Element
-    : node.parentElement
-  const cell = element?.closest('td, th') as HTMLTableCellElement | null
+  const cell = getSelectedCellElement(editor)
 
   return cell?.getBoundingClientRect() ?? null
 }
