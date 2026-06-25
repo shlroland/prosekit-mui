@@ -23,7 +23,13 @@ function normalizeAlertType(value: unknown) {
 }
 
 function formatFileSize(value: unknown): string {
-  const bytes = Number.parseInt(normalizeText(value) || '0', 10)
+  const text = normalizeText(value).trim()
+
+  if (/[a-z]/i.test(text)) {
+    return text
+  }
+
+  const bytes = Number.parseInt(text || '0', 10)
 
   if (!Number.isFinite(bytes) || bytes <= 0) {
     return ''
@@ -195,4 +201,3 @@ export function createBuiltinHTMLMarkMapping(): MarkMapping<string> {
     },
   }
 }
-
