@@ -1,9 +1,3 @@
-import {
-  MenuPopup,
-  MenuPositioner,
-  MenuRoot,
-  MenuTrigger,
-} from 'prosekit/react/menu'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -15,7 +9,7 @@ import {
   MoreLineIcon,
   SplitCellsVerticalIcon,
 } from '../../icons'
-import { Tooltip } from '../../ui'
+import { EditorFloatingPopover, Tooltip } from '../../ui'
 import {
   applyTextColorToSelection,
   canMergeSelectedCells,
@@ -146,7 +140,16 @@ export function TableCellFloatingToolbar() {
   const state = useMemo(() => JSON.parse(snapshot) as TableCellSnapshot, [snapshot])
   const [cellRect, setCellRect] = useState<DOMRect | null>(null)
   const [overlayRoot, setOverlayRoot] = useState<HTMLDivElement | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuAnchorRef = useRef<HTMLButtonElement | null>(null)
   const frameRef = useRef<number | null>(null)
+  const triggerId = 'pk-table-cell-menu-trigger'
+
+  useEffect(() => {
+    if (!state.open) {
+      setMenuOpen(false)
+    }
+  }, [state.open])
 
   const updateCellRect = useCallback(() => {
     if (!state.open || !editor.mounted || !editor.view.editable) {
@@ -269,91 +272,105 @@ export function TableCellFloatingToolbar() {
       <div
         className="pk:absolute pk:inset-0 pk:rounded-[2px] pk:border-2 pk:border-[var(--editor-primary)] pk:shadow-[0_0_0_1px_rgba(255,255,255,0.85)]"
       />
-      <MenuRoot>
-        <MenuTrigger>
-          <div
-            className="pk:pointer-events-auto pk:absolute pk:right-[-7px] pk:top-1/2 pk:z-[1303] pk:-translate-y-1/2"
+      <div
+        className="pk:pointer-events-auto pk:absolute pk:right-[-7px] pk:top-1/2 pk:z-[1303] pk:-translate-y-1/2"
+      >
+        <Tooltip content="单元格操作">
+          <button
+            ref={menuAnchorRef}
+            id={triggerId}
+            type="button"
+            aria-label="单元格操作"
+            onMouseDown={(event) => {
+              event.preventDefault()
+            }}
+            onClick={() => {
+              setMenuOpen((current) => !current)
+            }}
+            className="pk:inline-flex pk:h-[14px] pk:w-[14px] pk:items-center pk:justify-center pk:rounded-[6px] pk:bg-[var(--editor-primary)] pk:text-white pk:shadow-[0_6px_14px_rgba(37,99,235,0.28)]"
           >
-            <Tooltip content="单元格操作">
-              <button
-                type="button"
-                aria-label="单元格操作"
-                onMouseDown={(event) => {
-                  event.preventDefault()
+            <MoreLineIcon className="pk:h-3 pk:w-3" />
+          </button>
+        </Tooltip>
+      </div>
+      <EditorFloatingPopover
+        anchor={menuAnchorRef}
+        open={menuOpen}
+        triggerId={triggerId}
+        side="right"
+        align="start"
+        sideOffset={8}
+        popupClassName="pk:z-[1405]"
+        onOpenChange={(open) => {
+          setMenuOpen(open)
+        }}
+        content={(
+          <div
+            className="pk:min-w-[216px] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
+            data-editor-floating
+          >
+            {state.canMerge ? (
+              <TableMenuActionItem
+                label="合并单元格"
+                icon={<MergeCellsVerticalIcon className="pk:h-4 pk:w-4" />}
+                onSelect={() => {
+                  editor.focus()
+                  mergeSelectedCells(editor)
+                  setMenuOpen(false)
                 }}
-                className="pk:inline-flex pk:h-[14px] pk:w-[14px] pk:items-center pk:justify-center pk:rounded-[6px] pk:bg-[var(--editor-primary)] pk:text-white pk:shadow-[0_6px_14px_rgba(37,99,235,0.28)]"
-              >
-                <MoreLineIcon className="pk:h-3 pk:w-3" />
-              </button>
-            </Tooltip>
+              />
+            ) : null}
+
+            {state.canSplit ? (
+              <TableMenuActionItem
+                label="拆分单元格"
+                icon={<SplitCellsVerticalIcon className="pk:h-4 pk:w-4" />}
+                onSelect={() => {
+                  editor.focus()
+                  splitSelectedCell(editor)
+                  setMenuOpen(false)
+                }}
+              />
+            ) : null}
+
+            {state.canMerge || state.canSplit ? <TableMenuDivider /> : null}
+
+            <TableColorSubmenu
+              onApplyTextColor={applyTextColor}
+              onApplyBackgroundColor={applyBackgroundColor}
+            />
+            <TableAlignSubmenu
+              selectedTextAlign={state.selectedTextAlign}
+              selectedVerticalAlign={state.selectedVerticalAlign}
+              onApplyTextAlign={applyTextAlign}
+              onApplyVerticalAlign={applyVerticalAlign}
+            />
+
+            <TableMenuDivider />
+
+            <TableMenuActionItem
+              label="清空单元格内容"
+              icon={<DeleteBack2LineIcon className="pk:h-4 pk:w-4" />}
+              disabled={!state.canClear}
+              onSelect={() => {
+                editor.focus()
+                clearCurrentCellContent(editor)
+                setMenuOpen(false)
+              }}
+            />
+            <TableMenuActionItem
+              label="删除表格"
+              icon={<DeleteLineIcon className="pk:h-4 pk:w-4" />}
+              disabled={!state.canDeleteTable}
+              onSelect={() => {
+                editor.focus()
+                ;(editor.commands as any).deleteTable?.()
+                setMenuOpen(false)
+              }}
+            />
           </div>
-        </MenuTrigger>
-
-        <MenuPositioner placement="right-start" offset={8} strategy="fixed" hoist>
-          <MenuPopup className="pk:outline-none">
-            <div
-              className="pk:min-w-[216px] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
-              data-editor-floating
-            >
-              {state.canMerge ? (
-                <TableMenuActionItem
-                  label="合并单元格"
-                  icon={<MergeCellsVerticalIcon className="pk:h-4 pk:w-4" />}
-                  onSelect={() => {
-                    editor.focus()
-                    mergeSelectedCells(editor)
-                  }}
-                />
-              ) : null}
-
-              {state.canSplit ? (
-                <TableMenuActionItem
-                  label="拆分单元格"
-                  icon={<SplitCellsVerticalIcon className="pk:h-4 pk:w-4" />}
-                  onSelect={() => {
-                    editor.focus()
-                    splitSelectedCell(editor)
-                  }}
-                />
-              ) : null}
-
-              {state.canMerge || state.canSplit ? <TableMenuDivider /> : null}
-
-              <TableColorSubmenu
-                onApplyTextColor={applyTextColor}
-                onApplyBackgroundColor={applyBackgroundColor}
-              />
-              <TableAlignSubmenu
-                selectedTextAlign={state.selectedTextAlign}
-                selectedVerticalAlign={state.selectedVerticalAlign}
-                onApplyTextAlign={applyTextAlign}
-                onApplyVerticalAlign={applyVerticalAlign}
-              />
-
-              <TableMenuDivider />
-
-              <TableMenuActionItem
-                label="清空单元格内容"
-                icon={<DeleteBack2LineIcon className="pk:h-4 pk:w-4" />}
-                disabled={!state.canClear}
-                onSelect={() => {
-                  editor.focus()
-                  clearCurrentCellContent(editor)
-                }}
-              />
-              <TableMenuActionItem
-                label="删除表格"
-                icon={<DeleteLineIcon className="pk:h-4 pk:w-4" />}
-                disabled={!state.canDeleteTable}
-                onSelect={() => {
-                  editor.focus()
-                  ;(editor.commands as any).deleteTable?.()
-                }}
-              />
-            </div>
-          </MenuPopup>
-        </MenuPositioner>
-      </MenuRoot>
+        )}
+      />
     </div>
   )
 

@@ -1,10 +1,3 @@
-import {
-  MenuItem,
-  MenuPopup,
-  MenuPositioner,
-  MenuSubmenuRoot,
-  MenuSubmenuTrigger,
-} from 'prosekit/react/menu'
 import { type ReactNode } from 'react'
 
 import {
@@ -18,6 +11,7 @@ import {
   ArrowDownSLineIcon,
   BrushLineIcon,
 } from '../../icons'
+import { EditorHoverPopover } from '../../ui'
 import { cn } from '../../utils/cn'
 import type { TableCellTextAlign, TableCellVerticalAlign } from './table-utils'
 
@@ -65,19 +59,23 @@ export function TableMenuActionItem({
   className,
 }: TableMenuActionItemProps) {
   return (
-    <MenuItem
-      value={label}
+    <button
+      type="button"
+      aria-label={label}
       disabled={disabled}
-      closeOnSelect={closeOnSelect}
+      data-selected={selected ? '' : undefined}
       className={cn(
         'pk:grid pk:min-h-8 pk:grid-cols-[1rem_minmax(0,1fr)_auto] pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-1.5 pk:text-[13px] pk:leading-none pk:text-[var(--editor-foreground)] pk:outline-none',
         'pk:hover:bg-[var(--editor-muted)]',
-        'data-[highlighted]:bg-[var(--editor-muted)]',
+        'pk:focus-visible:bg-[var(--editor-muted)]',
         disabled && 'pk:pointer-events-none pk:opacity-40',
         selected && 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]',
         className,
       )}
-      onSelect={() => {
+      onMouseDown={(event) => {
+        event.preventDefault()
+      }}
+      onClick={() => {
         onSelect()
       }}
     >
@@ -86,7 +84,7 @@ export function TableMenuActionItem({
       </span>
       <span className="pk:min-w-0 pk:truncate">{label}</span>
       <span />
-    </MenuItem>
+    </button>
   )
 }
 
@@ -110,30 +108,35 @@ type TableSubmenuProps = {
 
 function TableSubmenu({ icon, label, children }: TableSubmenuProps) {
   return (
-    <MenuSubmenuRoot>
-      <MenuSubmenuTrigger
-        value={label}
+    <EditorHoverPopover
+      nativeButton
+      hoverDelay={60}
+      closeDelay={220}
+      side="right"
+      align="start"
+      sideOffset={8}
+      popupClassName="pk:min-w-[220px] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
+      content={children}
+    >
+      <button
+        type="button"
+        aria-label={label}
         className={cn(
           'pk:grid pk:min-h-8 pk:grid-cols-[1rem_minmax(0,1fr)_auto] pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-1.5 pk:text-[13px] pk:leading-none pk:text-[var(--editor-foreground)] pk:outline-none',
           'pk:hover:bg-[var(--editor-muted)]',
-          'data-[highlighted]:bg-[var(--editor-muted)]',
+          'pk:focus-visible:bg-[var(--editor-muted)]',
         )}
+        onMouseDown={(event) => {
+          event.preventDefault()
+        }}
       >
         <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
           {icon}
         </span>
         <span className="pk:min-w-0 pk:truncate">{label}</span>
         <ArrowDownSLineIcon className="pk:h-4 pk:w-4 pk:rotate-[-90deg] pk:text-[var(--editor-muted-foreground)]" />
-      </MenuSubmenuTrigger>
-      <MenuPositioner placement="right-start" offset={8} strategy="fixed" hoist>
-        <MenuPopup
-          className="pk:z-[1406] pk:min-w-[220px] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)] pk:outline-none"
-          data-editor-floating
-        >
-          {children}
-        </MenuPopup>
-      </MenuPositioner>
-    </MenuSubmenuRoot>
+      </button>
+    </EditorHoverPopover>
   )
 }
 

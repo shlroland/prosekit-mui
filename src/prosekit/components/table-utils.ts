@@ -69,6 +69,10 @@ function domCellAround(target: HTMLElement | null): HTMLTableCellElement | null 
   return target as HTMLTableCellElement | null
 }
 
+export function getDomTableCell(target: EventTarget | null) {
+  return domCellAround(target as HTMLElement | null)
+}
+
 function createCellInfo(
   row: number,
   column: number,
@@ -322,29 +326,31 @@ export function getAxisDomRect(
   return new DOMRect(left, top, right - left, bottom - top)
 }
 
-export function getHoveringTableCellInfo(
+export function getHoveringTableCellInfoFromDomCell(
   editor: any,
-  event: MouseEvent | PointerEvent,
+  domCell: HTMLTableCellElement | null,
 ): HoveringTableCellInfo | null {
   if (!editor?.view) {
     return null
   }
 
-  const domCell = domCellAround(event.target as HTMLElement | null)
   if (!domCell) {
     return null
   }
 
-  const cellRect = domCell.getBoundingClientRect()
-  const eventPos = editor.view.posAtCoords({
-    left: cellRect.left + cellRect.width / 2,
-    top: cellRect.top + cellRect.height / 2,
-  })
-  if (!eventPos) {
+  let cellPos: number | null = null
+
+  try {
+    cellPos = editor.view.posAtDOM(domCell, 0)
+  } catch {
+    cellPos = null
+  }
+
+  if (cellPos == null) {
     return null
   }
 
-  const $cell = cellAround(editor.state.doc.resolve(eventPos.pos))
+  const $cell = cellAround(editor.state.doc.resolve(cellPos))
   if (!$cell) {
     return null
   }
@@ -374,6 +380,13 @@ export function getHoveringTableCellInfo(
     columnRect,
     tableRect,
   }
+}
+
+export function getHoveringTableCellInfo(
+  editor: any,
+  event: MouseEvent | PointerEvent,
+): HoveringTableCellInfo | null {
+  return getHoveringTableCellInfoFromDomCell(editor, domCellAround(event.target as HTMLElement | null))
 }
 
 export function isFirstAxis(editor: any, orientation: TableOrientation, index?: number, tablePos?: number) {

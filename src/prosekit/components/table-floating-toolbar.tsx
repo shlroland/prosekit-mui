@@ -7,12 +7,16 @@ import {
   TableHandleRowMenuRoot,
   TableHandleRowMenuTrigger,
 } from 'prosekit/react/table-handle'
-import {
-  MenuPopup,
-  MenuPositioner,
-} from 'prosekit/react/menu'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import {
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 
 import {
   DeleteBack2LineIcon,
@@ -32,7 +36,7 @@ import {
   SkipRightIcon,
   SkipUpIcon,
 } from '../../icons'
-import { Tooltip } from '../../ui'
+import { EditorFloatingPopover, Tooltip } from '../../ui'
 import {
   applyTextColorToSelection,
   areAxisCellsAllHeader,
@@ -42,7 +46,9 @@ import {
   duplicateAxis,
   getAxisDomRect,
   getAxisIndex,
+  getDomTableCell,
   getHoveringTableCellInfo,
+  getHoveringTableCellInfoFromDomCell,
   getSelectedCellAttr,
   getTable,
   isFirstAxis,
@@ -130,25 +136,25 @@ function getHandleGeometry(cell: HoveringTableCellInfo): TableHandleGeometry {
   }
 }
 
-function useTableHandleHoverState(editor: any) {
+function useTableHandleHoverState(editor: any, lockedHandle: TableOrientation | null) {
   const [hoverState, setHoverState] = useState<TableHandleHoverState | null>(null)
   const [activeHandle, setActiveHandle] = useState<TableOrientation | null>(null)
+  const lastEventRef = useRef<MouseEvent | PointerEvent | null>(null)
+  const hoveredCellElementRef = useRef<HTMLTableCellElement | null>(null)
+  const clearTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!editor?.view?.dom) {
       return
     }
 
-    let lastEvent: MouseEvent | PointerEvent | null = null
-    let clearTimer: number | null = null
-
     function cancelClearTimer() {
-      if (clearTimer == null) {
+      if (clearTimerRef.current == null) {
         return
       }
 
-      window.clearTimeout(clearTimer)
-      clearTimer = null
+      window.clearTimeout(clearTimerRef.current)
+      clearTimerRef.current = null
     }
 
     function updateFromEvent(event: MouseEvent | PointerEvent | null) {
@@ -161,6 +167,25 @@ function useTableHandleHoverState(editor: any) {
         return
       }
 
+      hoveredCellElementRef.current = getDomTableCell(event.target)
+
+      cancelClearTimer()
+      setHoverState({
+        cell,
+        geometry: getHandleGeometry(cell),
+      })
+    }
+
+    function updateFromHoveredCell() {
+      if (!hoveredCellElementRef.current || !hoveredCellElementRef.current.isConnected) {
+        return
+      }
+
+      const cell = getHoveringTableCellInfoFromDomCell(editor, hoveredCellElementRef.current)
+      if (!cell) {
+        return
+      }
+
       cancelClearTimer()
       setHoverState({
         cell,
@@ -169,15 +194,23 @@ function useTableHandleHoverState(editor: any) {
     }
 
     function handlePointerOver(event: PointerEvent) {
-      lastEvent = event
+      lastEventRef.current = event
       updateFromEvent(event)
     }
 
     function handleViewportChange() {
-      updateFromEvent(lastEvent)
+      updateFromHoveredCell()
+      if (!hoveredCellElementRef.current) {
+        updateFromEvent(lastEventRef.current)
+      }
     }
 
     function handleDocumentPointerMove(event: PointerEvent) {
+      if (lockedHandle) {
+        cancelClearTimer()
+        return
+      }
+
       const target = event.target
       if (!(target instanceof Element)) {
         return
@@ -193,11 +226,11 @@ function useTableHandleHoverState(editor: any) {
         return
       }
 
-      if (clearTimer == null) {
-        clearTimer = window.setTimeout(() => {
+      if (clearTimerRef.current == null) {
+        clearTimerRef.current = window.setTimeout(() => {
           setHoverState(null)
           setActiveHandle(null)
-          clearTimer = null
+          clearTimerRef.current = null
         }, 160)
       }
     }
@@ -205,17 +238,34 @@ function useTableHandleHoverState(editor: any) {
     const dom = editor.view.dom as HTMLElement
     dom.addEventListener('pointerover', handlePointerOver)
     document.addEventListener('pointermove', handleDocumentPointerMove)
+    const scrollParents: Array<Element | Window> = [window]
+    let current: HTMLElement | null = dom.parentElement
+    while (current) {
+      const styles = window.getComputedStyle(current)
+      const isScrollable = /(auto|scroll|overlay)/.test(
+        `${styles.overflow}${styles.overflowX}${styles.overflowY}`,
+      )
+      if (isScrollable) {
+        scrollParents.push(current)
+      }
+      current = current.parentElement
+    }
+
     window.addEventListener('resize', handleViewportChange)
-    window.addEventListener('scroll', handleViewportChange, true)
+    for (const scrollParent of scrollParents) {
+      scrollParent.addEventListener('scroll', handleViewportChange, { capture: true })
+    }
 
     return () => {
       cancelClearTimer()
       dom.removeEventListener('pointerover', handlePointerOver)
       document.removeEventListener('pointermove', handleDocumentPointerMove)
       window.removeEventListener('resize', handleViewportChange)
-      window.removeEventListener('scroll', handleViewportChange, true)
+      for (const scrollParent of scrollParents) {
+        scrollParent.removeEventListener('scroll', handleViewportChange, { capture: true })
+      }
     }
-  }, [editor])
+  }, [editor, lockedHandle])
 
   return {
     activeHandle,
@@ -328,35 +378,44 @@ function getHoverTableHandleState(
   } satisfies TableHandleSnapshot
 }
 
-function TableHandleTrigger({
-  title,
-  orientation,
-}: {
+const TableHandleTrigger = forwardRef<HTMLButtonElement, {
   title: string
   orientation: 'horizontal' | 'vertical'
-}) {
+  active?: boolean
+  id?: string
+  onClick?: () => void
+}>(({ title, orientation, active = false, id, onClick }, forwardedRef) => {
   return (
     <Tooltip content={title}>
       <button
+        ref={forwardedRef}
+        id={id}
         type="button"
         aria-label={title}
+        data-active={active ? '' : undefined}
+        onMouseDown={(event) => {
+          event.preventDefault()
+        }}
+        onClick={onClick}
         className={
           orientation === 'horizontal'
-            ? 'pk:flex pk:h-3 pk:min-w-0 pk:flex-1 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors hover:pk:bg-[var(--editor-primary)] hover:pk:text-white'
-            : 'pk:flex pk:h-full pk:w-3 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors hover:pk:bg-[var(--editor-primary)] hover:pk:text-white'
+            ? 'pk:flex pk:h-3 pk:min-w-0 pk:flex-1 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors hover:pk:bg-[var(--editor-primary)] hover:pk:text-white data-[active]:pk:bg-[var(--editor-primary)] data-[active]:pk:text-white'
+            : 'pk:flex pk:h-full pk:w-3 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors hover:pk:bg-[var(--editor-primary)] hover:pk:text-white data-[active]:pk:bg-[var(--editor-primary)] data-[active]:pk:text-white'
         }
       >
         <MoreLineIcon
           className={
             orientation === 'horizontal'
-              ? 'pk:h-3 pk:w-3'
-              : 'pk:h-3 pk:w-3 pk:rotate-90'
+              ? 'pk:h-4 pk:w-4'
+              : 'pk:h-4 pk:w-4 pk:rotate-90'
           }
         />
       </button>
     </Tooltip>
   )
-}
+})
+
+TableHandleTrigger.displayName = 'TableHandleTrigger'
 
 type TableHandleAddButtonProps = {
   editor: any
@@ -425,9 +484,10 @@ type TableHandleMenuProps = {
   editor: any
   orientation: TableOrientation
   state: TableHandleSnapshot
+  onClose: () => void
 }
 
-function TableHandleMenu({ editor, orientation, state }: TableHandleMenuProps) {
+function TableHandleMenu({ editor, orientation, state, onClose }: TableHandleMenuProps) {
   const index = orientation === 'row' ? state.rowIndex : state.columnIndex
   const isHeader = orientation === 'row' ? state.rowIsHeader : state.columnIsHeader
   const isFirst = orientation === 'row' ? state.rowIsFirst : state.columnIsFirst
@@ -451,12 +511,14 @@ function TableHandleMenu({ editor, orientation, state }: TableHandleMenuProps) {
     }
 
     editor.commands[name]?.()
+    onClose()
   }
 
   function applyTextColor(color: string) {
     editor.focus()
     if (ensureSelected()) {
       applyTextColorToSelection(editor, color)
+      onClose()
     }
   }
 
@@ -464,6 +526,7 @@ function TableHandleMenu({ editor, orientation, state }: TableHandleMenuProps) {
     editor.focus()
     if (ensureSelected()) {
       setSelectedCellAttr(editor, 'bgcolor', color === 'transparent' ? null : color)
+      onClose()
     }
   }
 
@@ -471,6 +534,7 @@ function TableHandleMenu({ editor, orientation, state }: TableHandleMenuProps) {
     editor.focus()
     if (ensureSelected()) {
       setSelectedCellAttr(editor, 'textAlign', value)
+      onClose()
     }
   }
 
@@ -478,12 +542,14 @@ function TableHandleMenu({ editor, orientation, state }: TableHandleMenuProps) {
     editor.focus()
     if (ensureSelected()) {
       setSelectedCellAttr(editor, 'verticalAlign', value)
+      onClose()
     }
   }
 
   function duplicateCurrentAxis() {
     editor.focus()
     duplicateAxis(editor, orientation, index ?? undefined, state.tablePos ?? undefined)
+    onClose()
   }
 
   function clearAxisContentSafely() {
@@ -493,12 +559,14 @@ function TableHandleMenu({ editor, orientation, state }: TableHandleMenuProps) {
     }
 
     clearAxisContent(editor, orientation, index, state.tablePos ?? undefined)
+    onClose()
   }
 
   function toggleHeader() {
     editor.focus()
     if (ensureSelected()) {
       toggleSelectedHeader(editor, orientation)
+      onClose()
     }
   }
 
@@ -580,14 +648,46 @@ function TableHandleMenu({ editor, orientation, state }: TableHandleMenuProps) {
 export function TableFloatingToolbar() {
   const editor = useEditor<any>()
   const snapshot = useEditorDerivedValue<any, string>(getTableHandleSnapshot)
-  const { activeHandle, hoverState, setActiveHandle } = useTableHandleHoverState(editor)
+  const [openMenu, setOpenMenu] = useState<TableOrientation | null>(null)
+  const columnTriggerId = 'pk-table-column-handle-trigger'
+  const rowTriggerId = 'pk-table-row-handle-trigger'
+  const { activeHandle, hoverState, setActiveHandle } = useTableHandleHoverState(editor, openMenu)
+  const columnMenuAnchorRef = useRef<HTMLButtonElement | null>(null)
+  const rowMenuAnchorRef = useRef<HTMLButtonElement | null>(null)
   const baseState = useMemo(() => JSON.parse(snapshot) as TableHandleSnapshot, [snapshot])
   const state = useMemo(
     () => getHoverTableHandleState(editor, baseState, hoverState),
     [baseState, editor, hoverState],
   )
-  const showRowHandle = Boolean(hoverState && state.rowIndex != null)
-  const showColumnHandle = Boolean(hoverState && state.columnIndex != null)
+
+  function openHandleMenu(orientation: TableOrientation) {
+    const index = orientation === 'row' ? state.rowIndex : state.columnIndex
+    if (index == null || state.tablePos == null) {
+      return
+    }
+
+    editor.focus()
+    selectAxis(editor, orientation, index, state.tablePos)
+    setActiveHandle(orientation)
+    setOpenMenu((current) => current === orientation ? null : orientation)
+  }
+
+  useEffect(() => {
+    if (!hoverState || state.tablePos == null) {
+      setOpenMenu(null)
+    }
+  }, [hoverState, state.tablePos])
+
+  const showRowHandle = Boolean(
+    state.rowIndex != null
+    && hoverState
+    && (openMenu == null || openMenu === 'row'),
+  )
+  const showColumnHandle = Boolean(
+    state.columnIndex != null
+    && hoverState
+    && (openMenu == null || openMenu === 'column'),
+  )
 
   return (
     <TableHandleRoot editor={editor}>
@@ -612,16 +712,53 @@ export function TableFloatingToolbar() {
                 <TableHandleColumnMenuTrigger
                   editor={editor}
                   className="pk:block pk:h-full pk:w-full"
-                  data-active={activeHandle === 'column' ? '' : undefined}
+                  data-active={activeHandle === 'column' || openMenu === 'column' ? '' : undefined}
                 >
-                  <TableHandleTrigger title="列操作" orientation="horizontal" />
+                  <TableHandleTrigger
+                    ref={columnMenuAnchorRef}
+                    title="列操作"
+                    orientation="horizontal"
+                    active={openMenu === 'column'}
+                    id={columnTriggerId}
+                    onClick={() => openHandleMenu('column')}
+                  />
                 </TableHandleColumnMenuTrigger>
-                <MenuPositioner placement="top" offset={8} strategy="fixed" hoist>
-                  <MenuPopup className="pk:outline-none">
-                    <TableHandleMenu editor={editor} orientation="column" state={state} />
-                  </MenuPopup>
-                </MenuPositioner>
               </TableHandleColumnMenuRoot>
+              <EditorFloatingPopover
+                anchor={columnMenuAnchorRef}
+                open={openMenu === 'column'}
+                triggerId={columnTriggerId}
+                side="top"
+                sideOffset={8}
+                popupClassName="pk:z-[1405]"
+                onOpenChange={(open) => {
+                  setOpenMenu((current) => {
+                    if (open) {
+                      return 'column'
+                    }
+
+                    return current === 'column' ? null : current
+                  })
+                  setActiveHandle((current) => {
+                    if (open) {
+                      return 'column'
+                    }
+
+                    return current === 'column' ? null : current
+                  })
+                }}
+                content={(
+                  <TableHandleMenu
+                    editor={editor}
+                    orientation="column"
+                    state={state}
+                    onClose={() => {
+                      setOpenMenu((current) => current === 'column' ? null : current)
+                      setActiveHandle((current) => current === 'column' ? null : current)
+                    }}
+                  />
+                )}
+              />
             </div>
             <TableHandleAddButton editor={editor} orientation="column" direction="after" state={state} />
           </div>
@@ -646,16 +783,53 @@ export function TableFloatingToolbar() {
                 <TableHandleRowMenuTrigger
                   editor={editor}
                   className="pk:block pk:h-full pk:w-full"
-                  data-active={activeHandle === 'row' ? '' : undefined}
+                  data-active={activeHandle === 'row' || openMenu === 'row' ? '' : undefined}
                 >
-                  <TableHandleTrigger title="行操作" orientation="vertical" />
+                  <TableHandleTrigger
+                    ref={rowMenuAnchorRef}
+                    title="行操作"
+                    orientation="vertical"
+                    active={openMenu === 'row'}
+                    id={rowTriggerId}
+                    onClick={() => openHandleMenu('row')}
+                  />
                 </TableHandleRowMenuTrigger>
-                <MenuPositioner placement="left" offset={8} strategy="fixed" hoist>
-                  <MenuPopup className="pk:outline-none">
-                    <TableHandleMenu editor={editor} orientation="row" state={state} />
-                  </MenuPopup>
-                </MenuPositioner>
               </TableHandleRowMenuRoot>
+              <EditorFloatingPopover
+                anchor={rowMenuAnchorRef}
+                open={openMenu === 'row'}
+                triggerId={rowTriggerId}
+                side="left"
+                sideOffset={8}
+                popupClassName="pk:z-[1405]"
+                onOpenChange={(open) => {
+                  setOpenMenu((current) => {
+                    if (open) {
+                      return 'row'
+                    }
+
+                    return current === 'row' ? null : current
+                  })
+                  setActiveHandle((current) => {
+                    if (open) {
+                      return 'row'
+                    }
+
+                    return current === 'row' ? null : current
+                  })
+                }}
+                content={(
+                  <TableHandleMenu
+                    editor={editor}
+                    orientation="row"
+                    state={state}
+                    onClose={() => {
+                      setOpenMenu((current) => current === 'row' ? null : current)
+                      setActiveHandle((current) => current === 'row' ? null : current)
+                    }}
+                  />
+                )}
+              />
             </div>
             <TableHandleAddButton editor={editor} orientation="row" direction="after" state={state} />
           </div>
