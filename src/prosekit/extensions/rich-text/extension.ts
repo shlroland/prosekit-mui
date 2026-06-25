@@ -12,6 +12,7 @@ import { defineTextColor } from 'prosekit/extensions/text-color'
 import { defineAlertExtension } from '../alert'
 import { defineAttachmentExtension, type AttachmentExtensionOptions } from '../attachment'
 import { defineBasicExtension } from '../basic'
+import { defineCodeBlockExtension, type CodeBlockExtensionOptions } from '../code-block'
 import { defineDetailsExtension } from '../details'
 import { defineEmojiExtension } from '../emoji'
 import { defineExcalidrawExtension, type ExcalidrawExtensionOptions } from '../excalidraw'
@@ -27,6 +28,7 @@ export type RichTextExtensionOptions = {
   attachment?: AttachmentExtensionOptions
   image?: ImageExtensionOptions
   excalidraw?: ExcalidrawExtensionOptions
+  codeBlock?: CodeBlockExtensionOptions
 }
 
 export function defineRichTextExtension(options: RichTextExtensionOptions = {}) {
@@ -57,6 +59,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineHighlight(),
     defineSuperscript(),
     defineSubscript(),
+    defineCodeBlockExtension(options.codeBlock),
     defineEmojiExtension(),
     defineAlertExtension(),
     defineDetailsExtension(),

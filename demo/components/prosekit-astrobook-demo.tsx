@@ -14,6 +14,8 @@ import {
   ArrowGoForwardLineIcon,
   AttachmentLineIcon,
   BoldIcon,
+  CodeBoxLineIcon,
+  CodeBlockToolbar,
   CodeLineIcon,
   CollapseIcon,
   EditorContent,
@@ -46,6 +48,7 @@ import {
   ToolbarItem,
   TooltipLineIcon,
   UnderlineIcon,
+  createProseKitEditor,
   defineRichTextExtension,
   getCurrentLinkAttrs,
   isLinkActive,
@@ -54,7 +57,9 @@ import type { LinkAttrs } from '../../src'
 import { Button, Separator } from '../../src/ui'
 import type { Editor, NodeJSON } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+
+import { useDemoTheme } from './use-demo-theme'
 
 const demoImageSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360"%3E%3Cdefs%3E%3ClinearGradient id="bg" x1="0" x2="1" y1="0" y2="1"%3E%3Cstop offset="0" stop-color="%23fcfaf5"/%3E%3Cstop offset="0.5" stop-color="%23f5efe4"/%3E%3Cstop offset="1" stop-color="%23dbe8e1"/%3E%3C/linearGradient%3E%3CradialGradient id="clay" cx="18%25" cy="16%25" r="50%25"%3E%3Cstop offset="0" stop-color="%23b85c38" stop-opacity="0.38"/%3E%3Cstop offset="1" stop-color="%23b85c38" stop-opacity="0"/%3E%3C/radialGradient%3E%3CradialGradient id="moss" cx="88%25" cy="86%25" r="52%25"%3E%3Cstop offset="0" stop-color="%232f5d50" stop-opacity="0.34"/%3E%3Cstop offset="1" stop-color="%232f5d50" stop-opacity="0"/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width="960" height="360" rx="28" fill="url(%23bg)"/%3E%3Crect width="960" height="360" rx="28" fill="url(%23clay)"/%3E%3Crect width="960" height="360" rx="28" fill="url(%23moss)"/%3E%3Ccircle cx="760" cy="94" r="46" fill="%23ffffff" fill-opacity="0.68"/%3E%3Ccircle cx="812" cy="118" r="26" fill="%23ffffff" fill-opacity="0.5"/%3E%3Cpath d="M0 285 C155 225 253 257 372 220 C510 178 626 210 735 170 C832 134 893 146 960 118 L960 360 L0 360 Z" fill="%232f5d50" fill-opacity="0.2"/%3E%3Cpath d="M0 314 C152 255 258 291 390 252 C528 211 626 241 746 202 C844 170 906 184 960 160 L960 360 L0 360 Z" fill="%23b85c38" fill-opacity="0.18"/%3E%3Ctext x="56" y="112" fill="%23171717" font-family="Roboto,Arial,sans-serif" font-size="42" font-weight="700"%3EImage block preview%3C/text%3E%3Ctext x="56" y="164" fill="%23171717" fill-opacity="0.68" font-family="Roboto,Arial,sans-serif" font-size="22"%3EUpload tab, embed link tab, title and dimensions%3C/text%3E%3C/svg%3E'
 
@@ -153,6 +158,22 @@ const demoContent: NodeJSON = {
       type: 'paragraph',
       attrs: { textAlign: null },
       content: [{ type: 'text', text: '下面是图片节点示例：包含固定宽高和图片描述，用来检查 image 的插入、编辑和 hover 工具条表现。' }],
+    },
+    {
+      type: 'codeBlock',
+      attrs: { language: 'typescript' },
+      content: [
+        {
+          type: 'text',
+          text: [
+            "import { createEditor } from 'prosekit/core'",
+            '',
+            'const editor = createEditor({',
+            "  defaultContent: '<p>Hello ProseKit</p>',",
+            '})',
+          ].join('\n'),
+        },
+      ],
     },
     {
       type: 'image',
@@ -414,10 +435,6 @@ const demoContent: NodeJSON = {
   ],
 }
 
-const extension = defineRichTextExtension({
-  placeholder: '输入内容...',
-})
-
 const iconProps = {
   className: 'toolbar-icon-svg',
   sx: { fontSize: '1rem' },
@@ -434,11 +451,25 @@ type ToolbarState = {
   subscript: boolean
   blockquote: boolean
   codeBlock: boolean
+  codeBlockLanguage: string | null
   link: boolean
   tooltip: boolean
 }
 
 function getToolbarState(editor: Editor<any>): ToolbarState {
+  const { $from } = editor.state.selection
+  let codeBlockLanguage: string | null = null
+
+  for (let depth = $from.depth; depth >= 0; depth -= 1) {
+    const node = $from.node(depth)
+    if (node.type.name === 'codeBlock') {
+      codeBlockLanguage = typeof node.attrs.language === 'string' && node.attrs.language
+        ? node.attrs.language
+        : 'text'
+      break
+    }
+  }
+
   return {
     bold: editor.marks.bold?.isActive() ?? false,
     italic: editor.marks.italic?.isActive() ?? false,
@@ -450,6 +481,7 @@ function getToolbarState(editor: Editor<any>): ToolbarState {
     subscript: editor.marks.subscript?.isActive() ?? false,
     blockquote: editor.nodes.blockquote?.isActive() ?? false,
     codeBlock: editor.nodes.codeBlock?.isActive() ?? false,
+    codeBlockLanguage,
     link: isLinkActive(editor.state),
     tooltip: editor.marks.tooltip?.isActive() ?? false,
   }
@@ -558,6 +590,17 @@ function ProseKitAstrobookToolbar() {
         <DemoToolbarButton tip="下划线" active={state.underline} icon={<UnderlineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleUnderline() }} />
         <DemoToolbarButton tip="删除线" active={state.strike} icon={<StrikethroughIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleStrike() }} />
         <DemoToolbarButton tip="行内代码" active={state.code} icon={<CodeLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleCode() }} />
+        <DemoToolbarButton
+          tip="代码块"
+          active={state.codeBlock}
+          icon={<CodeBoxLineIcon {...iconProps} />}
+          onClick={() => {
+            focus()
+            editor.commands.toggleCodeBlock({
+              language: state.codeBlockLanguage ?? 'text',
+            })
+          }}
+        />
         <DemoToolbarButton tip="高亮" active={state.highlight} icon={<MarkPenLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleHighlight() }} />
         <DemoToolbarButton
           tip="文本提示"
@@ -725,16 +768,57 @@ function DemoInspector() {
   )
 }
 
+function DemoContentSync({
+  onChange,
+}: {
+  onChange: (content: NodeJSON) => void
+}) {
+  const snapshot = useEditorDerivedValue<any, string>((currentEditor) => {
+    return JSON.stringify(currentEditor.state.doc.toJSON())
+  })
+
+  useEffect(() => {
+    onChange(JSON.parse(snapshot) as NodeJSON)
+  }, [onChange, snapshot])
+
+  return null
+}
+
 export function ProseKitAstrobookDemo() {
+  const theme = useDemoTheme()
+  const [content, setContent] = useState<NodeJSON>(demoContent)
+  const contentRef = useRef<NodeJSON>(demoContent)
+
+  useEffect(() => {
+    contentRef.current = content
+  }, [content])
+
+  const extension = useMemo(() => {
+    return defineRichTextExtension({
+      placeholder: '输入内容...',
+      codeBlock: {
+        themes: [theme === 'dark' ? 'github-dark' : 'github-light'],
+      },
+    })
+  }, [theme])
+  const editor = useMemo(() => {
+    return createProseKitEditor({
+      extension,
+      defaultContent: contentRef.current,
+    })
+  }, [extension])
+
   return (
-    <div className="pk-mui-theme pk-demo-page" data-theme="light">
-      <ProseKitProvider extension={extension} initialContent={demoContent}>
+    <div className="pk-mui-theme pk-demo-page" data-theme={theme}>
+      <ProseKitProvider editor={editor}>
         <EditorShell
           toolbar={<ProseKitAstrobookToolbar />}
           content={<EditorContent className="prosekit-astrobook-editor-content" />}
           footer={<DemoInspector />}
         />
+        <DemoContentSync onChange={setContent} />
         <AlertBlockToolbar />
+        <CodeBlockToolbar />
         <TableFloatingToolbar />
         <TableCellFloatingToolbar />
         <EmojiAutocomplete />

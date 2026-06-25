@@ -1,4 +1,5 @@
 export * from './basic/'
+export * from './code-block/'
 export * from './alert/'
 export * from './details/'
 export * from './alert-panel/'
