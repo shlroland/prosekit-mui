@@ -14,6 +14,7 @@ import { defineAttachmentExtension, type AttachmentExtensionOptions } from '../a
 import { defineBasicExtension } from '../basic'
 import { defineDetailsExtension } from '../details'
 import { defineEmojiExtension } from '../emoji'
+import { defineExcalidrawExtension, type ExcalidrawExtensionOptions } from '../excalidraw'
 import { defineFlipGridExtension } from '../flip-grid'
 import { defineImageExtension, type ImageExtensionOptions } from '../image'
 import { defineTableCellVerticalAlignExtension } from '../table-cell-vertical-align'
@@ -25,6 +26,7 @@ export type RichTextExtensionOptions = {
   placeholder?: string
   attachment?: AttachmentExtensionOptions
   image?: ImageExtensionOptions
+  excalidraw?: ExcalidrawExtensionOptions
 }
 
 export function defineRichTextExtension(options: RichTextExtensionOptions = {}) {
@@ -60,6 +62,11 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineDetailsExtension(),
     defineAttachmentExtension(options.attachment),
     defineImageExtension(options.image),
+    defineExcalidrawExtension({
+      onUpload: options.excalidraw?.onUpload ?? options.image?.onUpload,
+      onError: options.excalidraw?.onError ?? options.image?.onError,
+      maxWidth: options.excalidraw?.maxWidth,
+    }),
     defineTableCellAttrsExtension(),
     defineTableCellVerticalAlignExtension(),
     defineFlipGridExtension(),

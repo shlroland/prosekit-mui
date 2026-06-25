@@ -85,6 +85,7 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
           ref={ref}
           variant="ghost"
           size="icon"
+          aria-label={tip}
           onMouseDown={(event) => {
             event.preventDefault()
             onMouseDown?.(event)

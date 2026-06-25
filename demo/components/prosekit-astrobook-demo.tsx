@@ -32,6 +32,7 @@ import {
   ListOrdered2Icon,
   ListUnorderedIcon,
   MarkPenLineIcon,
+  MindMapIcon,
   ProseKitProvider,
   QuoteTextIcon,
   SeparatorIcon,
@@ -162,6 +163,14 @@ const demoContent: NodeJSON = {
         title: 'Image block preview',
         align: 'center',
       },
+    },
+    {
+      type: 'paragraph',
+      attrs: { textAlign: null },
+      content: [{ type: 'text', text: '下面这个占位节点用来测试 Excalidraw 扩展：点击后会打开画板，保存后替换成 image 节点。' }],
+    },
+    {
+      type: 'excalidraw',
     },
     {
       type: 'blockAttachment',
@@ -636,6 +645,7 @@ function ProseKitAstrobookToolbar() {
           }}
         />
         <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertImage({ src: '', width: 760, align: 'center' }) }} />
+        <DemoToolbarButton tip="Excalidraw 绘图" icon={<MindMapIcon {...iconProps} />} onClick={() => { focus(); (editor.commands as any).setExcalidraw?.() }} />
         <EmojiPickerPopover>
           <EmotionLineIcon {...iconProps} />
         </EmojiPickerPopover>
