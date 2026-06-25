@@ -18,6 +18,8 @@ import { defineEmojiExtension } from '../emoji'
 import { defineExcalidrawExtension, type ExcalidrawExtensionOptions } from '../excalidraw'
 import { defineFlipGridExtension } from '../flip-grid'
 import { defineImageExtension, type ImageExtensionOptions } from '../image'
+import { defineMathExtension, type MathExtensionOptions } from '../math'
+import { defineMermaidExtension, type MermaidExtensionOptions } from '../mermaid'
 import { defineTableCellVerticalAlignExtension } from '../table-cell-vertical-align'
 import { defineTableCellAttrsExtension } from '../table-cell-attrs'
 import { defineTooltipExtension } from '../tooltip'
@@ -29,6 +31,8 @@ export type RichTextExtensionOptions = {
   image?: ImageExtensionOptions
   excalidraw?: ExcalidrawExtensionOptions
   codeBlock?: CodeBlockExtensionOptions
+  mermaid?: MermaidExtensionOptions
+  math?: MathExtensionOptions
 }
 
 export function defineRichTextExtension(options: RichTextExtensionOptions = {}) {
@@ -60,6 +64,8 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineSuperscript(),
     defineSubscript(),
     defineCodeBlockExtension(options.codeBlock),
+    defineMermaidExtension(options.mermaid),
+    defineMathExtension(options.math),
     defineEmojiExtension(),
     defineAlertExtension(),
     defineDetailsExtension(),

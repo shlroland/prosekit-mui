@@ -26,6 +26,8 @@ import {
   ErrorWarningFillIcon,
   FlipGridIcon,
   FlowChartIcon,
+  FormulaIcon,
+  FunctionsIcon,
   ImageAddLineIcon,
   Information2LineIcon,
   ItalicIcon,
@@ -51,13 +53,15 @@ import {
   UnderlineIcon,
   createProseKitEditor,
   defaultMermaidTemplate,
+  defaultBlockMathTemplate,
+  defaultInlineMathTemplate,
   defineRichTextExtension,
   getCurrentLinkAttrs,
   isLinkActive,
 } from '../../src'
 import type { LinkAttrs } from '../../src'
 import { Button, Separator } from '../../src/ui'
-import type { Editor, NodeJSON } from 'prosekit/core'
+import type { NodeJSON } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
@@ -192,6 +196,23 @@ const demoContent: NodeJSON = {
           text: demoMermaidSource,
         },
       ],
+    },
+    {
+      type: 'paragraph',
+      attrs: { textAlign: null },
+      content: [
+        { type: 'text', text: '行内数学示例：' },
+        {
+          type: 'mathInline',
+          content: [{ type: 'text', text: defaultInlineMathTemplate }],
+        },
+        { type: 'text', text: '，点击公式本身会切回源码编辑。' },
+      ],
+    },
+    {
+      type: 'mathBlock',
+      attrs: { language: 'tex' },
+      content: [{ type: 'text', text: defaultBlockMathTemplate }],
     },
     {
       type: 'image',
@@ -470,11 +491,13 @@ type ToolbarState = {
   blockquote: boolean
   codeBlock: boolean
   codeBlockLanguage: string | null
+  mathInline: boolean
+  mathBlock: boolean
   link: boolean
   tooltip: boolean
 }
 
-function getToolbarState(editor: Editor<any>): ToolbarState {
+function getToolbarState(editor: any): ToolbarState {
   const { $from } = editor.state.selection
   let codeBlockLanguage: string | null = null
 
@@ -500,12 +523,14 @@ function getToolbarState(editor: Editor<any>): ToolbarState {
     blockquote: editor.nodes.blockquote?.isActive() ?? false,
     codeBlock: editor.nodes.codeBlock?.isActive() ?? false,
     codeBlockLanguage,
+    mathInline: editor.nodes.mathInline?.isActive() ?? false,
+    mathBlock: editor.nodes.mathBlock?.isActive() ?? false,
     link: isLinkActive(editor.state),
     tooltip: editor.marks.tooltip?.isActive() ?? false,
   }
 }
 
-function getToolbarStateSnapshot(editor: Editor<any>): string {
+function getToolbarStateSnapshot(editor: any): string {
   return JSON.stringify(getToolbarState(editor))
 }
 
@@ -534,7 +559,7 @@ function DemoToolbarButton({
 }
 
 function ProseKitAstrobookToolbar() {
-  const editor = useEditor<any>()
+  const editor = useEditor<any>() as any
   const stateSnapshot = useEditorDerivedValue<any, string>(getToolbarStateSnapshot)
   const state = useMemo<ToolbarState>(() => {
     return JSON.parse(stateSnapshot) as ToolbarState
@@ -625,6 +650,24 @@ function ProseKitAstrobookToolbar() {
           onClick={() => {
             focus()
             ;(editor.commands as any).insertMermaidCodeBlock?.(demoMermaidSource)
+          }}
+        />
+        <DemoToolbarButton
+          tip="行内公式"
+          active={state.mathInline}
+          icon={<FormulaIcon {...iconProps} />}
+          onClick={() => {
+            focus()
+            ;(editor.commands as any).setMathInline?.()
+          }}
+        />
+        <DemoToolbarButton
+          tip="公式块"
+          active={state.mathBlock}
+          icon={<FunctionsIcon {...iconProps} />}
+          onClick={() => {
+            focus()
+            ;(editor.commands as any).setMathBlock?.()
           }}
         />
         <DemoToolbarButton tip="高亮" active={state.highlight} icon={<MarkPenLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleHighlight() }} />
@@ -764,7 +807,7 @@ function ProseKitAstrobookToolbar() {
 }
 
 function DemoInspector() {
-  const editor = useEditor<any>()
+  const editor = useEditor<any>() as any
   const statsSnapshot = useEditorDerivedValue<any, string>((currentEditor) => {
     const text = currentEditor.state.doc.textBetween(0, currentEditor.state.doc.content.size, '\n')
     return JSON.stringify({

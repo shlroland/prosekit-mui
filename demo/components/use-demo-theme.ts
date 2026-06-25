@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { useEffect, useState } from 'react'
 
 export type DemoTheme = 'light' | 'dark'
+type DemoThemeStyle = CSSProperties & Record<`--${string}`, string>
 
 const darkThemeMediaQuery = '(prefers-color-scheme: dark)'
 
@@ -51,7 +52,7 @@ export const lightThemeStyle = {
   '--pk-editor-code-bg': 'var(--muted)',
   background: 'radial-gradient(circle at top left, rgb(184 92 56 / 0.14), transparent 28rem), radial-gradient(circle at bottom right, rgb(47 93 80 / 0.14), transparent 26rem), linear-gradient(180deg, var(--sand-50) 0%, var(--sand-100) 100%)',
   color: 'var(--ink-950)',
-} satisfies CSSProperties
+} satisfies DemoThemeStyle
 
 export const darkThemeStyle = {
   '--radius': '0.25rem',
@@ -99,7 +100,7 @@ export const darkThemeStyle = {
   '--pk-editor-code-bg': 'var(--muted)',
   background: 'radial-gradient(circle at top left, rgb(216 132 95 / 0.14), transparent 28rem), radial-gradient(circle at bottom right, rgb(127 176 162 / 0.12), transparent 26rem), linear-gradient(180deg, var(--sand-50) 0%, var(--sand-100) 100%)',
   color: 'var(--foreground)',
-} satisfies CSSProperties
+} satisfies DemoThemeStyle
 
 export function getSystemDemoTheme(): DemoTheme {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {

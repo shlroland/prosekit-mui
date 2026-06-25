@@ -1,0 +1,125 @@
+@reference "tailwindcss";
+
+@layer components {
+  .ProseMirror .prosemirror-math-inline {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    border-radius: 0.25rem;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--editor-foreground, rgb(15 23 42));
+    padding: 0.125rem 0.375rem;
+    cursor: pointer;
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .ProseMirror .prosemirror-math-inline:hover {
+    background: var(--editor-muted, rgb(241 245 249));
+  }
+
+  .ProseMirror .prosemirror-math-inline.prosemirror-math-head-inside {
+    border-color: var(--editor-primary, rgb(37 99 235));
+    background: var(--editor-surface, #fff);
+    box-shadow: 0 0 0 2px var(--editor-ring, rgb(59 130 246 / 0.18));
+  }
+
+  .ProseMirror .prosemirror-math-block {
+    margin: 1rem 0;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .ProseMirror .prosemirror-math-block:hover {
+    background: var(--editor-muted, rgb(241 245 249));
+  }
+
+  .ProseMirror .prosemirror-math-block.prosemirror-math-head-inside {
+    border-color: var(--editor-primary, rgb(37 99 235));
+    background: var(--editor-surface, #fff);
+    box-shadow: 0 0 0 2px var(--editor-ring, rgb(59 130 246 / 0.18));
+  }
+
+  .ProseMirror .prosemirror-math-source {
+    color: var(--editor-foreground, rgb(15 23 42));
+  }
+
+  .ProseMirror .prosemirror-math-inline .prosemirror-math-source {
+    min-width: 1ch;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+    font-size: 0.92em;
+    line-height: 1.5;
+  }
+
+  .ProseMirror .prosemirror-math-block .prosemirror-math-source {
+    margin: 0;
+    min-height: 4.5rem;
+    padding: 0.875rem 1rem;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    background: var(--editor-surface, #fff);
+  }
+
+  .ProseMirror .prosemirror-math-source code {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    color: inherit !important;
+    font: inherit !important;
+    box-shadow: none !important;
+  }
+
+  .ProseMirror .prosemirror-math-display {
+    cursor: text;
+    color: var(--editor-foreground, rgb(15 23 42));
+  }
+
+  .ProseMirror .prosemirror-math-inline .prosemirror-math-display {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+  }
+
+  .ProseMirror .prosemirror-math-block .prosemirror-math-display {
+    min-height: 4.25rem;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: auto;
+    background: transparent;
+  }
+
+  .ProseMirror .prosemirror-math-display .katex {
+    color: inherit;
+    font-size: 1.04em;
+  }
+
+  .ProseMirror .prosemirror-math-block .prosemirror-math-display .katex-display {
+    margin: 0;
+  }
+
+  .ProseMirror .prosemirror-math-display[data-math-empty='true']::before {
+    content: '添加数学公式';
+    color: var(--editor-muted-foreground, rgb(100 116 139));
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+
+  .ProseMirror .prosemirror-math-display[data-math-error='true'] {
+    color: rgb(185 28 28);
+  }
+}

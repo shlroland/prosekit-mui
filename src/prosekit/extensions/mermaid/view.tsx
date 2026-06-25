@@ -1,6 +1,6 @@
 import { renderMermaidSVG } from 'beautiful-mermaid'
-import type { ReactNodeViewProps } from 'prosekit/react'
 import { TextSelection } from 'prosekit/pm/state'
+import type { ReactNodeViewProps } from 'prosekit/react'
 import { useMemo, useState, type FocusEvent, type ReactNode } from 'react'
 
 import { CodeLineIcon, EyeLineIcon, SplitCellsHorizontalIcon } from '../../../icons'
@@ -82,7 +82,7 @@ function PreviewModeButton({
   )
 }
 
-export function CodeBlockView({
+export function MermaidCodeBlockView({
   node,
   contentRef,
   selected,
@@ -178,7 +178,7 @@ export function CodeBlockView({
     >
       <div
         contentEditable={false}
-        data-code-block-controls="true"
+        data-mermaid-code-block-controls="true"
         className={cn(
           'pk:absolute pk:right-3 pk:top-3 pk:z-10 pk:flex pk:flex-wrap pk:items-center pk:justify-end pk:gap-2 pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1.5 pk:shadow-sm pk:transition-all',
           showControls

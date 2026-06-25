@@ -2,7 +2,7 @@ import { defineCommands } from 'prosekit/core'
 import type { Node as ProseMirrorNode, NodeType } from 'prosekit/pm/model'
 import { TextSelection, type Command, type EditorState, type Transaction } from 'prosekit/pm/state'
 
-import type { CodeBlockCommandsExtension } from './types'
+import type { MermaidCommandsExtension } from './types'
 
 export const defaultMermaidTemplate = [
   'graph TD',
@@ -138,7 +138,7 @@ export function setMermaidCodeBlock(source?: string, fallbackSource = defaultMer
   }
 }
 
-export function defineCodeBlockCommands(defaultSource = defaultMermaidTemplate): CodeBlockCommandsExtension {
+export function defineMermaidCommands(defaultSource = defaultMermaidTemplate): MermaidCommandsExtension {
   return defineCommands({
     insertMermaidCodeBlock: (source) => {
       return insertMermaidCodeBlock(source ?? defaultSource)
@@ -146,5 +146,5 @@ export function defineCodeBlockCommands(defaultSource = defaultMermaidTemplate):
     setMermaidCodeBlock: (source) => {
       return setMermaidCodeBlock(source, defaultSource)
     },
-  }) as CodeBlockCommandsExtension
+  }) as MermaidCommandsExtension
 }

@@ -381,6 +381,7 @@ time:
   jsonfile@6.2.1: 2026-04-20T15:28:28.409Z
   jszip@3.10.1: 2022-08-02T22:49:17.127Z
   katex@0.16.47: 2026-05-16T07:48:35.236Z
+  katex@0.17.0: 2026-05-22T08:06:26.967Z
   khroma@2.1.0: 2023-10-12T23:03:38.130Z
   kleur@3.0.3: 2019-04-07T22:02:01.149Z
   kleur@4.1.5: 2022-06-26T18:50:12.559Z
@@ -611,6 +612,9 @@ importers:
       emoji-mart:
         specifier: ^5.6.0
         version: 5.6.0
+      katex:
+        specifier: ^0.17.0
+        version: 0.17.0
       lucide-react:
         specifier: ^1.14.0
         version: 1.18.0(react@19.2.7)
@@ -620,6 +624,9 @@ importers:
       prosekit:
         specifier: ^0.21.4
         version: 0.21.4(react@19.2.7)(react-dom@19.2.7(react@19.2.7))(yjs@13.6.31)
+      prosemirror-math:
+        specifier: ^0.2.2
+        version: 0.2.2
       prosemirror-tables:
         specifier: ^1.8.5
         version: 1.8.5
@@ -3489,6 +3496,10 @@ packages:
 
   katex@0.16.47:
     resolution: {integrity: sha512-Eeo8Ys1doU1z+x8AZsPpQu+p/QcZBI5PeOo7QGQdy2x2m0MU/hYagBbGOmXwr5KVbEfVuWv9LpnQWeehogurjg==}
+    hasBin: true
+
+  katex@0.17.0:
+    resolution: {integrity: sha512-Vdw0ATsQ9V+LuegM/BTwQqV/6cTl5lbGcIrU+BCgLxyf6bo38ybOr372tuSIxir3CN720flu1meYR6XzNMwQnw==}
     hasBin: true
 
   khroma@2.1.0:
@@ -8094,6 +8105,10 @@ snapshots:
   just-group-by@2.2.0: {}
 
   katex@0.16.47:
+    dependencies:
+      commander: 8.3.0
+
+  katex@0.17.0:
     dependencies:
       commander: 8.3.0
 

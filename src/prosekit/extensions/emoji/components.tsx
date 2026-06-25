@@ -158,6 +158,7 @@ export function EmojiPickerPopover({ children }: EmojiPickerPopoverProps) {
     <EditorFloatingPopover
       open={open}
       onOpenChange={setOpen}
+      nativeButton
       side="bottom"
       align="start"
       sideOffset={8}
