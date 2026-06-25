@@ -5,10 +5,13 @@ import {
   shikiBundledLanguagesInfo,
 } from 'prosekit/extensions/code-block'
 
+import { defaultMermaidTemplate, defineCodeBlockCommands } from './commands'
+import { defineCodeBlockNodeView } from './node-view'
 import type { CodeBlockExtension, CodeBlockExtensionOptions, CodeBlockLanguageOption } from './types'
 
 const defaultLanguageIds = [
   'text',
+  'mermaid',
   'typescript',
   'tsx',
   'javascript',
@@ -28,6 +31,7 @@ const builtInLanguageMap = new Map(
 )
 
 export const defaultCodeBlockLanguages = [...defaultLanguageIds]
+export { defaultMermaidTemplate } from './commands'
 
 export const defaultCodeBlockLanguageOptions: CodeBlockLanguageOption[] = defaultLanguageIds.map((id) => ({
   id,
@@ -43,6 +47,7 @@ export function defineCodeBlockExtension(
     langs,
     nodeTypes,
     engine,
+    mermaidTemplate,
     ...rest
   } = options
 
@@ -55,11 +60,17 @@ export function defineCodeBlockExtension(
   })
 
   if (enablePreview === false) {
-    return shikiExtension
+    return union(
+      shikiExtension,
+      defineCodeBlockCommands(mermaidTemplate ?? defaultMermaidTemplate),
+      defineCodeBlockNodeView(),
+    ) as CodeBlockExtension
   }
 
   return union(
     shikiExtension,
+    defineCodeBlockCommands(mermaidTemplate ?? defaultMermaidTemplate),
     defineCodeBlockPreviewPlugin(),
+    defineCodeBlockNodeView(),
   ) as CodeBlockExtension
 }

@@ -36,7 +36,7 @@ function getActiveCodeBlockState(editor: any): ActiveCodeBlockState {
         ? node.attrs.language
         : 'text',
       nodePos: $from.before(depth),
-      open: true,
+      open: node.attrs.language !== 'mermaid',
       text: node.textContent,
     }
   }
@@ -64,6 +64,77 @@ function rectEquals(a: DOMRect | null, b: DOMRect | null) {
     && Math.abs(a.width - b.width) < 0.5
     && Math.abs(a.height - b.height) < 0.5
   )
+}
+
+function getSelectionAnchorElement() {
+  const selection = window.getSelection()
+  const anchorNode = selection?.anchorNode
+
+  if (!anchorNode) {
+    return null
+  }
+
+  if (anchorNode instanceof HTMLElement) {
+    return anchorNode
+  }
+
+  return anchorNode.parentElement
+}
+
+function resolveCodeBlockElement(editor: any, nodePos: number) {
+  const selectionElement = getSelectionAnchorElement()
+  const selectionContainer = selectionElement?.closest('[data-node-view-root], pre')
+
+  if (selectionContainer instanceof HTMLElement) {
+    if (selectionContainer.matches('pre')) {
+      return selectionContainer
+    }
+
+    const nestedPre = selectionContainer.querySelector('pre')
+    if (nestedPre instanceof HTMLElement) {
+      return nestedPre
+    }
+
+    const firstChild = selectionContainer.firstElementChild
+    if (firstChild instanceof HTMLElement) {
+      return firstChild
+    }
+
+    return selectionContainer
+  }
+
+  const domNode = editor.view.nodeDOM(nodePos)
+  const baseElement = domNode instanceof HTMLElement
+    ? domNode
+    : domNode instanceof Text
+      ? domNode.parentElement
+      : null
+
+  if (!baseElement) {
+    return null
+  }
+
+  const container = baseElement.closest('[data-node-view-root], pre')
+
+  if (container instanceof HTMLElement) {
+    if (container.matches('pre')) {
+      return container
+    }
+
+    const nestedPre = container.querySelector('pre')
+    if (nestedPre instanceof HTMLElement) {
+      return nestedPre
+    }
+
+    const firstChild = container.firstElementChild
+    if (firstChild instanceof HTMLElement) {
+      return firstChild
+    }
+
+    return container
+  }
+
+  return baseElement
 }
 
 function copyTextWithFallback(text: string) {
@@ -116,8 +187,7 @@ export function CodeBlockToolbar() {
       return
     }
 
-    const domNode = editor.view.nodeDOM(state.nodePos)
-    const element = domNode instanceof HTMLElement ? domNode : null
+    const element = resolveCodeBlockElement(editor, state.nodePos)
     const nextRect = element?.getBoundingClientRect() ?? null
     setRect((current) => (rectEquals(current, nextRect) ? current : nextRect))
   }, [editor, state.nodePos, state.open])
