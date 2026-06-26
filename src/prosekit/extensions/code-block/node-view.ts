@@ -1,11 +1,11 @@
 import { defineReactNodeView } from 'prosekit/react'
 
-import { MermaidCodeBlockView } from '../mermaid'
+import { CodeBlockView } from './view'
 
 export function defineCodeBlockNodeView() {
   return defineReactNodeView({
     name: 'codeBlock',
-    component: MermaidCodeBlockView,
+    component: CodeBlockView,
     as: 'div',
     contentAs: 'code',
     stopEvent: (event) => {

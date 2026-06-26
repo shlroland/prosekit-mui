@@ -89,29 +89,14 @@ export function MermaidCodeBlockView({
   view,
   getPos,
 }: ReactNodeViewProps) {
-  const language = typeof node.attrs.language === 'string' && node.attrs.language
-    ? node.attrs.language
-    : 'text'
-  const isMermaid = language === 'mermaid'
   const source = node.textContent
   const lineCount = source.trim() ? source.trim().split('\n').length : 0
   const [layoutMode, setLayoutMode] = useState<MermaidLayoutMode>('auto')
   const [hasDomFocus, setHasDomFocus] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const preview = useMemo(() => {
-    return isMermaid ? renderMermaidPreview(source) : { svg: null, error: null }
-  }, [isMermaid, source])
-
-  if (!isMermaid) {
-    return (
-      <pre data-language={language || undefined}>
-        <code
-          ref={contentRef}
-          className={language ? `language-${language}` : undefined}
-        />
-      </pre>
-    )
-  }
+    return renderMermaidPreview(source)
+  }, [source])
 
   const nodePos = getPos()
   const selectionFrom = view.state.selection.from
@@ -228,7 +213,8 @@ export function MermaidCodeBlockView({
         {showCode ? (
           <div className={cn('pk:min-w-0 pk:bg-[var(--editor-surface)] pk:pt-12', showPreview && 'xl:pk:border-r xl:pk:border-[var(--editor-border)]')}>
             <pre
-              data-language={language || undefined}
+              ref={contentRef}
+              data-language="mermaid"
               className="pk:min-h-[176px]"
               style={{
                 margin: 0,
@@ -238,12 +224,7 @@ export function MermaidCodeBlockView({
                 boxShadow: 'none',
                 padding: '1rem',
               }}
-            >
-              <code
-                ref={contentRef}
-                className={language ? `language-${language}` : undefined}
-              />
-            </pre>
+            />
             <div
               contentEditable={false}
               className="pk:px-4 pk:pb-3 pk:text-[11px] pk:text-[var(--editor-muted-foreground)]"
@@ -256,19 +237,15 @@ export function MermaidCodeBlockView({
         {!showCode ? (
           <div className="pk:absolute pk:left-0 pk:top-0 pk:h-0 pk:w-0 pk:overflow-hidden pk:opacity-0 pk:pointer-events-none">
             <pre
-              data-language={language || undefined}
+              ref={contentRef}
+              data-language="mermaid"
               aria-hidden="true"
               style={{
                 margin: 0,
                 border: 0,
                 padding: 0,
               }}
-            >
-              <code
-                ref={contentRef}
-                className={language ? `language-${language}` : undefined}
-              />
-            </pre>
+            />
           </div>
         ) : null}
 
