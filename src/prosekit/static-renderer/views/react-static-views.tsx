@@ -488,14 +488,30 @@ export function renderEmojiText(attrs: Record<string, unknown>) {
   return normalizeText(attrs.native) || getEmojiNativeById(normalizeText(attrs.name))
 }
 
-export function StaticExcalidrawView() {
+export function StaticExcalidrawView({ attrs, baseUrl }: StaticNodeViewProps) {
+  const src = resolveAssetUrl(attrs.src || attrs.url, baseUrl)
+  const title = normalizeText(attrs.title)
+  const width = normalizeNumber(attrs.width)
+  const height = normalizeNumber(attrs.height)
+
+  if (!src) {
+    return null
+  }
+
   return (
     <figure
-      className="pk:my-4 pk:flex pk:min-h-12 pk:w-full pk:min-w-[200px] pk:items-center pk:gap-3 pk:rounded-lg pk:border pk:border-dashed pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-4 pk:py-3 pk:text-sm pk:text-[var(--editor-muted-foreground)]"
+      className="pk:my-4 pk:max-w-full"
       data-type="excalidraw"
       data-static-renderer="true"
     >
-      <span>Excalidraw 绘图</span>
+      <img
+        className="pk:block pk:h-auto pk:max-w-full pk:rounded-[var(--radius)]"
+        src={src}
+        alt={title}
+        title={title || undefined}
+        width={width || undefined}
+        height={height || undefined}
+      />
     </figure>
   )
 }

@@ -65,7 +65,7 @@ export function createBuiltinReactNodeMapping(options: StaticRichTextExtensionOp
     },
     flipGridColumn: ({ node, children }) => <StaticFlipGridColumnView attrs={node.attrs}>{keyedChildren(children)}</StaticFlipGridColumnView>,
     emoji: ({ node }) => renderEmojiText(node.attrs),
-    excalidraw: () => <StaticExcalidrawView />,
+    excalidraw: ({ node }) => <StaticExcalidrawView attrs={node.attrs} baseUrl={options.baseUrl} />,
   }
 }
 

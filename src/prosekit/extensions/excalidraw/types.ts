@@ -1,4 +1,5 @@
 import type { Extension, Union } from 'prosekit/core'
+import type { Attrs } from 'prosekit/pm/model'
 
 import type { ImageUploadFunction } from '../image'
 
@@ -10,7 +11,7 @@ export type ExcalidrawExtensionOptions = {
 
 export type ExcalidrawSpecExtension = Extension<{
   Nodes: {
-    excalidraw: Record<string, never>
+    excalidraw: Attrs
   }
 }>
 

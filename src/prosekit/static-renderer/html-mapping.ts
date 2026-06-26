@@ -222,8 +222,18 @@ export function createBuiltinHTMLNodeMapping(options: StaticRendererAssetOptions
     emoji: ({ node }) => {
       return escapeHTML(normalizeText(node.attrs.native) || getEmojiNativeById(normalizeText(node.attrs.name)))
     },
-    excalidraw: () => {
-      return '<figure class="pk:my-4 pk:flex pk:min-h-12 pk:w-full pk:min-w-[200px] pk:items-center pk:gap-3 pk:rounded-lg pk:border pk:border-dashed pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-4 pk:py-3 pk:text-sm pk:text-[var(--editor-muted-foreground)]" data-type="excalidraw" data-static-renderer="true"><span>Excalidraw 绘图</span></figure>'
+    excalidraw: ({ node }) => {
+      const attrs = node.attrs
+      const src = resolveAssetUrl(attrs.src || attrs.url, options.baseUrl)
+      const title = normalizeText(attrs.title)
+      const width = normalizeNumber(attrs.width)
+      const height = normalizeNumber(attrs.height)
+
+      if (!src) {
+        return ''
+      }
+
+      return `<figure class="pk:my-4 pk:max-w-full" data-type="excalidraw" data-static-renderer="true"><img class="pk:block pk:h-auto pk:max-w-full pk:rounded-[var(--radius)]"${attribute('src', src)}${attribute('alt', title)}${attribute('title', title)}${attribute('width', width)}${attribute('height', height)}></figure>`
     },
   }
 }

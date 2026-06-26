@@ -78,8 +78,11 @@ function createBuiltinMarkdownNodeMapping(options: StaticRichTextExtensionOption
     emoji: ({ node }: { node: ProseMirrorNode }) => {
       return normalizeText(node.attrs.native) || normalizeText(node.attrs.name)
     },
-    excalidraw: () => {
-      return block('[Excalidraw 绘图]')
+    excalidraw: ({ node }: { node: ProseMirrorNode }) => {
+      const src = resolveAssetUrl(node.attrs.src || node.attrs.url, options.baseUrl)
+      const title = normalizeText(node.attrs.title)
+
+      return block(src ? `![${title}](${src})` : '')
     },
   }
 }

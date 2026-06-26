@@ -87,6 +87,10 @@ const content = {
       type: 'excalidraw',
     },
     {
+      type: 'excalidraw',
+      attrs: { src: '/drawings/a.svg', title: 'Drawing A', width: 720, height: 420 },
+    },
+    {
       type: 'flipGrid',
       attrs: { gap: '24px' },
       content: [
@@ -136,6 +140,9 @@ describe('static renderer', () => {
     expect(markup).toContain('prosemirror-math-block')
     expect(markup).toContain('katex')
     expect(markup).toContain('data-type="excalidraw"')
+    expect(markup).toContain('src="https://cdn.example.com/drawings/a.svg"')
+    expect(markup).toContain('Drawing A')
+    expect(markup).not.toContain('Excalidraw 绘图')
     expect(markup).toContain('data-type="flip-grid"')
     expect(markup).toContain('grid-template-columns:minmax(0, 35fr) minmax(0, 65fr)')
   })
@@ -160,6 +167,9 @@ describe('static renderer', () => {
     expect(html).toContain('prosemirror-math-block')
     expect(html).toContain('katex')
     expect(html).toContain('data-type="excalidraw"')
+    expect(html).toContain('src="https://cdn.example.com/drawings/a.svg"')
+    expect(html).toContain('Drawing A')
+    expect(html).not.toContain('Excalidraw 绘图')
     expect(html).toContain('data-type="flip-grid"')
     expect(html).toContain('grid-template-columns: minmax(0, 35fr) minmax(0, 65fr);')
   })
