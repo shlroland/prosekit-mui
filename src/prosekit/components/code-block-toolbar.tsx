@@ -2,9 +2,12 @@ import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { ArrowDownSLineIcon, CheckboxCircleLineIcon, CopyIcon, CodeBoxLineIcon } from '../../icons'
+import { ArrowDownSLineIcon } from '../../icons/arrow-down-s-line-icon'
+import { CheckboxCircleLineIcon } from '../../icons/checkbox-circle-line-icon'
+import { CodeBoxLineIcon } from '../../icons/code-box-line-icon'
+import { CopyIcon } from '../../icons/copy-icon'
 import { defaultCodeBlockLanguageOptions } from '../extensions/code-block'
-import { Button, EditorFloatingPopover, Tooltip } from '../../ui'
+import { Button, EditorFloatingMenu, Tooltip } from '../../ui'
 
 type ActiveCodeBlockState = {
   language: string
@@ -178,22 +181,15 @@ export function CodeBlockToolbar() {
   const [rect, setRect] = useState<DOMRect | null>(null)
   const [copied, setCopied] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
-  const [languageQuery, setLanguageQuery] = useState('')
   const languageButtonRef = useRef<HTMLButtonElement | null>(null)
-  const languageSearchRef = useRef<HTMLInputElement | null>(null)
   const frameRef = useRef<number | null>(null)
-  const filteredLanguages = useMemo(() => {
-    const query = languageQuery.trim().toLowerCase()
-
-    if (!query) {
-      return defaultCodeBlockLanguageOptions
-    }
-
-    return defaultCodeBlockLanguageOptions.filter((option) => {
-      return option.id.toLowerCase().includes(query)
-        || option.name.toLowerCase().includes(query)
-    })
-  }, [languageQuery])
+  const languageOptions = useMemo(() => {
+    return defaultCodeBlockLanguageOptions.map((option) => ({
+      id: option.id,
+      label: option.name,
+      description: option.id,
+    }))
+  }, [])
 
   const updateRect = useCallback(() => {
     if (!state.open || typeof state.nodePos !== 'number' || !editor.mounted) {
@@ -213,7 +209,6 @@ export function CodeBlockToolbar() {
   useEffect(() => {
     if (!state.open || !editor.mounted) {
       setLanguageOpen(false)
-      setLanguageQuery('')
       return
     }
 
@@ -241,21 +236,6 @@ export function CodeBlockToolbar() {
       }
     }
   }, [editor, state.open, updateRect])
-
-  useEffect(() => {
-    if (!languageOpen) {
-      return
-    }
-
-    const frame = window.requestAnimationFrame(() => {
-      languageSearchRef.current?.focus()
-      languageSearchRef.current?.select()
-    })
-
-    return () => {
-      window.cancelAnimationFrame(frame)
-    }
-  }, [languageOpen])
 
   useEffect(() => {
     if (!copied) {
@@ -290,7 +270,6 @@ export function CodeBlockToolbar() {
       language,
     })
     setLanguageOpen(false)
-    setLanguageQuery('')
   }
 
   if (!state.open || !rect || typeof document === 'undefined') {
@@ -310,88 +289,26 @@ export function CodeBlockToolbar() {
       }}
     >
       <div className="pk:pointer-events-auto pk:flex pk:items-center pk:gap-1 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[color:color-mix(in_srgb,var(--editor-surface)_92%,white)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)] pk:backdrop-blur-md">
-        <EditorFloatingPopover
+        <EditorFloatingMenu
           anchor={languageButtonRef}
           open={languageOpen}
+          options={languageOptions}
+          value={state.language}
           nativeButton
           side="bottom"
           align="end"
           sideOffset={8}
           popupClassName="pk:z-[1405]"
-          onOpenChange={(open) => {
-            setLanguageOpen(open)
-            setLanguageQuery('')
+          searchLabel="搜索代码语言"
+          searchPlaceholder="搜索语言..."
+          emptyText="没有匹配语言"
+          onOpenChange={setLanguageOpen}
+          onClose={() => {
+            editor.focus()
           }}
-          content={(
-            <div className="pk:w-[240px] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)]">
-              <div className="pk:p-1">
-                <input
-                  ref={languageSearchRef}
-                  type="search"
-                  value={languageQuery}
-                  placeholder="搜索语言..."
-                  aria-label="搜索代码语言"
-                  onMouseDown={(event) => {
-                    event.stopPropagation()
-                  }}
-                  onKeyDown={(event) => {
-                    event.stopPropagation()
-
-                    if (event.key === 'Escape') {
-                      event.preventDefault()
-                      setLanguageOpen(false)
-                      setLanguageQuery('')
-                      editor.focus()
-                      return
-                    }
-
-                    if (event.key === 'Enter' && filteredLanguages.length === 1) {
-                      event.preventDefault()
-                      selectLanguage(filteredLanguages[0].id)
-                    }
-                  }}
-                  onChange={(event) => {
-                    setLanguageQuery(event.target.value)
-                  }}
-                  className="pk:h-8 pk:w-full pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-2.5 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:placeholder:text-[var(--editor-muted-foreground)] pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
-                />
-              </div>
-
-              <div className="pk:max-h-[280px] pk:overflow-y-auto pk:p-1">
-                {filteredLanguages.length ? filteredLanguages.map((option) => {
-                  const active = option.id === state.language
-
-                  return (
-                    <button
-                      key={option.id}
-                      type="button"
-                      onMouseDown={(event) => {
-                        event.preventDefault()
-                      }}
-                      onClick={() => {
-                        selectLanguage(option.id)
-                      }}
-                      className={[
-                        'pk:grid pk:min-h-8 pk:w-full pk:grid-cols-[1rem_minmax(0,1fr)_auto] pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-1.5 pk:text-left pk:text-[13px] pk:text-[var(--editor-foreground)] pk:outline-none',
-                        'pk:hover:bg-[var(--editor-muted)] pk:focus-visible:bg-[var(--editor-muted)]',
-                        active ? 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]' : '',
-                      ].join(' ')}
-                    >
-                      <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center">
-                        {active ? <CheckboxCircleLineIcon className="pk:h-4 pk:w-4" /> : null}
-                      </span>
-                      <span className="pk:truncate">{option.name}</span>
-                      <span className="pk:text-[11px] pk:text-[var(--editor-muted-foreground)]">{option.id}</span>
-                    </button>
-                  )
-                }) : (
-                  <div className="pk:px-2.5 pk:py-6 pk:text-center pk:text-sm pk:text-[var(--editor-muted-foreground)]">
-                    没有匹配语言
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          onSelect={(option) => {
+            selectLanguage(option.id)
+          }}
         >
           <button
             ref={languageButtonRef}
@@ -400,16 +317,13 @@ export function CodeBlockToolbar() {
             onMouseDown={(event) => {
               event.preventDefault()
             }}
-            onClick={() => {
-              setLanguageOpen((current) => !current)
-            }}
             className="pk:inline-flex pk:h-7 pk:max-w-[148px] pk:items-center pk:gap-1.5 pk:rounded-md pk:px-2.5 pk:text-xs pk:font-medium pk:text-[var(--editor-muted-foreground)] pk:transition-colors pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]"
           >
             <CodeBoxLineIcon className="pk:h-3.5 pk:w-3.5" />
             <span className="pk:truncate">{currentLanguage.name}</span>
             <ArrowDownSLineIcon className="pk:h-4 pk:w-4" />
           </button>
-        </EditorFloatingPopover>
+        </EditorFloatingMenu>
 
         <Tooltip content={copied ? '复制成功' : '复制代码'}>
           <Button
