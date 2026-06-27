@@ -41,6 +41,7 @@ import {
   ProseKitProvider,
   QuoteTextIcon,
   SeparatorIcon,
+  SlashCommandAutocomplete,
   StrikethroughIcon,
   SubscriptIcon,
   SuperscriptIcon,
@@ -148,6 +149,11 @@ export const demoContent: NodeJSON = {
         },
         { type: 'text', text: '。' },
       ],
+    },
+    {
+      type: 'paragraph',
+      attrs: { textAlign: null },
+      content: [{ type: 'text', text: 'Slash Commands 示例：在空段落输入 / 可以打开命令菜单，快速插入标题、列表、图片、表格、折叠面板、Mermaid 和 Excalidraw。' }],
     },
     {
       type: 'blockLink',
@@ -891,6 +897,7 @@ export function ProseKitAstrobookDemo() {
         <TableFloatingToolbar />
         <TableCellFloatingToolbar />
         <EmojiAutocomplete />
+        <SlashCommandAutocomplete />
         <div className="pk:mt-2">
           <p className="pk:m-0 pk:text-sm pk:leading-6 pk:text-[var(--editor-muted-foreground)]">
             This demo intentionally uses ProseKit built-in extensions for repeated
