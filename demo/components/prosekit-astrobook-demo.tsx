@@ -13,6 +13,7 @@ import {
   ArrowGoBackLineIcon,
   ArrowGoForwardLineIcon,
   AttachmentLineIcon,
+  BlockHandle,
   BoldIcon,
   CodeBoxLineIcon,
   CodeBlockToolbar,
@@ -896,6 +897,7 @@ export function ProseKitAstrobookDemo() {
         <CodeBlockToolbar />
         <TableFloatingToolbar />
         <TableCellFloatingToolbar />
+        <BlockHandle />
         <EmojiAutocomplete />
         <SlashCommandAutocomplete />
         <div className="pk:mt-2">

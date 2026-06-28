@@ -1,0 +1,41 @@
+@layer components {
+  prosekit-block-handle-positioner.prosekit-block-handle-positioner,
+  .prosekit-block-handle-positioner {
+    background: none !important;
+    background-color: transparent !important;
+    z-index: 1320;
+  }
+
+  prosekit-block-handle-popup.prosekit-block-handle-popup,
+  .prosekit-block-handle-popup {
+    border-color: var(--editor-border, rgb(15 23 42 / 0.12)) !important;
+    background: var(--editor-surface, #fff) !important;
+    background-color: var(--editor-surface, #fff) !important;
+    color: var(--editor-muted-foreground, rgb(100 116 139)) !important;
+  }
+
+  prosekit-block-handle-add.prosekit-block-handle-button,
+  prosekit-block-handle-draggable.prosekit-block-handle-button,
+  .prosekit-block-handle-button {
+    background: transparent !important;
+  }
+
+  prosekit-block-handle-add.prosekit-block-handle-button:hover,
+  prosekit-block-handle-draggable.prosekit-block-handle-button:hover,
+  .prosekit-block-handle-button:hover {
+    background: var(--editor-muted, rgb(241 245 249)) !important;
+    color: var(--editor-foreground, rgb(15 23 42)) !important;
+  }
+
+  prosekit-block-handle-draggable.prosekit-block-handle-drag,
+  .prosekit-block-handle-drag {
+    cursor: grab !important;
+  }
+
+  prosekit-block-handle-draggable.prosekit-block-handle-drag[data-dragging],
+  .prosekit-block-handle-drag[data-dragging] {
+    cursor: grabbing !important;
+    background: var(--editor-muted, rgb(241 245 249)) !important;
+    color: var(--editor-foreground, rgb(15 23 42)) !important;
+  }
+}
