@@ -90,6 +90,7 @@ function createBuiltinMarkdownNodeMapping(options: StaticRichTextExtensionOption
 function createBuiltinMarkdownMarkMapping() {
   return {
     tooltip: ({ children }: { children: string }) => children,
+    fontSize: ({ children }: { children: string }) => children,
   }
 }
 

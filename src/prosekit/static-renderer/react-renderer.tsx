@@ -33,6 +33,10 @@ function asArray<T>(value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
 
+function normalizeText(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
 function keyedChildren(children: ReactNode | ReactNode[]) {
   return asArray(children).map((child, index) => <Fragment key={index}>{child}</Fragment>)
 }
@@ -72,6 +76,11 @@ export function createBuiltinReactNodeMapping(options: StaticRichTextExtensionOp
 export function createBuiltinReactMarkMapping(): MarkMapping<ReactNode> {
   return {
     tooltip: ({ mark, children }) => <StaticTooltipView attrs={mark.attrs}>{children}</StaticTooltipView>,
+    fontSize: ({ mark, children }) => (
+      <span data-font-size={normalizeText(mark.attrs.size) || undefined} style={{ fontSize: normalizeText(mark.attrs.size) || undefined }}>
+        {children}
+      </span>
+    ),
   }
 }
 

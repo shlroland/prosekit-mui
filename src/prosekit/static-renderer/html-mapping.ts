@@ -246,5 +246,9 @@ export function createBuiltinHTMLMarkMapping(): MarkMapping<string> {
 
       return `<span${attribute('data-tooltip-id', id)}${attribute('data-tooltip-text', text)}${attribute('data-tooltip', text)}${attribute('title', text)}>${children}</span>`
     },
+    fontSize: ({ mark, children }) => {
+      const size = normalizeText(mark.attrs.size)
+      return `<span${attribute('data-font-size', size)}${styleAttribute({ 'font-size': size || null })}>${children}</span>`
+    },
   }
 }

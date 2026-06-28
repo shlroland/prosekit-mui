@@ -35,6 +35,7 @@ import { defineDetailsSpec } from '../extensions/details'
 import { defineEmojiSpec } from '../extensions/emoji'
 import { defineExcalidrawSpec } from '../extensions/excalidraw/spec'
 import { defineFlipGridSpec } from '../extensions/flip-grid'
+import { defineFontSizeSpec } from '../extensions/font-size'
 import { defineImageSpec, type ImageExtensionOptions } from '../extensions/image'
 import { defineLinkSpec } from '../extensions/link'
 import { defineTableCellAttrs } from '../extensions/table-cell-attrs/attrs'
@@ -85,6 +86,7 @@ export function defineStaticBasicExtension() {
     defineTextColorSpec(),
     defineBackgroundColorSpec(),
     defineFontFamilySpec(),
+    defineFontSizeSpec(),
     defineHighlightSpec(),
     defineSuperscriptSpec(),
     defineSubscriptSpec(),

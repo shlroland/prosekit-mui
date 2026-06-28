@@ -17,19 +17,26 @@ import {
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
+  ArrowDownSLineIcon,
+  AttachmentLineIcon,
+  BrushLineIcon,
   CodeBoxLineIcon,
   CollapseIcon,
   DeleteLineIcon,
+  DownloadLineIcon,
   DraggableIcon,
   EraserLineIcon,
   ErrorWarningFillIcon,
   FileCopyLineIcon,
   FlipGridIcon,
   FlowChartIcon,
+  FontSizeIcon,
   H1Icon,
   H2Icon,
   H3Icon,
   ImageAddLineIcon,
+  IndentDecreaseIcon,
+  IndentIncreaseIcon,
   Information2LineIcon,
   ListCheck3Icon,
   ListOrdered2Icon,
@@ -44,7 +51,7 @@ import {
   TextWrapIcon,
 } from '../../icons'
 import { cn } from '../../utils/cn'
-import { EditorFloatingPopover } from '../../ui'
+import { EditorFloatingPopover, EditorHoverPopover } from '../../ui'
 import { defaultMermaidTemplate } from '../extensions/mermaid'
 
 import './block-handle.css'
@@ -65,9 +72,37 @@ type BlockMenuAction = {
   label: string
   icon: ReactNode
   shortcut?: string
+  extra?: ReactNode
   selected?: boolean
   disabled?: boolean
   onSelect: () => void
+}
+
+type DownloadResource = {
+  key: string
+  type: 'image' | 'attachment'
+  url: string
+  filename: string
+}
+
+type LinewiseTarget =
+  | { type: 'paragraph' }
+  | { type: 'heading', level: 1 | 2 | 3 }
+  | { type: 'list', kind: 'bullet' | 'ordered' | 'task' }
+  | { type: 'blockquote' }
+  | { type: 'codeBlock' }
+  | { type: 'alert', attrs: { variant: 'info' | 'warning', type: 'icon' } }
+
+type ColorPreset = {
+  key: string
+  label: string
+  value: string | null
+}
+
+type FontSizePreset = {
+  key: string
+  label: string
+  value: string | null
 }
 
 const popupClassName = cn(
@@ -108,6 +143,37 @@ const quickButtonClassName = cn(
   'focus-visible:pk:bg-[var(--editor-muted)] focus-visible:pk:text-[var(--editor-foreground)]',
   'disabled:pk:pointer-events-none disabled:pk:opacity-40',
 )
+const submenuTriggerClassName = cn(
+  menuItemClassName,
+  'pk:grid-cols-[1rem_minmax(0,1fr)_1rem]',
+)
+
+const textColorPresets: ColorPreset[] = [
+  { key: 'foreground', label: '默认文字', value: null },
+  { key: 'blue', label: '蓝色', value: '#2563eb' },
+  { key: 'green', label: '绿色', value: '#16a34a' },
+  { key: 'amber', label: '琥珀色', value: '#d97706' },
+  { key: 'red', label: '红色', value: '#dc2626' },
+  { key: 'purple', label: '紫色', value: '#7c3aed' },
+]
+
+const backgroundColorPresets: ColorPreset[] = [
+  { key: 'transparent', label: '透明背景', value: null },
+  { key: 'blue-tint', label: '浅蓝', value: '#dbeafe' },
+  { key: 'green-tint', label: '浅绿', value: '#dcfce7' },
+  { key: 'amber-tint', label: '浅黄', value: '#fef3c7' },
+  { key: 'red-tint', label: '浅红', value: '#fee2e2' },
+  { key: 'purple-tint', label: '浅紫', value: '#ede9fe' },
+]
+
+const fontSizePresets: FontSizePreset[] = [
+  { key: 'default', label: '默认字号', value: null },
+  ...[10, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 48, 56, 64].map((size) => ({
+    key: `${size}px`,
+    label: `${size}px`,
+    value: `${size}px`,
+  })),
+]
 
 function isSameBlockState(a: BlockHandleState, b: BlockHandleState) {
   if (!a || !b) {
@@ -138,12 +204,20 @@ function getNodeLabel(node: ProseMirrorNode | null) {
     return `标题 ${node.attrs.level ?? 1}`
   }
 
+  if (node.type.name === 'list') {
+    if (node.attrs.kind === 'ordered') {
+      return '有序列表'
+    }
+
+    if (node.attrs.kind === 'task') {
+      return '任务列表'
+    }
+
+    return '无序列表'
+  }
+
   const labels: Record<string, string> = {
     paragraph: '正文',
-    bulletList: '无序列表',
-    orderedList: '有序列表',
-    taskList: '任务列表',
-    listItem: '列表项',
     blockquote: '引用',
     codeBlock: '代码块',
     alert: '警告块',
@@ -156,6 +230,175 @@ function getNodeLabel(node: ProseMirrorNode | null) {
   }
 
   return labels[node.type.name] ?? node.type.name
+}
+
+function normalizeDownloadName(value: unknown, fallback: string) {
+  if (typeof value === 'string' && value.trim()) {
+    return value.trim()
+  }
+
+  return fallback
+}
+
+function getDownloadResources(node: ProseMirrorNode | null) {
+  const resources: DownloadResource[] = []
+
+  function collect(child: ProseMirrorNode, path: string) {
+    if (child.type.name === 'image' && typeof child.attrs.src === 'string' && child.attrs.src) {
+      resources.push({
+        key: `${path}-image`,
+        type: 'image',
+        url: child.attrs.src,
+        filename: normalizeDownloadName(child.attrs.title, child.attrs.src.split('/').pop() || 'image'),
+      })
+    }
+
+    if (
+      (child.type.name === 'blockAttachment' || child.type.name === 'inlineAttachment')
+      && typeof child.attrs.url === 'string'
+      && child.attrs.url
+    ) {
+      resources.push({
+        key: `${path}-attachment`,
+        type: 'attachment',
+        url: child.attrs.url,
+        filename: normalizeDownloadName(child.attrs.title, child.attrs.url.split('/').pop() || 'attachment'),
+      })
+    }
+  }
+
+  if (!node) {
+    return resources
+  }
+
+  collect(node, 'self')
+  node.descendants((child, pos) => {
+    collect(child, String(pos))
+  })
+
+  return resources
+}
+
+function triggerDownload(resource: DownloadResource) {
+  const link = document.createElement('a')
+  link.href = resource.url
+  link.download = resource.filename
+  link.rel = 'noopener noreferrer'
+  document.body.append(link)
+  link.click()
+  link.remove()
+}
+
+function triggerResourceDownloads(resources: DownloadResource[]) {
+  for (const resource of resources) {
+    triggerDownload(resource)
+  }
+}
+
+function splitTextLines(text: string) {
+  return text.split('\n')
+}
+
+function extractLinesFromNode(node: ProseMirrorNode) {
+  if (node.type.name === 'blockquote') {
+    const lines: string[] = []
+    node.forEach((child) => {
+      lines.push(...splitTextLines(child.textContent))
+    })
+    return lines.length ? lines : ['']
+  }
+
+  if (node.type.name === 'list') {
+    return splitTextLines(node.textContent)
+  }
+
+  return splitTextLines(node.textContent)
+}
+
+function createTextNode(view: EditorView, text: string) {
+  return text ? view.state.schema.text(text) : undefined
+}
+
+function createParagraphFromLine(view: EditorView, text: string) {
+  return view.state.schema.nodes.paragraph?.create(undefined, createTextNode(view, text)) ?? null
+}
+
+function createNodesFromLines(view: EditorView, lines: string[], target: LinewiseTarget) {
+  const { schema } = view.state
+  const paragraphType = schema.nodes.paragraph
+
+  if (!paragraphType) {
+    return null
+  }
+
+  if (target.type === 'paragraph') {
+    return lines.map((line) => createParagraphFromLine(view, line)).filter((node): node is ProseMirrorNode => Boolean(node))
+  }
+
+  if (target.type === 'heading') {
+    const headingType = schema.nodes.heading
+    if (!headingType) {
+      return null
+    }
+
+    return lines.map((line) => headingType.create({ level: target.level }, createTextNode(view, line)))
+  }
+
+  if (target.type === 'list') {
+    const listType = schema.nodes.list
+    if (!listType) {
+      return null
+    }
+
+    return lines.map((line) => {
+      const paragraph = createParagraphFromLine(view, line)
+      return listType.create({ kind: target.kind, checked: false }, paragraph ? [paragraph] : undefined)
+    })
+  }
+
+  if (target.type === 'blockquote') {
+    const blockquoteType = schema.nodes.blockquote
+    if (!blockquoteType) {
+      return null
+    }
+
+    const paragraphs = lines.map((line) => createParagraphFromLine(view, line)).filter((node): node is ProseMirrorNode => Boolean(node))
+    return [blockquoteType.create(undefined, paragraphs.length ? paragraphs : undefined)]
+  }
+
+  if (target.type === 'codeBlock') {
+    const codeBlockType = schema.nodes.codeBlock
+    if (!codeBlockType) {
+      return null
+    }
+
+    const text = lines.join('\n')
+    return [codeBlockType.create({ language: 'text' }, createTextNode(view, text))]
+  }
+
+  const alertType = schema.nodes.alert
+  if (!alertType) {
+    return null
+  }
+
+  const paragraphs = lines.map((line) => createParagraphFromLine(view, line)).filter((node): node is ProseMirrorNode => Boolean(node))
+  return [alertType.create(target.attrs, paragraphs.length ? paragraphs : undefined)]
+}
+
+function dispatchConvertBlock(view: EditorView, state: ActiveBlockHandleState, target: LinewiseTarget) {
+  const lines = extractLinesFromNode(state.node)
+  const nodes = createNodesFromLines(view, lines, target)
+  if (!nodes?.length) {
+    return false
+  }
+
+  const from = state.pos
+  const to = state.pos + state.node.nodeSize
+  const tr = view.state.tr.replaceWith(from, to, nodes).scrollIntoView()
+  tr.setSelection(TextSelection.near(tr.doc.resolve(Math.min(tr.doc.content.size, from + 1))))
+  view.dispatch(tr)
+  focusView(view)
+  return true
 }
 
 function focusView(view: EditorView) {
@@ -255,8 +498,50 @@ function dispatchClearMarks(view: EditorView, state: ActiveBlockHandleState) {
       tr = tr.removeMark(from, to, mark.type)
     }
   })
+
+  if ('textAlign' in (state.node.type.spec.attrs ?? {})) {
+    tr = tr.setNodeAttribute(state.pos, 'textAlign', null)
+  }
+
   view.dispatch(tr.scrollIntoView())
   focusView(view)
+}
+
+function dispatchBlockMark(
+  view: EditorView,
+  state: ActiveBlockHandleState,
+  markName: 'textColor' | 'backgroundColor' | 'fontSize',
+  attrs: Record<string, string> | null,
+) {
+  const markType = view.state.schema.marks[markName]
+  if (!markType) {
+    return false
+  }
+
+  let tr = view.state.tr
+  let changed = false
+
+  state.node.descendants((child, childPos) => {
+    if (!child.isText) {
+      return
+    }
+
+    const from = state.pos + childPos + 1
+    const to = from + child.nodeSize
+    tr = tr.removeMark(from, to, markType)
+    if (attrs) {
+      tr = tr.addMark(from, to, markType.create(attrs))
+    }
+    changed = true
+  })
+
+  if (!changed) {
+    return false
+  }
+
+  view.dispatch(tr.scrollIntoView())
+  focusView(view)
+  return true
 }
 
 function hasMarksInNode(node: ProseMirrorNode | null) {
@@ -309,8 +594,26 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
 
     const hasMarks = hasMarksInNode(node)
     const canTextAlign = !!node && 'textAlign' in (node.type.spec.attrs ?? {})
+    const isList = node?.type.name === 'list'
+    const resources = getDownloadResources(node)
+    const imageResources = resources.filter((resource) => resource.type === 'image')
+    const attachmentResources = resources.filter((resource) => resource.type === 'attachment')
 
     const quickActions: BlockMenuAction[] = [
+      {
+        key: 'dedent-list',
+        label: '减少缩进',
+        icon: <IndentDecreaseIcon className={menuIconClassName} />,
+        disabled: !view || !blockState || !isList,
+        onSelect: () => selectThen(() => editor.commands.dedentList?.()),
+      },
+      {
+        key: 'indent-list',
+        label: '增加缩进',
+        icon: <IndentIncreaseIcon className={menuIconClassName} />,
+        disabled: !view || !blockState || !isList,
+        onSelect: () => selectThen(() => editor.commands.indentList?.()),
+      },
       {
         key: 'clear-format',
         label: '清除格式',
@@ -360,6 +663,36 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
       },
     ]
 
+    const downloadActions: BlockMenuAction[] = [
+      ...(imageResources.length
+        ? [{
+            key: 'download-images',
+            label: imageResources.length > 1 ? '下载图片' : `下载${getNodeLabel(node)}`,
+            icon: <ImageAddLineIcon className={menuIconClassName} />,
+            extra: <CountBadge count={imageResources.length} />,
+            onSelect: () => run(() => triggerResourceDownloads(imageResources)),
+          }]
+        : []),
+      ...(attachmentResources.length
+        ? [{
+            key: 'download-attachments',
+            label: attachmentResources.length > 1 ? '下载附件' : `下载${getNodeLabel(node)}`,
+            icon: <AttachmentLineIcon className={menuIconClassName} />,
+            extra: <CountBadge count={attachmentResources.length} />,
+            onSelect: () => run(() => triggerResourceDownloads(attachmentResources)),
+          }]
+        : []),
+      ...(resources.length > 1 && imageResources.length && attachmentResources.length
+        ? [{
+            key: 'download-all-resources',
+            label: '下载全部资源',
+            icon: <DownloadLineIcon className={menuIconClassName} />,
+            extra: <CountBadge count={resources.length} />,
+            onSelect: () => run(() => triggerResourceDownloads(resources)),
+          }]
+        : []),
+    ] satisfies BlockMenuAction[]
+
     const alignActions: BlockMenuAction[] = [
       {
         key: 'align-left',
@@ -405,77 +738,77 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
         label: '文本',
         icon: <TextIcon className={menuIconClassName} />,
         selected: node?.type.name === 'paragraph',
-        onSelect: () => selectThen(() => editor.commands.setParagraph?.()),
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'paragraph' })),
       },
       {
         key: 'heading-1',
         label: '标题 1',
         icon: <H1Icon className={menuIconClassName} />,
         selected: node?.type.name === 'heading' && node.attrs.level === 1,
-        onSelect: () => selectThen(() => editor.commands.setHeading?.({ level: 1 })),
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'heading', level: 1 })),
       },
       {
         key: 'heading-2',
         label: '标题 2',
         icon: <H2Icon className={menuIconClassName} />,
         selected: node?.type.name === 'heading' && node.attrs.level === 2,
-        onSelect: () => selectThen(() => editor.commands.setHeading?.({ level: 2 })),
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'heading', level: 2 })),
       },
       {
         key: 'heading-3',
         label: '标题 3',
         icon: <H3Icon className={menuIconClassName} />,
         selected: node?.type.name === 'heading' && node.attrs.level === 3,
-        onSelect: () => selectThen(() => editor.commands.setHeading?.({ level: 3 })),
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'heading', level: 3 })),
       },
       {
         key: 'bullet-list',
         label: '无序列表',
         icon: <ListUnorderedIcon className={menuIconClassName} />,
-        selected: node?.type.name === 'bulletList',
-        onSelect: () => selectThen(() => editor.commands.toggleList?.({ kind: 'bullet' })),
+        selected: node?.type.name === 'list' && node.attrs.kind === 'bullet',
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'list', kind: 'bullet' })),
       },
       {
         key: 'ordered-list',
         label: '有序列表',
         icon: <ListOrdered2Icon className={menuIconClassName} />,
-        selected: node?.type.name === 'orderedList',
-        onSelect: () => selectThen(() => editor.commands.toggleList?.({ kind: 'ordered' })),
+        selected: node?.type.name === 'list' && node.attrs.kind === 'ordered',
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'list', kind: 'ordered' })),
       },
       {
         key: 'task-list',
         label: '任务列表',
         icon: <ListCheck3Icon className={menuIconClassName} />,
-        selected: node?.type.name === 'taskList',
-        onSelect: () => selectThen(() => editor.commands.toggleList?.({ kind: 'task' })),
+        selected: node?.type.name === 'list' && node.attrs.kind === 'task',
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'list', kind: 'task' })),
       },
       {
         key: 'blockquote',
         label: '引用',
         icon: <QuoteTextIcon className={menuIconClassName} />,
         selected: node?.type.name === 'blockquote',
-        onSelect: () => selectThen(() => editor.commands.toggleBlockquote?.()),
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'blockquote' })),
       },
       {
         key: 'code-block',
         label: '代码块',
         icon: <CodeBoxLineIcon className={menuIconClassName} />,
         selected: node?.type.name === 'codeBlock',
-        onSelect: () => selectThen(() => editor.commands.toggleCodeBlock?.({ language: 'text' })),
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'codeBlock' })),
       },
       {
         key: 'alert-info',
         label: '提示块',
         icon: <Information2LineIcon className={menuIconClassName} />,
         selected: node?.type.name === 'alert' && node.attrs.variant === 'info',
-        onSelect: () => selectThen(() => editor.commands.setAlert?.({ variant: 'info', type: 'icon' })),
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'alert', attrs: { variant: 'info', type: 'icon' } })),
       },
       {
         key: 'alert-warning',
         label: '警告块',
         icon: <ErrorWarningFillIcon className={menuIconClassName} />,
         selected: node?.type.name === 'alert' && node.attrs.variant === 'warning',
-        onSelect: () => selectThen(() => editor.commands.setAlert?.({ variant: 'warning', type: 'icon' })),
+        onSelect: () => selectThen(() => view && blockState && dispatchConvertBlock(view, blockState, { type: 'alert', attrs: { variant: 'warning', type: 'icon' } })),
       },
       {
         key: 'details',
@@ -525,8 +858,25 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
       },
     ]
 
-    return { quickActions, mainActions, alignActions, convertActions, insertActions }
+    const colorActions = {
+      applyTextColor: (color: string | null) => run(() => view && blockState && dispatchBlockMark(view, blockState, 'textColor', color ? { color } : null)),
+      applyBackgroundColor: (color: string | null) => run(() => view && blockState && dispatchBlockMark(view, blockState, 'backgroundColor', color ? { color } : null)),
+    }
+
+    const fontSizeActions = {
+      applyFontSize: (size: string | null) => run(() => view && blockState && dispatchBlockMark(view, blockState, 'fontSize', size ? { size } : null)),
+    }
+
+    return { quickActions, mainActions, downloadActions, alignActions, convertActions, insertActions, colorActions, fontSizeActions }
   }, [blockState, closeMenu, editor])
+}
+
+function CountBadge({ count }: { count: number }) {
+  return (
+    <span className="pk:flex pk:min-w-5 pk:items-center pk:justify-center pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:px-1 pk:text-[11px] pk:leading-4 pk:text-[var(--editor-muted-foreground)]">
+      {count}
+    </span>
+  )
 }
 
 function BlockQuickAction({ action }: { action: BlockMenuAction }) {
@@ -562,10 +912,137 @@ function BlockMenuItem({ action }: { action: BlockMenuAction }) {
       </span>
       <span className="pk:min-w-0 pk:truncate">{action.label}</span>
       <span className="pk:flex pk:min-w-4 pk:items-center pk:justify-end pk:text-[11px] pk:text-[var(--editor-muted-foreground)]">
-        {action.shortcut ? action.shortcut : null}
-        {!action.shortcut && action.selected ? <span className="pk:h-1.5 pk:w-1.5 pk:rounded-full pk:bg-[var(--editor-primary)]" /> : null}
+        {action.extra ?? action.shortcut ?? null}
+        {!action.extra && !action.shortcut && action.selected ? <span className="pk:h-1.5 pk:w-1.5 pk:rounded-full pk:bg-[var(--editor-primary)]" /> : null}
       </span>
     </button>
+  )
+}
+
+function BlockMenuSubmenu({
+  icon,
+  label,
+  children,
+}: {
+  icon: ReactNode
+  label: string
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <EditorHoverPopover
+      open={open}
+      onOpenChange={(nextOpen, eventDetails) => {
+        if (nextOpen && eventDetails.reason === 'trigger-press') {
+          return
+        }
+
+        setOpen(nextOpen)
+      }}
+      nativeButton
+      hoverDelay={60}
+      closeDelay={220}
+      side="right"
+      align="start"
+      sideOffset={8}
+      popupClassName={menuPopupClassName}
+      content={children}
+    >
+      <button
+        type="button"
+        className={submenuTriggerClassName}
+        onPointerDown={(event) => {
+          event.preventDefault()
+        }}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+        }}
+      >
+        <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
+          {icon}
+        </span>
+        <span className="pk:min-w-0 pk:truncate">{label}</span>
+        <ArrowDownSLineIcon className="pk:h-4 pk:w-4 pk:-rotate-90 pk:text-[var(--editor-muted-foreground)]" />
+      </button>
+    </EditorHoverPopover>
+  )
+}
+
+function ColorSwatch({ color }: { color: string | null }) {
+  return (
+    <span
+      className="pk:inline-block pk:h-3.5 pk:w-3.5 pk:rounded-full pk:border pk:border-black/10"
+      style={{ backgroundColor: color ?? 'transparent' }}
+    />
+  )
+}
+
+function BlockColorSubmenu({
+  onApplyTextColor,
+  onApplyBackgroundColor,
+}: {
+  onApplyTextColor: (color: string | null) => void
+  onApplyBackgroundColor: (color: string | null) => void
+}) {
+  return (
+    <BlockMenuSubmenu
+      icon={<BrushLineIcon className="pk:h-4 pk:w-4" />}
+      label="颜色"
+    >
+      <BlockMenuSectionLabel>文字颜色</BlockMenuSectionLabel>
+      {textColorPresets.map((preset) => (
+        <BlockMenuItem
+          key={preset.key}
+          action={{
+            key: `text-color-${preset.key}`,
+            label: preset.label,
+            icon: <ColorSwatch color={preset.value ?? 'var(--editor-foreground)'} />,
+            onSelect: () => onApplyTextColor(preset.value),
+          }}
+        />
+      ))}
+      <BlockMenuDivider />
+      <BlockMenuSectionLabel>背景颜色</BlockMenuSectionLabel>
+      {backgroundColorPresets.map((preset) => (
+        <BlockMenuItem
+          key={preset.key}
+          action={{
+            key: `background-color-${preset.key}`,
+            label: preset.label,
+            icon: <ColorSwatch color={preset.value} />,
+            onSelect: () => onApplyBackgroundColor(preset.value),
+          }}
+        />
+      ))}
+    </BlockMenuSubmenu>
+  )
+}
+
+function BlockFontSizeSubmenu({
+  onApplyFontSize,
+}: {
+  onApplyFontSize: (size: string | null) => void
+}) {
+  return (
+    <BlockMenuSubmenu
+      icon={<FontSizeIcon className="pk:h-4 pk:w-4" />}
+      label="字号"
+    >
+      {fontSizePresets.map((preset) => (
+        <BlockMenuItem
+          key={preset.key}
+          action={{
+            key: `font-size-${preset.key}`,
+            label: preset.label,
+            icon: <span className="pk:text-xs pk:font-medium">A</span>,
+            onSelect: () => onApplyFontSize(preset.value),
+          }}
+        />
+      ))}
+    </BlockMenuSubmenu>
   )
 }
 
@@ -677,7 +1154,7 @@ function DragBlockMenu({
     onOpenChange(nextOpen)
   }
 
-  const { quickActions, mainActions, alignActions, convertActions, insertActions } = useBlockActions(
+  const { quickActions, mainActions, downloadActions, alignActions, convertActions, insertActions, colorActions, fontSizeActions } = useBlockActions(
     editor,
     blockState,
     () => updateOpen(false),
@@ -738,21 +1215,36 @@ function DragBlockMenu({
           {mainActions.map((action) => (
             <BlockMenuItem key={action.key} action={action} />
           ))}
+          {downloadActions.length ? (
+            <>
+              <BlockMenuDivider />
+              {downloadActions.map((action) => (
+                <BlockMenuItem key={action.key} action={action} />
+              ))}
+            </>
+          ) : null}
+          <BlockMenuDivider />
+          <BlockColorSubmenu
+            onApplyTextColor={colorActions.applyTextColor}
+            onApplyBackgroundColor={colorActions.applyBackgroundColor}
+          />
+          <BlockFontSizeSubmenu
+            onApplyFontSize={fontSizeActions.applyFontSize}
+          />
           <BlockMenuDivider />
           <BlockMenuSectionLabel>对齐方式</BlockMenuSectionLabel>
           {alignActions.map((action) => (
             <BlockMenuItem key={action.key} action={action} />
           ))}
           <BlockMenuDivider />
-          <BlockMenuSectionLabel>
-            <span className="pk:inline-flex pk:items-center pk:gap-1.5">
-              <Repeat2LineIcon className="pk:h-3.5 pk:w-3.5" />
-              转换
-            </span>
-          </BlockMenuSectionLabel>
-          {convertActions.map((action) => (
-            <BlockMenuItem key={action.key} action={action} />
-          ))}
+          <BlockMenuSubmenu
+            icon={<Repeat2LineIcon className="pk:h-4 pk:w-4" />}
+            label="转换"
+          >
+            {convertActions.map((action) => (
+              <BlockMenuItem key={action.key} action={action} />
+            ))}
+          </BlockMenuSubmenu>
           <BlockMenuDivider />
           <BlockMenuSectionLabel>插入</BlockMenuSectionLabel>
           {insertActions.map((action) => (

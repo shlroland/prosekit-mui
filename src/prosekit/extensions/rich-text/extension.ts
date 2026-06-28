@@ -17,6 +17,7 @@ import { defineDetailsExtension } from '../details'
 import { defineEmojiExtension } from '../emoji'
 import { defineExcalidrawExtension, type ExcalidrawExtensionOptions } from '../excalidraw'
 import { defineFlipGridExtension } from '../flip-grid'
+import { defineFontSize } from '../font-size'
 import { defineImageExtension, type ImageExtensionOptions } from '../image'
 import { defineMathExtension, type MathExtensionOptions } from '../math'
 import { defineMermaidExtension, type MermaidExtensionOptions } from '../mermaid'
@@ -60,6 +61,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineTextColor(),
     defineBackgroundColor(),
     defineFontFamily(),
+    defineFontSize(),
     defineHighlight(),
     defineSuperscript(),
     defineSubscript(),
