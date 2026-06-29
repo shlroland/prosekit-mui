@@ -14,6 +14,7 @@ import { defineAttachmentExtension, type AttachmentExtensionOptions } from '../a
 import { defineBasicExtension } from '../basic'
 import { defineCodeBlockExtension, type CodeBlockExtensionOptions } from '../code-block'
 import { defineDetailsExtension } from '../details'
+import { defineDiffExtension, type DiffOptions } from '../diff'
 import { defineEmojiExtension } from '../emoji'
 import { defineExcalidrawExtension, type ExcalidrawExtensionOptions } from '../excalidraw'
 import { defineFlipGridExtension } from '../flip-grid'
@@ -35,6 +36,7 @@ export type RichTextExtensionOptions = {
   codeBlock?: CodeBlockExtensionOptions
   mermaid?: MermaidExtensionOptions
   math?: MathExtensionOptions
+  diff?: DiffOptions
 }
 
 export function defineRichTextExtension(options: RichTextExtensionOptions = {}) {
@@ -64,6 +66,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineFontFamily(),
     defineFontSize(),
     defineTableOfContentsExtension(),
+    defineDiffExtension(options.diff),
     defineHighlight(),
     defineSuperscript(),
     defineSubscript(),

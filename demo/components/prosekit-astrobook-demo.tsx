@@ -59,6 +59,7 @@ import {
   defaultBlockMathTemplate,
   defaultInlineMathTemplate,
   defineRichTextExtension,
+  getDiffState,
   getCurrentLinkAttrs,
   isLinkActive,
 } from '../../src'
@@ -560,6 +561,15 @@ function getToolbarState(editor: any): ToolbarState {
   }
 }
 
+function getDiffToolbarSnapshot(editor: any): string {
+  const state = getDiffState(editor.state)
+  return JSON.stringify({
+    isActive: state.isActive,
+    diffCount: state.diffCount,
+    hasBaseline: Boolean(state.baseline),
+  })
+}
+
 function getToolbarStateSnapshot(editor: any): string {
   return JSON.stringify(getToolbarState(editor))
 }
@@ -608,6 +618,18 @@ function ProseKitAstrobookToolbar() {
   const currentLink = useMemo<LinkAttrs | null>(() => {
     return currentLinkSnapshot ? JSON.parse(currentLinkSnapshot) as LinkAttrs : null
   }, [currentLinkSnapshot])
+  const diffSnapshot = useEditorDerivedValue<any, string>(getDiffToolbarSnapshot)
+  const diffState = useMemo<{
+    isActive: boolean
+    diffCount: number
+    hasBaseline: boolean
+  }>(() => {
+    return JSON.parse(diffSnapshot) as {
+      isActive: boolean
+      diffCount: number
+      hasBaseline: boolean
+    }
+  }, [diffSnapshot])
   const [linkOpen, setLinkOpen] = useState(false)
   const [tablePickerAnchor, setTablePickerAnchor] = useState<HTMLElement | null>(null)
   const tablePickerOpen = Boolean(tablePickerAnchor)
@@ -671,6 +693,30 @@ function ProseKitAstrobookToolbar() {
             editor.commands.redo()
           }}
         />
+
+        <Button
+          size="sm"
+          variant={diffState.hasBaseline && !diffState.isActive ? 'default' : 'outline'}
+          className="pk:h-8 pk:px-2 pk:text-xs"
+          onClick={() => {
+            focus()
+            ;(editor.commands as any).setDiffBaseline?.()
+          }}
+        >
+          Diff 基准
+        </Button>
+        <Button
+          size="sm"
+          variant={diffState.isActive ? 'default' : 'outline'}
+          className="pk:h-8 pk:px-2 pk:text-xs"
+          disabled={!diffState.hasBaseline}
+          onClick={() => {
+            focus()
+            ;(editor.commands as any).toggleDiff?.()
+          }}
+        >
+          {diffState.isActive ? `隐藏 Diff (${diffState.diffCount})` : '显示 Diff'}
+        </Button>
 
         <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
 

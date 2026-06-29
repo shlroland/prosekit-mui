@@ -666,9 +666,15 @@ importers:
       codemirror:
         specifier: ^6.0.2
         version: 6.0.2
+      diff-match-patch:
+        specifier: ^1.0.5
+        version: 1.0.5
       emoji-mart:
         specifier: ^5.6.0
         version: 5.6.0
+      happy-dom:
+        specifier: '*'
+        version: 20.10.3
       katex:
         specifier: ^0.17.0
         version: 0.17.0
@@ -681,12 +687,12 @@ importers:
       prosekit:
         specifier: ^0.21.4
         version: 0.21.4(react@19.2.7)(react-dom@19.2.7(react@19.2.7))(yjs@13.6.31)
-      prosemirror-math:
-        specifier: ^0.2.2
-        version: 0.2.2
       prosekit-static-renderer:
         specifier: ^0.4.1
         version: 0.4.1(react@19.2.7)(react-dom@19.2.7(react@19.2.7))
+      prosemirror-math:
+        specifier: ^0.2.2
+        version: 0.2.2
       prosemirror-tables:
         specifier: ^1.8.5
         version: 1.8.5

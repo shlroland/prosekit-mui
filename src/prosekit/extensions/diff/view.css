@@ -1,0 +1,33 @@
+.prosekit-diff-insert {
+  border: 1px dashed color-mix(in srgb, var(--editor-success, #16a34a) 70%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--editor-success, #16a34a) 14%, transparent);
+  color: color-mix(in srgb, var(--editor-success, #16a34a) 80%, var(--editor-foreground));
+}
+
+.prosekit-diff-insert-node {
+  border-radius: var(--radius-sm, 6px);
+  outline: 1px dashed color-mix(in srgb, var(--editor-success, #16a34a) 70%, transparent);
+  background: color-mix(in srgb, var(--editor-success, #16a34a) 10%, transparent);
+}
+
+.prosekit-diff-delete {
+  display: inline-flex;
+  max-width: 18rem;
+  margin: 0 0.125rem;
+  padding: 0.0625rem 0.25rem;
+  border: 1px dashed color-mix(in srgb, var(--editor-danger, #dc2626) 70%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--editor-danger, #dc2626) 12%, transparent);
+  color: var(--editor-danger, #dc2626);
+  font-style: italic;
+  text-decoration: line-through;
+  vertical-align: baseline;
+}
+
+.prosekit-diff-modify,
+.prosekit-diff-modify-node {
+  border-radius: 3px;
+  outline: 1px dashed color-mix(in srgb, var(--editor-warning, #d97706) 70%, transparent);
+  background: color-mix(in srgb, var(--editor-warning, #d97706) 16%, transparent);
+}
