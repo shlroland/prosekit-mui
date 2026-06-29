@@ -23,6 +23,7 @@ import { defineMathExtension, type MathExtensionOptions } from '../math'
 import { defineMermaidExtension, type MermaidExtensionOptions } from '../mermaid'
 import { defineTableCellVerticalAlignExtension } from '../table-cell-vertical-align'
 import { defineTableCellAttrsExtension } from '../table-cell-attrs'
+import { defineTableOfContentsExtension } from '../table-of-contents'
 import { defineTooltipExtension } from '../tooltip'
 import { defineTrailingNode } from '../trailing-node'
 
@@ -62,6 +63,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineBackgroundColor(),
     defineFontFamily(),
     defineFontSize(),
+    defineTableOfContentsExtension(),
     defineHighlight(),
     defineSuperscript(),
     defineSubscript(),

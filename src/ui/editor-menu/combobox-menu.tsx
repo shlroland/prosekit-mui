@@ -86,7 +86,7 @@ export function EditorComboboxMenu({
   searchLabel = '搜索选项',
   searchPlaceholder = '搜索...',
   emptyText = '没有匹配项',
-  nativeButton = false,
+  nativeButton = true,
   anchor,
   side = 'bottom',
   align = 'center',

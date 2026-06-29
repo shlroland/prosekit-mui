@@ -27,6 +27,7 @@ export function ComboboxTrigger({
   return (
     <BaseCombobox.Trigger
       data-slot="combobox-trigger"
+      nativeButton
       className={cn(
         'pk:inline-flex pk:items-center pk:justify-center pk:gap-1.5 pk:outline-none [&_svg]:pk:pointer-events-none [&_svg]:pk:shrink-0',
         className,

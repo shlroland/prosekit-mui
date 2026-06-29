@@ -49,6 +49,7 @@ import {
   Table2Icon,
   TableCellFloatingToolbar,
   TableFloatingToolbar,
+  TableOfContents,
   TableSizePicker,
   ToolbarItem,
   TooltipLineIcon,
@@ -157,6 +158,11 @@ export const demoContent: NodeJSON = {
       content: [{ type: 'text', text: 'Slash Commands 示例：在空段落输入 / 可以打开命令菜单，快速插入标题、列表、图片、表格、折叠面板、Mermaid 和 Excalidraw。' }],
     },
     {
+      type: 'heading',
+      attrs: { level: 3, textAlign: null },
+      content: [{ type: 'text', text: '链接与富文本' }],
+    },
+    {
       type: 'blockLink',
       attrs: {
         href: 'https://github.com/prosekit/prosekit',
@@ -167,6 +173,11 @@ export const demoContent: NodeJSON = {
         type: 'block',
         download: null,
       },
+    },
+    {
+      type: 'heading',
+      attrs: { level: 3, textAlign: null },
+      content: [{ type: 'text', text: '代码、图表与公式' }],
     },
     {
       type: 'paragraph',
@@ -220,6 +231,11 @@ export const demoContent: NodeJSON = {
       type: 'mathBlock',
       attrs: { language: 'tex' },
       content: [{ type: 'text', text: defaultBlockMathTemplate }],
+    },
+    {
+      type: 'heading',
+      attrs: { level: 2, textAlign: null },
+      content: [{ type: 'text', text: '媒体与结构化内容' }],
     },
     {
       type: 'image',
@@ -910,11 +926,16 @@ export function ProseKitAstrobookDemo() {
   return (
     <div className="pk-mui-theme pk-demo-page" data-theme={theme}>
       <ProseKitProvider editor={editor}>
-        <EditorShell
-          toolbar={<ProseKitAstrobookToolbar />}
-          content={<EditorContent className="prosekit-astrobook-editor-content" />}
-          footer={<DemoInspector />}
-        />
+        <div className="pk:grid pk:gap-4 pk:lg:grid-cols-[minmax(0,1fr)_240px] pk:lg:items-start">
+          <EditorShell
+            toolbar={<ProseKitAstrobookToolbar />}
+            content={<EditorContent className="prosekit-astrobook-editor-content" />}
+            footer={<DemoInspector />}
+          />
+          <aside className="pk:sticky pk:top-4 pk:hidden pk:lg:block">
+            <TableOfContents title="目录" />
+          </aside>
+        </div>
         <DemoContentSync onChange={setContent} />
         <AlertBlockToolbar />
         <CodeBlockToolbar />
