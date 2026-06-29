@@ -6,24 +6,20 @@ import {
   AutocompleteRoot,
 } from 'prosekit/react/autocomplete'
 import { useEditor } from 'prosekit/react'
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useMemo, useState } from 'react'
 
-import { SlashCommandMenuItem } from './menu'
+import {
+  EditorSlashMenuItemView,
+  editorSlashMenuEmptyClassName,
+  editorSlashMenuItemClassName,
+  editorSlashMenuPopupClassName,
+  editorSlashMenuPopupStyle,
+  editorSlashMenuPositionerStyle,
+} from '../../../ui'
 import { defaultSlashCommandGroups } from './commands'
 import type { SlashCommandGroup, SlashCommandItem } from './types'
 
-import './view.css'
-
 const SLASH_COMMAND_REGEX = /(?<!\S)\/([\p{L}\p{N}_-]*)$/u
-
-const slashCommandPopupStyle = {
-  display: 'block',
-  background: 'var(--editor-surface, #ffffff)',
-  backgroundColor: 'var(--editor-surface, #ffffff)',
-  borderColor: 'var(--editor-border, rgb(15 23 42 / 0.12))',
-  color: 'var(--editor-foreground, rgb(15 23 42))',
-  boxShadow: '0 18px 48px rgb(15 23 42 / 18%)',
-} satisfies CSSProperties
 
 export type SlashCommandAutocompleteProps = {
   groups?: SlashCommandGroup[]
@@ -89,24 +85,25 @@ export function SlashCommandAutocomplete({
     >
       <AutocompletePositioner
         className="slash-command-positioner"
+        style={editorSlashMenuPositionerStyle}
         placement="bottom-start"
         offset={{ mainAxis: 8, crossAxis: 0 }}
         overflowPadding={12}
       >
         <AutocompletePopup
-          className="slash-command-popup pk:z-[1500] pk:w-[340px] pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:text-[var(--editor-foreground)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none"
-          style={slashCommandPopupStyle}
+          className={editorSlashMenuPopupClassName}
+          style={editorSlashMenuPopupStyle}
         >
           {filteredItems.map((item) => (
             <AutocompleteItem
               key={item.id}
               value={item.id}
-              className="slash-command-item pk:block pk:cursor-pointer pk:rounded-lg pk:outline-none data-[highlighted]:pk:bg-[var(--editor-muted)]"
+              className={editorSlashMenuItemClassName}
             >
-              <SlashCommandMenuItem item={item} />
+              <EditorSlashMenuItemView item={item} />
             </AutocompleteItem>
           ))}
-          <AutocompleteEmpty className="slash-command-empty pk:flex pk:items-center pk:gap-2 pk:rounded-lg pk:px-3 pk:py-3 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
+          <AutocompleteEmpty className={editorSlashMenuEmptyClassName}>
             没有找到匹配的命令
           </AutocompleteEmpty>
         </AutocompletePopup>

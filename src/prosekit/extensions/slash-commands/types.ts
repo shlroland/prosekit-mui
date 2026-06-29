@@ -1,18 +1,8 @@
 import type { Editor } from 'prosekit/core'
-import type { ReactNode } from 'react'
+import type { EditorSlashMenuGroup, EditorSlashMenuItem } from '../../../ui'
 
-export type SlashCommandItem = {
-  id: string
-  title: string
-  description?: string
-  keywords?: string[]
-  icon?: ReactNode
-  shortcut?: string
+export type SlashCommandItem = EditorSlashMenuItem & {
   command: (editor: Editor) => void
 }
 
-export type SlashCommandGroup = {
-  id: string
-  title: string
-  items: SlashCommandItem[]
-}
+export type SlashCommandGroup = EditorSlashMenuGroup<SlashCommandItem>

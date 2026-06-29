@@ -36,7 +36,7 @@ import {
   SkipRightIcon,
   SkipUpIcon,
 } from '../../icons'
-import { EditorFloatingPopover, Tooltip } from '../../ui'
+import { EditorFloatingPopover, Tooltip, editorMenuSurfaceClassName } from '../../ui'
 import {
   applyTextColorToSelection,
   areAxisCellsAllHeader,
@@ -472,7 +472,7 @@ function TableHandleAddButton({ editor, orientation, direction, state }: TableHa
 function TableToolbarSurface({ children }: { children: ReactNode }) {
   return (
     <div
-      className="pk:min-w-[216px] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
+      className={editorMenuSurfaceClassName}
       data-editor-floating
     >
       {children}

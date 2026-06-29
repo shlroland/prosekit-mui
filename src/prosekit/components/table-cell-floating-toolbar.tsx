@@ -9,7 +9,7 @@ import {
   MoreLineIcon,
   SplitCellsVerticalIcon,
 } from '../../icons'
-import { EditorFloatingPopover, Tooltip } from '../../ui'
+import { EditorFloatingPopover, Tooltip, editorMenuSurfaceClassName } from '../../ui'
 import {
   applyTextColorToSelection,
   canMergeSelectedCells,
@@ -305,10 +305,7 @@ export function TableCellFloatingToolbar() {
           setMenuOpen(open)
         }}
         content={(
-          <div
-            className="pk:min-w-[216px] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
-            data-editor-floating
-          >
+          <div className={editorMenuSurfaceClassName} data-editor-floating>
             {state.canMerge ? (
               <TableMenuActionItem
                 label="合并单元格"

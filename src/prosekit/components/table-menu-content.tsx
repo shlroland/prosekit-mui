@@ -8,11 +8,16 @@ import {
   AlignRightIcon,
   AlignTopIcon,
   AlignVerticallyIcon,
-  ArrowDownSLineIcon,
   BrushLineIcon,
 } from '../../icons'
-import { EditorHoverPopover } from '../../ui'
-import { cn } from '../../utils/cn'
+import {
+  EditorHoverPopover,
+  EditorMenuDivider,
+  EditorMenuItemButton,
+  EditorMenuSectionLabel,
+  EditorMenuSubmenuTriggerButton,
+  editorMenuSurfaceClassName,
+} from '../../ui'
 import type { TableCellTextAlign, TableCellVerticalAlign } from './table-utils'
 
 type ColorPreset = {
@@ -59,46 +64,24 @@ export function TableMenuActionItem({
   className,
 }: TableMenuActionItemProps) {
   return (
-    <button
-      type="button"
+    <EditorMenuItemButton
       aria-label={label}
-      disabled={disabled}
-      data-selected={selected ? '' : undefined}
-      className={cn(
-        'pk:grid pk:min-h-8 pk:grid-cols-[1rem_minmax(0,1fr)_auto] pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-1.5 pk:text-[13px] pk:leading-none pk:text-[var(--editor-foreground)] pk:outline-none',
-        'pk:hover:bg-[var(--editor-muted)]',
-        'pk:focus-visible:bg-[var(--editor-muted)]',
-        disabled && 'pk:pointer-events-none pk:opacity-40',
-        selected && 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]',
-        className,
-      )}
-      onMouseDown={(event) => {
-        event.preventDefault()
+      className={className}
+      action={{
+        key: label,
+        label,
+        icon,
+        disabled,
+        selected,
+        onSelect,
       }}
-      onClick={() => {
-        onSelect()
-      }}
-    >
-      <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
-        {icon}
-      </span>
-      <span className="pk:min-w-0 pk:truncate">{label}</span>
-      <span />
-    </button>
+    />
   )
 }
 
-export function TableMenuDivider() {
-  return <div className="pk:my-1 pk:h-px pk:bg-[var(--editor-border)]" />
-}
+export const TableMenuDivider = EditorMenuDivider
 
-export function TableMenuSectionLabel({ children }: { children: ReactNode }) {
-  return (
-    <div className="pk:px-2.5 pk:py-1 pk:text-[11px] pk:font-medium pk:leading-none pk:text-[var(--editor-muted-foreground)]">
-      {children}
-    </div>
-  )
-}
+export const TableMenuSectionLabel = EditorMenuSectionLabel
 
 type TableSubmenuProps = {
   icon: ReactNode
@@ -115,27 +98,14 @@ function TableSubmenu({ icon, label, children }: TableSubmenuProps) {
       side="right"
       align="start"
       sideOffset={8}
-      popupClassName="pk:min-w-[220px] pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
+      popupClassName={editorMenuSurfaceClassName}
       content={children}
     >
-      <button
-        type="button"
+      <EditorMenuSubmenuTriggerButton
         aria-label={label}
-        className={cn(
-          'pk:grid pk:min-h-8 pk:grid-cols-[1rem_minmax(0,1fr)_auto] pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-1.5 pk:text-[13px] pk:leading-none pk:text-[var(--editor-foreground)] pk:outline-none',
-          'pk:hover:bg-[var(--editor-muted)]',
-          'pk:focus-visible:bg-[var(--editor-muted)]',
-        )}
-        onMouseDown={(event) => {
-          event.preventDefault()
-        }}
-      >
-        <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
-          {icon}
-        </span>
-        <span className="pk:min-w-0 pk:truncate">{label}</span>
-        <ArrowDownSLineIcon className="pk:h-4 pk:w-4 pk:rotate-[-90deg] pk:text-[var(--editor-muted-foreground)]" />
-      </button>
+        icon={icon}
+        label={label}
+      />
     </EditorHoverPopover>
   )
 }

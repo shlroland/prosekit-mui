@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { useMemo, useRef, useState } from 'react'
 import { Fragment, Slice, type Node as ProseMirrorNode } from 'prosekit/pm/model'
 import { NodeSelection, TextSelection } from 'prosekit/pm/state'
@@ -17,7 +16,6 @@ import {
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
-  ArrowDownSLineIcon,
   AttachmentLineIcon,
   BrushLineIcon,
   CodeBoxLineIcon,
@@ -51,7 +49,18 @@ import {
   TextWrapIcon,
 } from '../../icons'
 import { cn } from '../../utils/cn'
-import { EditorFloatingPopover, EditorHoverPopover } from '../../ui'
+import {
+  EditorAnchoredMenu,
+  EditorAnchoredMenuDivider,
+  EditorAnchoredMenuItem,
+  EditorAnchoredMenuQuickAction,
+  EditorAnchoredMenuSectionLabel,
+  EditorAnchoredMenuSubmenu,
+  EditorMenuCountBadge,
+  editorMenuIconClassName,
+  editorMenuSurfaceClassName,
+  type EditorMenuAction,
+} from '../../ui'
 import { defaultMermaidTemplate } from '../extensions/mermaid'
 
 import './block-handle.css'
@@ -67,15 +76,11 @@ type FrozenAnchor = {
   getBoundingClientRect: () => DOMRect
 }
 
-type BlockMenuAction = {
-  key: string
-  label: string
-  icon: ReactNode
-  shortcut?: string
-  extra?: ReactNode
-  selected?: boolean
-  disabled?: boolean
-  onSelect: () => void
+type FrozenHandleRect = {
+  left: number
+  top: number
+  width: number
+  height: number
 }
 
 type DownloadResource = {
@@ -122,31 +127,10 @@ const handleButtonClassName = cn(
 
 const menuPopupClassName = cn(
   'prosekit-block-handle-menu-popup',
-  'pk:z-[1500] pk:min-w-[216px] pk:rounded-xl pk:border pk:border-[var(--editor-border)]',
-  'pk:bg-[var(--editor-surface)] pk:p-1 pk:text-[var(--editor-foreground)]',
-  'pk:max-h-[min(620px,var(--available-height))] pk:overflow-y-auto',
-  'pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none',
+  editorMenuSurfaceClassName,
 )
 
-const menuItemClassName = cn(
-  'pk:grid pk:min-h-8 pk:w-full pk:grid-cols-[1rem_minmax(0,1fr)_auto] pk:items-center pk:gap-2',
-  'pk:rounded-lg pk:px-2.5 pk:py-1.5 pk:text-left pk:text-[13px] pk:leading-none pk:outline-none',
-  'pk:text-[var(--editor-foreground)] pk:hover:bg-[var(--editor-muted)] pk:focus-visible:bg-[var(--editor-muted)]',
-  'data-[highlighted]:pk:bg-[var(--editor-muted)] data-[disabled]:pk:pointer-events-none data-[disabled]:pk:opacity-40',
-)
-
-const menuIconClassName = 'pk:h-4 pk:w-4'
-const quickButtonClassName = cn(
-  'pk:flex pk:h-8 pk:w-8 pk:items-center pk:justify-center pk:rounded-lg pk:border-0 pk:bg-transparent pk:p-0',
-  'pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors',
-  'hover:pk:bg-[var(--editor-muted)] hover:pk:text-[var(--editor-foreground)]',
-  'focus-visible:pk:bg-[var(--editor-muted)] focus-visible:pk:text-[var(--editor-foreground)]',
-  'disabled:pk:pointer-events-none disabled:pk:opacity-40',
-)
-const submenuTriggerClassName = cn(
-  menuItemClassName,
-  'pk:grid-cols-[1rem_minmax(0,1fr)_1rem]',
-)
+const menuIconClassName = editorMenuIconClassName
 
 const textColorPresets: ColorPreset[] = [
   { key: 'foreground', label: '默认文字', value: null },
@@ -430,6 +414,17 @@ function createFrozenAnchor(element: HTMLElement): FrozenAnchor {
   }
 }
 
+function createFrozenHandleRect(element: HTMLElement): FrozenHandleRect {
+  const positioner = element.closest('.prosekit-block-handle-positioner')
+  const rect = (positioner instanceof HTMLElement ? positioner : element).getBoundingClientRect()
+  return {
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height,
+  }
+}
+
 async function copyNodeToClipboard(view: EditorView, node: ProseMirrorNode) {
   const slice = new Slice(Fragment.from(node), 0, 0)
   const textContent = node.textContent
@@ -599,7 +594,7 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
     const imageResources = resources.filter((resource) => resource.type === 'image')
     const attachmentResources = resources.filter((resource) => resource.type === 'attachment')
 
-    const quickActions: BlockMenuAction[] = [
+    const quickActions: EditorMenuAction[] = [
       {
         key: 'dedent-list',
         label: '减少缩进',
@@ -653,7 +648,7 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
       },
     ]
 
-    const mainActions: BlockMenuAction[] = [
+    const mainActions: EditorMenuAction[] = [
       {
         key: 'duplicate',
         label: `复制${getNodeLabel(node)}`,
@@ -663,13 +658,13 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
       },
     ]
 
-    const downloadActions: BlockMenuAction[] = [
+    const downloadActions: EditorMenuAction[] = [
       ...(imageResources.length
         ? [{
             key: 'download-images',
             label: imageResources.length > 1 ? '下载图片' : `下载${getNodeLabel(node)}`,
             icon: <ImageAddLineIcon className={menuIconClassName} />,
-            extra: <CountBadge count={imageResources.length} />,
+            extra: <EditorMenuCountBadge count={imageResources.length} />,
             onSelect: () => run(() => triggerResourceDownloads(imageResources)),
           }]
         : []),
@@ -678,7 +673,7 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
             key: 'download-attachments',
             label: attachmentResources.length > 1 ? '下载附件' : `下载${getNodeLabel(node)}`,
             icon: <AttachmentLineIcon className={menuIconClassName} />,
-            extra: <CountBadge count={attachmentResources.length} />,
+            extra: <EditorMenuCountBadge count={attachmentResources.length} />,
             onSelect: () => run(() => triggerResourceDownloads(attachmentResources)),
           }]
         : []),
@@ -687,13 +682,13 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
             key: 'download-all-resources',
             label: '下载全部资源',
             icon: <DownloadLineIcon className={menuIconClassName} />,
-            extra: <CountBadge count={resources.length} />,
+            extra: <EditorMenuCountBadge count={resources.length} />,
             onSelect: () => run(() => triggerResourceDownloads(resources)),
           }]
         : []),
-    ] satisfies BlockMenuAction[]
+    ] satisfies EditorMenuAction[]
 
-    const alignActions: BlockMenuAction[] = [
+    const alignActions: EditorMenuAction[] = [
       {
         key: 'align-left',
         label: '左侧对齐',
@@ -732,7 +727,7 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
       },
     ]
 
-    const convertActions: BlockMenuAction[] = [
+    const convertActions: EditorMenuAction[] = [
       {
         key: 'paragraph',
         label: '文本',
@@ -819,7 +814,7 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
       },
     ]
 
-    const insertActions: BlockMenuAction[] = [
+    const insertActions: EditorMenuAction[] = [
       {
         key: 'horizontal-rule',
         label: '分割线',
@@ -871,106 +866,6 @@ function useBlockActions(editor: any, blockState: BlockHandleState, closeMenu: (
   }, [blockState, closeMenu, editor])
 }
 
-function CountBadge({ count }: { count: number }) {
-  return (
-    <span className="pk:flex pk:min-w-5 pk:items-center pk:justify-center pk:rounded-md pk:border pk:border-[var(--editor-border)] pk:px-1 pk:text-[11px] pk:leading-4 pk:text-[var(--editor-muted-foreground)]">
-      {count}
-    </span>
-  )
-}
-
-function BlockQuickAction({ action }: { action: BlockMenuAction }) {
-  return (
-    <button
-      type="button"
-      aria-label={action.label}
-      title={action.label}
-      disabled={action.disabled}
-      className={quickButtonClassName}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={action.onSelect}
-    >
-      {action.icon}
-    </button>
-  )
-}
-
-function BlockMenuItem({ action }: { action: BlockMenuAction }) {
-  return (
-    <button
-      type="button"
-      disabled={action.disabled}
-      data-selected={action.selected ? '' : undefined}
-      className={menuItemClassName}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={() => {
-        action.onSelect()
-      }}
-    >
-      <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
-        {action.icon}
-      </span>
-      <span className="pk:min-w-0 pk:truncate">{action.label}</span>
-      <span className="pk:flex pk:min-w-4 pk:items-center pk:justify-end pk:text-[11px] pk:text-[var(--editor-muted-foreground)]">
-        {action.extra ?? action.shortcut ?? null}
-        {!action.extra && !action.shortcut && action.selected ? <span className="pk:h-1.5 pk:w-1.5 pk:rounded-full pk:bg-[var(--editor-primary)]" /> : null}
-      </span>
-    </button>
-  )
-}
-
-function BlockMenuSubmenu({
-  icon,
-  label,
-  children,
-}: {
-  icon: ReactNode
-  label: string
-  children: ReactNode
-}) {
-  const [open, setOpen] = useState(false)
-
-  return (
-    <EditorHoverPopover
-      open={open}
-      onOpenChange={(nextOpen, eventDetails) => {
-        if (nextOpen && eventDetails.reason === 'trigger-press') {
-          return
-        }
-
-        setOpen(nextOpen)
-      }}
-      nativeButton
-      hoverDelay={60}
-      closeDelay={220}
-      side="right"
-      align="start"
-      sideOffset={8}
-      popupClassName={menuPopupClassName}
-      content={children}
-    >
-      <button
-        type="button"
-        className={submenuTriggerClassName}
-        onPointerDown={(event) => {
-          event.preventDefault()
-        }}
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={(event) => {
-          event.preventDefault()
-          event.stopPropagation()
-        }}
-      >
-        <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
-          {icon}
-        </span>
-        <span className="pk:min-w-0 pk:truncate">{label}</span>
-        <ArrowDownSLineIcon className="pk:h-4 pk:w-4 pk:-rotate-90 pk:text-[var(--editor-muted-foreground)]" />
-      </button>
-    </EditorHoverPopover>
-  )
-}
-
 function ColorSwatch({ color }: { color: string | null }) {
   return (
     <span
@@ -988,13 +883,13 @@ function BlockColorSubmenu({
   onApplyBackgroundColor: (color: string | null) => void
 }) {
   return (
-    <BlockMenuSubmenu
+    <EditorAnchoredMenuSubmenu
       icon={<BrushLineIcon className="pk:h-4 pk:w-4" />}
       label="颜色"
     >
-      <BlockMenuSectionLabel>文字颜色</BlockMenuSectionLabel>
+      <EditorAnchoredMenuSectionLabel>文字颜色</EditorAnchoredMenuSectionLabel>
       {textColorPresets.map((preset) => (
-        <BlockMenuItem
+        <EditorAnchoredMenuItem
           key={preset.key}
           action={{
             key: `text-color-${preset.key}`,
@@ -1004,10 +899,10 @@ function BlockColorSubmenu({
           }}
         />
       ))}
-      <BlockMenuDivider />
-      <BlockMenuSectionLabel>背景颜色</BlockMenuSectionLabel>
+      <EditorAnchoredMenuDivider />
+      <EditorAnchoredMenuSectionLabel>背景颜色</EditorAnchoredMenuSectionLabel>
       {backgroundColorPresets.map((preset) => (
-        <BlockMenuItem
+        <EditorAnchoredMenuItem
           key={preset.key}
           action={{
             key: `background-color-${preset.key}`,
@@ -1017,7 +912,7 @@ function BlockColorSubmenu({
           }}
         />
       ))}
-    </BlockMenuSubmenu>
+    </EditorAnchoredMenuSubmenu>
   )
 }
 
@@ -1027,12 +922,12 @@ function BlockFontSizeSubmenu({
   onApplyFontSize: (size: string | null) => void
 }) {
   return (
-    <BlockMenuSubmenu
+    <EditorAnchoredMenuSubmenu
       icon={<FontSizeIcon className="pk:h-4 pk:w-4" />}
       label="字号"
     >
       {fontSizePresets.map((preset) => (
-        <BlockMenuItem
+        <EditorAnchoredMenuItem
           key={preset.key}
           action={{
             key: `font-size-${preset.key}`,
@@ -1042,30 +937,20 @@ function BlockFontSizeSubmenu({
           }}
         />
       ))}
-    </BlockMenuSubmenu>
+    </EditorAnchoredMenuSubmenu>
   )
-}
-
-function BlockMenuSectionLabel({ children }: { children: ReactNode }) {
-  return (
-    <div className="pk:px-2.5 pk:py-1.5 pk:text-[11px] pk:font-medium pk:leading-none pk:text-[var(--editor-muted-foreground)]">
-      {children}
-    </div>
-  )
-}
-
-function BlockMenuDivider() {
-  return <div className="pk:my-1 pk:h-px pk:bg-[var(--editor-border)]" />
 }
 
 function AddBlockMenu({
   editor,
   blockState,
   onOpenChange,
+  onFreezeHandle,
 }: {
   editor: any
   blockState: BlockHandleState
   onOpenChange: (open: boolean) => void
+  onFreezeHandle: (rect: FrozenHandleRect) => void
 }) {
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -1087,36 +972,33 @@ function AddBlockMenu({
   }
 
   return (
-    <EditorFloatingPopover
-      open={open}
-      onOpenChange={updateOpen}
-      nativeButton
-      anchor={anchor ?? triggerRef.current}
-      side="right"
-      align="start"
-      sideOffset={8}
-      popupClassName={cn(menuPopupClassName, 'pk:min-w-[180px]')}
-      content={(
-        <>
-          <BlockMenuItem
-            action={{
-              key: 'insert-before',
-              label: '上方插入行',
-              icon: <TextWrapIcon className="pk:h-4 pk:w-4 pk:rotate-180" />,
-              onSelect: () => insert('before'),
-            }}
-          />
-          <BlockMenuItem
-            action={{
-              key: 'insert-after',
-              label: '下方插入行',
-              icon: <TextWrapIcon className="pk:h-4 pk:w-4" />,
-              onSelect: () => insert('after'),
-            }}
-          />
-        </>
-      )}
-    >
+    <>
+      <EditorAnchoredMenu
+        open={open}
+        onOpenChange={updateOpen}
+        anchor={anchor ?? triggerRef.current}
+        side="right"
+        align="start"
+        sideOffset={8}
+        popupClassName={cn(menuPopupClassName, 'pk:min-w-[180px]')}
+      >
+        <EditorAnchoredMenuItem
+          action={{
+            key: 'insert-before',
+            label: '上方插入行',
+            icon: <TextWrapIcon className="pk:h-4 pk:w-4 pk:rotate-180" />,
+            onSelect: () => insert('before'),
+          }}
+        />
+        <EditorAnchoredMenuItem
+          action={{
+            key: 'insert-after',
+            label: '下方插入行',
+            icon: <TextWrapIcon className="pk:h-4 pk:w-4" />,
+            onSelect: () => insert('after'),
+          }}
+        />
+      </EditorAnchoredMenu>
       <button
         ref={triggerRef}
         type="button"
@@ -1125,14 +1007,19 @@ function AddBlockMenu({
         className={handleButtonClassName}
         contentEditable={false}
         disabled={!blockState}
-        onMouseDown={(event) => {
+        onClick={(event) => {
           event.preventDefault()
+          setAnchor(createFrozenAnchor(event.currentTarget))
+          onFreezeHandle(createFrozenHandleRect(event.currentTarget))
+          updateOpen(!open)
+        }}
+        onPointerDown={(event) => {
           setAnchor(createFrozenAnchor(event.currentTarget))
         }}
       >
         <AddLineIcon className="pk:h-4 pk:w-4" />
       </button>
-    </EditorFloatingPopover>
+    </>
   )
 }
 
@@ -1140,10 +1027,12 @@ function DragBlockMenu({
   editor,
   blockState,
   onOpenChange,
+  onFreezeHandle,
 }: {
   editor: any
   blockState: BlockHandleState
   onOpenChange: (open: boolean) => void
+  onFreezeHandle: (rect: FrozenHandleRect) => void
 }) {
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -1152,6 +1041,17 @@ function DragBlockMenu({
   function updateOpen(nextOpen: boolean) {
     setOpen(nextOpen)
     onOpenChange(nextOpen)
+  }
+
+  function handleMenuOpenChange(
+    nextOpen: boolean,
+    eventDetails?: { reason?: string },
+  ) {
+    if (!nextOpen && eventDetails?.reason && !['outside-press', 'escape-key', 'trigger-press', 'none'].includes(eventDetails.reason)) {
+      return
+    }
+
+    updateOpen(nextOpen)
   }
 
   const { quickActions, mainActions, downloadActions, alignActions, convertActions, insertActions, colorActions, fontSizeActions } = useBlockActions(
@@ -1194,65 +1094,62 @@ function DragBlockMenu({
   }
 
   return (
-    <EditorFloatingPopover
-      open={open}
-      onOpenChange={updateOpen}
-      nativeButton
-      anchor={anchor ?? triggerRef.current}
-      side="right"
-      align="start"
-      sideOffset={8}
-      popupClassName={menuPopupClassName}
-      content={(
-        <>
-          <BlockMenuSectionLabel>{getNodeLabel(blockState?.node ?? null)}</BlockMenuSectionLabel>
-          <div className="pk:flex pk:items-center pk:gap-0.5 pk:px-0.5">
-            {quickActions.map((action) => (
-              <BlockQuickAction key={action.key} action={action} />
+    <>
+      <EditorAnchoredMenu
+        open={open}
+        onOpenChange={handleMenuOpenChange}
+        anchor={anchor ?? triggerRef.current}
+        side="right"
+        align="start"
+        sideOffset={8}
+        popupClassName={menuPopupClassName}
+      >
+        <EditorAnchoredMenuSectionLabel>{getNodeLabel(blockState?.node ?? null)}</EditorAnchoredMenuSectionLabel>
+        <div className="pk:flex pk:items-center pk:gap-0.5 pk:px-0.5">
+          {quickActions.map((action) => (
+            <EditorAnchoredMenuQuickAction key={action.key} action={action} />
+          ))}
+        </div>
+        <EditorAnchoredMenuDivider />
+        {mainActions.map((action) => (
+          <EditorAnchoredMenuItem key={action.key} action={action} />
+        ))}
+        {downloadActions.length ? (
+          <>
+            <EditorAnchoredMenuDivider />
+            {downloadActions.map((action) => (
+              <EditorAnchoredMenuItem key={action.key} action={action} />
             ))}
-          </div>
-          <BlockMenuDivider />
-          {mainActions.map((action) => (
-            <BlockMenuItem key={action.key} action={action} />
+          </>
+        ) : null}
+        <EditorAnchoredMenuDivider />
+        <BlockColorSubmenu
+          onApplyTextColor={colorActions.applyTextColor}
+          onApplyBackgroundColor={colorActions.applyBackgroundColor}
+        />
+        <BlockFontSizeSubmenu
+          onApplyFontSize={fontSizeActions.applyFontSize}
+        />
+        <EditorAnchoredMenuDivider />
+        <EditorAnchoredMenuSectionLabel>对齐方式</EditorAnchoredMenuSectionLabel>
+        {alignActions.map((action) => (
+          <EditorAnchoredMenuItem key={action.key} action={action} />
+        ))}
+        <EditorAnchoredMenuDivider />
+        <EditorAnchoredMenuSubmenu
+          icon={<Repeat2LineIcon className="pk:h-4 pk:w-4" />}
+          label="转换"
+        >
+          {convertActions.map((action) => (
+            <EditorAnchoredMenuItem key={action.key} action={action} />
           ))}
-          {downloadActions.length ? (
-            <>
-              <BlockMenuDivider />
-              {downloadActions.map((action) => (
-                <BlockMenuItem key={action.key} action={action} />
-              ))}
-            </>
-          ) : null}
-          <BlockMenuDivider />
-          <BlockColorSubmenu
-            onApplyTextColor={colorActions.applyTextColor}
-            onApplyBackgroundColor={colorActions.applyBackgroundColor}
-          />
-          <BlockFontSizeSubmenu
-            onApplyFontSize={fontSizeActions.applyFontSize}
-          />
-          <BlockMenuDivider />
-          <BlockMenuSectionLabel>对齐方式</BlockMenuSectionLabel>
-          {alignActions.map((action) => (
-            <BlockMenuItem key={action.key} action={action} />
-          ))}
-          <BlockMenuDivider />
-          <BlockMenuSubmenu
-            icon={<Repeat2LineIcon className="pk:h-4 pk:w-4" />}
-            label="转换"
-          >
-            {convertActions.map((action) => (
-              <BlockMenuItem key={action.key} action={action} />
-            ))}
-          </BlockMenuSubmenu>
-          <BlockMenuDivider />
-          <BlockMenuSectionLabel>插入</BlockMenuSectionLabel>
-          {insertActions.map((action) => (
-            <BlockMenuItem key={action.key} action={action} />
-          ))}
-        </>
-      )}
-    >
+        </EditorAnchoredMenuSubmenu>
+        <EditorAnchoredMenuDivider />
+        <EditorAnchoredMenuSectionLabel>插入</EditorAnchoredMenuSectionLabel>
+        {insertActions.map((action) => (
+          <EditorAnchoredMenuItem key={action.key} action={action} />
+        ))}
+      </EditorAnchoredMenu>
       <button
         ref={triggerRef}
         type="button"
@@ -1265,6 +1162,7 @@ function DragBlockMenu({
         onClick={(event) => {
           event.preventDefault()
           setAnchor(createFrozenAnchor(event.currentTarget))
+          onFreezeHandle(createFrozenHandleRect(event.currentTarget))
           updateOpen(!open)
         }}
         onPointerDown={(event) => {
@@ -1275,7 +1173,38 @@ function DragBlockMenu({
       >
         <DraggableIcon className="pk:h-4 pk:w-4" />
       </button>
-    </EditorFloatingPopover>
+    </>
+  )
+}
+
+function FrozenBlockHandle({ rect }: { rect: FrozenHandleRect }) {
+  return (
+    <div
+      aria-hidden
+      className={cn(popupClassName, 'pk:pointer-events-none pk:fixed pk:z-[1320]')}
+      contentEditable={false}
+      style={{
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        minHeight: rect.height,
+      }}
+    >
+      <button
+        type="button"
+        tabIndex={-1}
+        className={handleButtonClassName}
+      >
+        <AddLineIcon className="pk:h-4 pk:w-4" />
+      </button>
+      <button
+        type="button"
+        tabIndex={-1}
+        className={cn(handleButtonClassName, 'prosekit-block-handle-drag pk:cursor-grab')}
+      >
+        <DraggableIcon className="pk:h-4 pk:w-4" />
+      </button>
+    </div>
   )
 }
 
@@ -1283,29 +1212,59 @@ export function BlockHandle() {
   const editor = useEditor<any>()
   const [blockState, setBlockState] = useState<BlockHandleState>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [frozenHandleRect, setFrozenHandleRect] = useState<FrozenHandleRect | null>(null)
+  const menuOpenRef = useRef(false)
+
+  function updateMenuOpen(open: boolean) {
+    menuOpenRef.current = open
+    setMenuOpen(open)
+    if (!open) {
+      setFrozenHandleRect(null)
+    }
+  }
 
   function handleStateChange(event: BlockHandleStateChangeEvent) {
+    if (menuOpenRef.current) {
+      return
+    }
+
     const nextState = event.detail
     if (!isSameBlockState(blockState, nextState)) {
-      setMenuOpen(false)
+      updateMenuOpen(false)
     }
     setBlockState(nextState)
   }
 
   return (
-    <BlockHandleRoot editor={editor} onStateChange={handleStateChange}>
-      <BlockHandlePositioner
-        className="prosekit-block-handle-positioner"
-        placement="left-start"
-        offset={8}
-        overflowPadding={12}
-        hide={!menuOpen}
-      >
-        <BlockHandlePopup className={popupClassName} contentEditable={false}>
-          <AddBlockMenu editor={editor} blockState={blockState} onOpenChange={setMenuOpen} />
-          <DragBlockMenu editor={editor} blockState={blockState} onOpenChange={setMenuOpen} />
-        </BlockHandlePopup>
-      </BlockHandlePositioner>
-    </BlockHandleRoot>
+    <>
+      <BlockHandleRoot editor={editor} onStateChange={handleStateChange}>
+        <BlockHandlePositioner
+          className={cn(
+            'prosekit-block-handle-positioner',
+            menuOpen && 'pk:invisible',
+          )}
+          placement="left-start"
+          offset={8}
+          overflowPadding={12}
+          hide={!menuOpen}
+        >
+          <BlockHandlePopup className={popupClassName} contentEditable={false}>
+            <AddBlockMenu
+              editor={editor}
+              blockState={blockState}
+              onOpenChange={updateMenuOpen}
+              onFreezeHandle={setFrozenHandleRect}
+            />
+            <DragBlockMenu
+              editor={editor}
+              blockState={blockState}
+              onOpenChange={updateMenuOpen}
+              onFreezeHandle={setFrozenHandleRect}
+            />
+          </BlockHandlePopup>
+        </BlockHandlePositioner>
+      </BlockHandleRoot>
+      {menuOpen && frozenHandleRect ? <FrozenBlockHandle rect={frozenHandleRect} /> : null}
+    </>
   )
 }
