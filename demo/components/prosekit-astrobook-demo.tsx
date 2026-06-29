@@ -62,7 +62,7 @@ import {
   isLinkActive,
 } from '../../src'
 import type { LinkAttrs } from '../../src'
-import { Button, Separator } from '../../src/ui'
+import { Button, EditorComboboxMenu, Separator } from '../../src/ui'
 import type { NodeJSON } from 'prosekit/core'
 import { useEditor, useEditorDerivedValue } from 'prosekit/react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
@@ -487,6 +487,7 @@ const iconProps = {
 }
 
 type ToolbarState = {
+  headingLevel: number | null
   bold: boolean
   italic: boolean
   underline: boolean
@@ -507,9 +508,14 @@ type ToolbarState = {
 function getToolbarState(editor: any): ToolbarState {
   const { $from } = editor.state.selection
   let codeBlockLanguage: string | null = null
+  let headingLevel: number | null = null
 
   for (let depth = $from.depth; depth >= 0; depth -= 1) {
     const node = $from.node(depth)
+    if (node.type.name === 'heading') {
+      headingLevel = Number(node.attrs.level) || null
+    }
+
     if (node.type.name === 'codeBlock') {
       codeBlockLanguage = typeof node.attrs.language === 'string' && node.attrs.language
         ? node.attrs.language
@@ -519,6 +525,7 @@ function getToolbarState(editor: any): ToolbarState {
   }
 
   return {
+    headingLevel,
     bold: editor.marks.bold?.isActive() ?? false,
     italic: editor.marks.italic?.isActive() ?? false,
     underline: editor.marks.underline?.isActive() ?? false,
@@ -540,6 +547,13 @@ function getToolbarState(editor: any): ToolbarState {
 function getToolbarStateSnapshot(editor: any): string {
   return JSON.stringify(getToolbarState(editor))
 }
+
+const blockTypeOptions = [
+  { id: 'paragraph', label: '正文' },
+  { id: '1', label: '标题 1' },
+  { id: '2', label: '标题 2' },
+  { id: '3', label: '标题 3' },
+]
 
 function DemoToolbarButton({
   tip,
@@ -595,24 +609,33 @@ function ProseKitAstrobookToolbar() {
   return (
     <div className="pk:border-b pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-2 pk:py-1.5">
       <div className="pk:flex pk:flex-wrap pk:items-center pk:gap-1">
-        <select
-          defaultValue="paragraph"
-          onChange={(event) => {
+        <EditorComboboxMenu
+          options={blockTypeOptions}
+          value={state.headingLevel ? String(state.headingLevel) : 'paragraph'}
+          searchable={false}
+          side="bottom"
+          align="start"
+          sideOffset={6}
+          popupClassName="pk:!w-[160px] pk:!min-w-[160px]"
+          getOptionMeta={() => ''}
+          onSelect={(option) => {
             focus()
-            const value = event.target.value
-            if (value === 'paragraph') {
+            if (option.id === 'paragraph') {
               editor.commands.setParagraph()
               return
             }
-            editor.commands.setHeading({ level: Number(value) })
+            editor.commands.setHeading({ level: Number(option.id) })
           }}
-          className="pk:h-[34px] pk:min-w-[116px] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-white pk:px-2 pk:text-sm pk:font-medium pk:text-[var(--editor-foreground)] pk:outline-none pk:focus:ring-2 pk:focus:ring-[var(--editor-ring)]"
         >
-          <option value="paragraph">正文</option>
-          <option value="1">标题 1</option>
-          <option value="2">标题 2</option>
-          <option value="3">标题 3</option>
-        </select>
+          <button
+            type="button"
+            className="pk:flex pk:h-[34px] pk:min-w-[116px] pk:items-center pk:justify-between pk:gap-2 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-white pk:px-2 pk:text-sm pk:font-medium pk:text-[var(--editor-foreground)] pk:outline-none pk:transition-colors pk:hover:bg-[var(--editor-muted)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]"
+          >
+            <span className="pk:truncate">
+              {state.headingLevel ? `标题 ${state.headingLevel}` : '正文'}
+            </span>
+          </button>
+        </EditorComboboxMenu>
 
         <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
 

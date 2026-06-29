@@ -155,7 +155,7 @@ export function EditorComboboxMenu({
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         positionerClassName={positionerClassName}
-        className={cn('pk:w-[240px]', popupClassName, menuClassName)}
+        className={cn(!popupClassName && 'pk:w-[240px]', popupClassName, menuClassName)}
         data-editor-floating
       >
         {searchable ? (
