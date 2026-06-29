@@ -110,7 +110,7 @@ export function EmojiAutocomplete() {
             <AutocompleteItem
               key={item.id}
               value={item.id}
-              className="emoji-autocomplete-item pk:flex pk:cursor-pointer pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-2 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:transition data-[highlighted]:bg-[var(--editor-muted)]"
+              className="emoji-autocomplete-item pk:flex pk:cursor-pointer pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-2 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:transition data-[highlighted]:pk:bg-[var(--editor-muted)]"
               style={emojiAutocompleteItemStyle}
             >
               <span className="pk:flex pk:h-6 pk:w-6 pk:items-center pk:justify-center pk:text-xl pk:leading-none">

@@ -1,4 +1,3 @@
-import { Menu } from '@base-ui/react/menu'
 import { Tabs } from '@base-ui/react/tabs'
 import { ChevronDown } from 'lucide-react'
 import { NodeSelection } from 'prosekit/pm/state'
@@ -27,7 +26,7 @@ import {
   ScrollToBottomLineIcon,
   UploadCloud2LineIcon,
 } from '../../../icons'
-import { Button, EditorFloatingPopover, EditorHoverPopover, Separator, Tooltip } from '../../../ui'
+import { Button, EditorDropdownMenu, EditorDropdownMenuCustomItem, EditorFloatingPopover, EditorHoverPopover, Separator, Tooltip } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import type {
   AttachmentAttrs,
@@ -244,58 +243,43 @@ function AttachmentDisplayMenu({
   }
 
   return (
-    <Menu.Root modal={false}>
-      <Tooltip content="切换展示方式">
-        <Menu.Trigger
-          render={(
-            <Button
-              variant="ghost"
-              size="default"
-              className={cn(
-                'pk:h-8 pk:min-w-[92px] pk:justify-start pk:gap-1.5 pk:rounded-lg pk:px-2',
-                'pk:bg-[var(--editor-primary)] pk:text-white pk:hover:bg-[var(--editor-primary-hover)]',
-              )}
-            >
-              <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center">
-                {selectedOption.icon}
-              </span>
-              <span className="pk:min-w-0 pk:flex-1 pk:truncate pk:text-left pk:text-xs pk:font-bold">
-                {selectedOption.label}
-              </span>
-              <ChevronDown className="pk:h-3.5 pk:w-3.5 pk:shrink-0" strokeWidth={1.85} />
-            </Button>
+    <EditorDropdownMenu
+      trigger={(
+        <Button
+          variant="ghost"
+          size="default"
+          aria-label="切换展示方式"
+          title="切换展示方式"
+          className={cn(
+            'pk:h-8 pk:min-w-[92px] pk:justify-start pk:gap-1.5 pk:rounded-lg pk:px-2',
+            'pk:bg-[var(--editor-primary)] pk:text-white pk:hover:bg-[var(--editor-primary-hover)]',
           )}
-        />
-      </Tooltip>
-      <Menu.Portal>
-        <Menu.Positioner side="bottom" align="start" sideOffset={6}>
-          <Menu.Popup className="pk:z-[1400] pk:min-w-[160px] pk:rounded-xl pk:border pk:border-black/6 pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgba(23,23,23,0.08)] pk:outline-none">
-            {options.map((option) => {
-              const selected = option.value === displayType
+        >
+          <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center">
+            {selectedOption.icon}
+          </span>
+          <span className="pk:min-w-0 pk:flex-1 pk:truncate pk:text-left pk:text-xs pk:font-bold">
+            {selectedOption.label}
+          </span>
+          <ChevronDown className="pk:h-3.5 pk:w-3.5 pk:shrink-0" strokeWidth={1.85} />
+        </Button>
+      )}
+      popupClassName="pk:z-[1400] pk:min-w-[160px]"
+    >
+      {options.map((option) => {
+        const selected = option.value === displayType
 
-              return (
-                <Menu.Item
-                  key={option.value}
-                  className={cn(
-                    'pk:flex pk:min-h-8 pk:w-full pk:items-center pk:gap-2 pk:rounded-md pk:px-2 pk:text-left pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none',
-                    'pk:hover:bg-[var(--editor-muted)]',
-                    selected && 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]',
-                  )}
-                  onClick={() => onChangeDisplay(option.value)}
-                >
-                  <span className="pk:inline-flex pk:h-4 pk:w-4 pk:shrink-0 pk:items-center pk:justify-center">
-                    {option.icon}
-                  </span>
-                  <span className="pk:min-w-0 pk:flex-1 pk:truncate">
-                    {option.label}
-                  </span>
-                </Menu.Item>
-              )
-            })}
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
+        return (
+          <EditorDropdownMenuCustomItem
+            key={option.value}
+            selected={selected}
+            icon={option.icon}
+            label={option.label}
+            onSelect={() => onChangeDisplay(option.value)}
+          />
+        )
+      })}
+    </EditorDropdownMenu>
   )
 }
 

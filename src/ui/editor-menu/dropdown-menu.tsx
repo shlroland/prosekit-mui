@@ -33,6 +33,16 @@ export type EditorDropdownMenuProps = {
   onOpenChange?: MenuRootProps['onOpenChange']
 }
 
+export type EditorDropdownMenuCustomItemProps = {
+  label: ReactNode
+  icon?: ReactNode
+  extra?: ReactNode
+  disabled?: boolean
+  selected?: boolean
+  destructive?: boolean
+  onSelect: () => void
+}
+
 export function EditorDropdownMenu({
   trigger,
   children,
@@ -53,7 +63,13 @@ export function EditorDropdownMenu({
       open={open}
       defaultOpen={defaultOpen}
       modal={modal}
-      onOpenChange={onOpenChange}
+      onOpenChange={(nextOpen, eventDetails) => {
+        if (!nextOpen && eventDetails.reason === 'sibling-open') {
+          return
+        }
+
+        onOpenChange?.(nextOpen, eventDetails)
+      }}
     >
       <BaseMenu.Trigger render={trigger as MenuTriggerProps['render']} />
       <BaseMenu.Portal>
@@ -71,12 +87,43 @@ export function EditorDropdownMenu({
               'pk:origin-[var(--transform-origin)] pk:transition-[opacity,transform] pk:duration-100 data-[ending-style]:pk:scale-[0.98] data-[ending-style]:pk:opacity-0 data-[starting-style]:pk:scale-[0.98] data-[starting-style]:pk:opacity-0',
               popupClassName,
             )}
+            data-editor-floating
           >
             {children}
           </BaseMenu.Popup>
         </BaseMenu.Positioner>
       </BaseMenu.Portal>
     </BaseMenu.Root>
+  )
+}
+
+export function EditorDropdownMenuCustomItem({
+  label,
+  icon,
+  extra,
+  disabled,
+  selected,
+  destructive,
+  onSelect,
+}: EditorDropdownMenuCustomItemProps) {
+  return (
+    <BaseMenu.Item
+      disabled={disabled}
+      closeOnClick
+      data-selected={selected ? '' : undefined}
+      data-destructive={destructive ? '' : undefined}
+      className={editorMenuItemClassName}
+      onClick={onSelect}
+    >
+      <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
+        {icon}
+      </span>
+      <span className="pk:min-w-0 pk:truncate">{label}</span>
+      <span className="pk:flex pk:min-w-4 pk:items-center pk:justify-end pk:text-[11px] pk:text-[var(--editor-muted-foreground)]">
+        {extra}
+        {!extra && selected ? <span className="pk:h-1.5 pk:w-1.5 pk:rounded-full pk:bg-[var(--editor-primary)]" /> : null}
+      </span>
+    </BaseMenu.Item>
   )
 }
 

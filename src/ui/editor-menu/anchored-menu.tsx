@@ -43,7 +43,7 @@ export function EditorAnchoredMenu({
   children,
   open,
   defaultOpen,
-  modal = false,
+  modal = true,
   anchor,
   side = 'bottom',
   align = 'start',
@@ -65,7 +65,13 @@ export function EditorAnchoredMenu({
       open={open}
       defaultOpen={defaultOpen}
       modal={modal}
-      onOpenChange={onOpenChange}
+      onOpenChange={(nextOpen, eventDetails) => {
+        if (!nextOpen && eventDetails.reason === 'sibling-open') {
+          return
+        }
+
+        onOpenChange?.(nextOpen, eventDetails)
+      }}
     >
       <BaseMenu.Portal>
         <BaseMenu.Positioner

@@ -1,5 +1,4 @@
 import { type CSSProperties, type ReactNode } from 'react'
-import { Menu } from '@base-ui/react/menu'
 import type { ReactNodeViewProps } from 'prosekit/react'
 
 import {
@@ -11,7 +10,7 @@ import {
   TextIcon,
   UserSmileFillIcon,
 } from '../../../icons'
-import { Button, EditorHoverPopover, Separator, Tooltip } from '../../../ui'
+import { Button, EditorDropdownMenu, EditorDropdownMenuCustomItem, EditorHoverPopover, Separator, Tooltip } from '../../../ui'
 import { cn } from '../../../utils/cn'
 import type { AlertType, AlertVariant } from './types'
 
@@ -133,45 +132,30 @@ function AlertTypeMenu({
   }
 
   return (
-    <Menu.Root modal={false}>
-      <Menu.Trigger
-        render={(
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="展示类型"
-            title="展示类型"
-            className="pk:h-7 pk:w-7 pk:rounded-md pk:text-[var(--editor-muted-foreground)] pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]"
-          >
-            {selectedOption.icon}
-          </Button>
-        )}
-      />
-      <Menu.Portal>
-        <Menu.Positioner side="bottom" align="start" sideOffset={6}>
-          <Menu.Popup
-            className="pk:z-[1410] pk:min-w-[136px] pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:shadow-[0_12px_32px_rgb(15_23_42_/_18%)] pk:outline-none"
-            data-editor-floating
-          >
-            {alertTypeOptions.map((option) => (
-              <Menu.Item
-                key={option.value}
-                className={cn(
-                  'pk:flex pk:cursor-pointer pk:items-center pk:gap-2 pk:rounded-md pk:px-2.5 pk:py-1.5 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:hover:bg-[var(--editor-muted)] data-[highlighted]:bg-[var(--editor-muted)]',
-                  option.value === value && 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]',
-                )}
-                onClick={() => onChange(option.value)}
-              >
-                <span className="pk:flex pk:h-4 pk:w-4 pk:items-center pk:justify-center">
-                  {option.icon}
-                </span>
-                <span>{option.label}</span>
-              </Menu.Item>
-            ))}
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
+    <EditorDropdownMenu
+      trigger={(
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="展示类型"
+          title="展示类型"
+          className="pk:h-7 pk:w-7 pk:rounded-md pk:text-[var(--editor-muted-foreground)] pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]"
+        >
+          {selectedOption.icon}
+        </Button>
+      )}
+      popupClassName="pk:z-[1410] pk:min-w-[136px]"
+    >
+      {alertTypeOptions.map((option) => (
+        <EditorDropdownMenuCustomItem
+          key={option.value}
+          selected={option.value === value}
+          icon={option.icon}
+          label={option.label}
+          onSelect={() => onChange(option.value)}
+        />
+      ))}
+    </EditorDropdownMenu>
   )
 }
 

@@ -15,7 +15,6 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type ReactNode,
 } from 'react'
 
 import {
@@ -36,7 +35,7 @@ import {
   SkipRightIcon,
   SkipUpIcon,
 } from '../../icons'
-import { EditorFloatingPopover, Tooltip, editorMenuSurfaceClassName } from '../../ui'
+import { EditorAnchoredMenu, Tooltip } from '../../ui'
 import {
   applyTextColorToSelection,
   areAxisCellsAllHeader,
@@ -399,8 +398,8 @@ const TableHandleTrigger = forwardRef<HTMLButtonElement, {
         onClick={onClick}
         className={
           orientation === 'horizontal'
-            ? 'pk:flex pk:h-3 pk:min-w-0 pk:flex-1 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors hover:pk:bg-[var(--editor-primary)] hover:pk:text-white data-[active]:pk:bg-[var(--editor-primary)] data-[active]:pk:text-white'
-            : 'pk:flex pk:h-full pk:w-3 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors hover:pk:bg-[var(--editor-primary)] hover:pk:text-white data-[active]:pk:bg-[var(--editor-primary)] data-[active]:pk:text-white'
+            ? 'pk:flex pk:h-3 pk:min-w-0 pk:flex-1 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors pk:hover:bg-[var(--editor-primary)] pk:hover:text-white data-[active]:pk:bg-[var(--editor-primary)] data-[active]:pk:text-white'
+            : 'pk:flex pk:h-full pk:w-3 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors pk:hover:bg-[var(--editor-primary)] pk:hover:text-white data-[active]:pk:bg-[var(--editor-primary)] data-[active]:pk:text-white'
         }
       >
         <MoreLineIcon
@@ -459,24 +458,13 @@ function TableHandleAddButton({ editor, orientation, direction, state }: TableHa
         onClick={handleClick}
         className={
           orientation === 'row'
-            ? 'pk:flex pk:h-3 pk:w-3 pk:shrink-0 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors hover:pk:bg-[var(--editor-primary)] hover:pk:text-white disabled:pk:pointer-events-none disabled:pk:opacity-40'
-            : 'pk:flex pk:h-3 pk:w-8 pk:shrink-0 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors hover:pk:bg-[var(--editor-primary)] hover:pk:text-white disabled:pk:pointer-events-none disabled:pk:opacity-40'
+            ? 'pk:flex pk:h-3 pk:w-3 pk:shrink-0 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors pk:hover:bg-[var(--editor-primary)] pk:hover:text-white disabled:pk:pointer-events-none disabled:pk:opacity-40'
+            : 'pk:flex pk:h-3 pk:w-8 pk:shrink-0 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-[var(--radius-sm)] pk:border-0 pk:bg-[var(--editor-surface)] pk:p-0 pk:text-[var(--editor-muted-foreground)] pk:transition-colors pk:hover:bg-[var(--editor-primary)] pk:hover:text-white disabled:pk:pointer-events-none disabled:pk:opacity-40'
         }
       >
         <Icon className="pk:h-3 pk:w-3 pk:shrink-0" />
       </button>
     </Tooltip>
-  )
-}
-
-function TableToolbarSurface({ children }: { children: ReactNode }) {
-  return (
-    <div
-      className={editorMenuSurfaceClassName}
-      data-editor-floating
-    >
-      {children}
-    </div>
   )
 }
 
@@ -571,7 +559,7 @@ function TableHandleMenu({ editor, orientation, state, onClose }: TableHandleMen
   }
 
   return (
-    <TableToolbarSurface>
+    <>
       {isFirst ? (
         <>
           <TableMenuActionItem
@@ -641,7 +629,7 @@ function TableHandleMenu({ editor, orientation, state, onClose }: TableHandleMen
         disabled={!state.canDeleteTable}
         onSelect={() => runCommand('deleteTable')}
       />
-    </TableToolbarSurface>
+    </>
   )
 }
 
@@ -649,8 +637,6 @@ export function TableFloatingToolbar() {
   const editor = useEditor<any>()
   const snapshot = useEditorDerivedValue<any, string>(getTableHandleSnapshot)
   const [openMenu, setOpenMenu] = useState<TableOrientation | null>(null)
-  const columnTriggerId = 'pk-table-column-handle-trigger'
-  const rowTriggerId = 'pk-table-row-handle-trigger'
   const { activeHandle, hoverState, setActiveHandle } = useTableHandleHoverState(editor, openMenu)
   const columnMenuAnchorRef = useRef<HTMLButtonElement | null>(null)
   const rowMenuAnchorRef = useRef<HTMLButtonElement | null>(null)
@@ -719,15 +705,13 @@ export function TableFloatingToolbar() {
                     title="列操作"
                     orientation="horizontal"
                     active={openMenu === 'column'}
-                    id={columnTriggerId}
                     onClick={() => openHandleMenu('column')}
                   />
                 </TableHandleColumnMenuTrigger>
               </TableHandleColumnMenuRoot>
-              <EditorFloatingPopover
+              <EditorAnchoredMenu
                 anchor={columnMenuAnchorRef}
                 open={openMenu === 'column'}
-                triggerId={columnTriggerId}
                 side="top"
                 sideOffset={8}
                 popupClassName="pk:z-[1405]"
@@ -747,18 +731,17 @@ export function TableFloatingToolbar() {
                     return current === 'column' ? null : current
                   })
                 }}
-                content={(
-                  <TableHandleMenu
-                    editor={editor}
-                    orientation="column"
-                    state={state}
-                    onClose={() => {
-                      setOpenMenu((current) => current === 'column' ? null : current)
-                      setActiveHandle((current) => current === 'column' ? null : current)
-                    }}
-                  />
-                )}
-              />
+              >
+                <TableHandleMenu
+                  editor={editor}
+                  orientation="column"
+                  state={state}
+                  onClose={() => {
+                    setOpenMenu((current) => current === 'column' ? null : current)
+                    setActiveHandle((current) => current === 'column' ? null : current)
+                  }}
+                />
+              </EditorAnchoredMenu>
             </div>
             <TableHandleAddButton editor={editor} orientation="column" direction="after" state={state} />
           </div>
@@ -790,15 +773,13 @@ export function TableFloatingToolbar() {
                     title="行操作"
                     orientation="vertical"
                     active={openMenu === 'row'}
-                    id={rowTriggerId}
                     onClick={() => openHandleMenu('row')}
                   />
                 </TableHandleRowMenuTrigger>
               </TableHandleRowMenuRoot>
-              <EditorFloatingPopover
+              <EditorAnchoredMenu
                 anchor={rowMenuAnchorRef}
                 open={openMenu === 'row'}
-                triggerId={rowTriggerId}
                 side="left"
                 sideOffset={8}
                 popupClassName="pk:z-[1405]"
@@ -818,18 +799,17 @@ export function TableFloatingToolbar() {
                     return current === 'row' ? null : current
                   })
                 }}
-                content={(
-                  <TableHandleMenu
-                    editor={editor}
-                    orientation="row"
-                    state={state}
-                    onClose={() => {
-                      setOpenMenu((current) => current === 'row' ? null : current)
-                      setActiveHandle((current) => current === 'row' ? null : current)
-                    }}
-                  />
-                )}
-              />
+              >
+                <TableHandleMenu
+                  editor={editor}
+                  orientation="row"
+                  state={state}
+                  onClose={() => {
+                    setOpenMenu((current) => current === 'row' ? null : current)
+                    setActiveHandle((current) => current === 'row' ? null : current)
+                  }}
+                />
+              </EditorAnchoredMenu>
             </div>
             <TableHandleAddButton editor={editor} orientation="row" direction="after" state={state} />
           </div>

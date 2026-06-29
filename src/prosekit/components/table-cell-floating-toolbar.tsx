@@ -9,7 +9,7 @@ import {
   MoreLineIcon,
   SplitCellsVerticalIcon,
 } from '../../icons'
-import { EditorFloatingPopover, Tooltip, editorMenuSurfaceClassName } from '../../ui'
+import { EditorAnchoredMenu, Tooltip } from '../../ui'
 import {
   applyTextColorToSelection,
   canMergeSelectedCells,
@@ -293,10 +293,9 @@ export function TableCellFloatingToolbar() {
           </button>
         </Tooltip>
       </div>
-      <EditorFloatingPopover
+      <EditorAnchoredMenu
         anchor={menuAnchorRef}
         open={menuOpen}
-        triggerId={triggerId}
         side="right"
         align="start"
         sideOffset={8}
@@ -304,70 +303,67 @@ export function TableCellFloatingToolbar() {
         onOpenChange={(open) => {
           setMenuOpen(open)
         }}
-        content={(
-          <div className={editorMenuSurfaceClassName} data-editor-floating>
-            {state.canMerge ? (
-              <TableMenuActionItem
-                label="合并单元格"
-                icon={<MergeCellsVerticalIcon className="pk:h-4 pk:w-4" />}
-                onSelect={() => {
-                  editor.focus()
-                  mergeSelectedCells(editor)
-                  setMenuOpen(false)
-                }}
-              />
-            ) : null}
+      >
+        {state.canMerge ? (
+          <TableMenuActionItem
+            label="合并单元格"
+            icon={<MergeCellsVerticalIcon className="pk:h-4 pk:w-4" />}
+            onSelect={() => {
+              editor.focus()
+              mergeSelectedCells(editor)
+              setMenuOpen(false)
+            }}
+          />
+        ) : null}
 
-            {state.canSplit ? (
-              <TableMenuActionItem
-                label="拆分单元格"
-                icon={<SplitCellsVerticalIcon className="pk:h-4 pk:w-4" />}
-                onSelect={() => {
-                  editor.focus()
-                  splitSelectedCell(editor)
-                  setMenuOpen(false)
-                }}
-              />
-            ) : null}
+        {state.canSplit ? (
+          <TableMenuActionItem
+            label="拆分单元格"
+            icon={<SplitCellsVerticalIcon className="pk:h-4 pk:w-4" />}
+            onSelect={() => {
+              editor.focus()
+              splitSelectedCell(editor)
+              setMenuOpen(false)
+            }}
+          />
+        ) : null}
 
-            {state.canMerge || state.canSplit ? <TableMenuDivider /> : null}
+        {state.canMerge || state.canSplit ? <TableMenuDivider /> : null}
 
-            <TableColorSubmenu
-              onApplyTextColor={applyTextColor}
-              onApplyBackgroundColor={applyBackgroundColor}
-            />
-            <TableAlignSubmenu
-              selectedTextAlign={state.selectedTextAlign}
-              selectedVerticalAlign={state.selectedVerticalAlign}
-              onApplyTextAlign={applyTextAlign}
-              onApplyVerticalAlign={applyVerticalAlign}
-            />
+        <TableColorSubmenu
+          onApplyTextColor={applyTextColor}
+          onApplyBackgroundColor={applyBackgroundColor}
+        />
+        <TableAlignSubmenu
+          selectedTextAlign={state.selectedTextAlign}
+          selectedVerticalAlign={state.selectedVerticalAlign}
+          onApplyTextAlign={applyTextAlign}
+          onApplyVerticalAlign={applyVerticalAlign}
+        />
 
-            <TableMenuDivider />
+        <TableMenuDivider />
 
-            <TableMenuActionItem
-              label="清空单元格内容"
-              icon={<DeleteBack2LineIcon className="pk:h-4 pk:w-4" />}
-              disabled={!state.canClear}
-              onSelect={() => {
-                editor.focus()
-                clearCurrentCellContent(editor)
-                setMenuOpen(false)
-              }}
-            />
-            <TableMenuActionItem
-              label="删除表格"
-              icon={<DeleteLineIcon className="pk:h-4 pk:w-4" />}
-              disabled={!state.canDeleteTable}
-              onSelect={() => {
-                editor.focus()
-                ;(editor.commands as any).deleteTable?.()
-                setMenuOpen(false)
-              }}
-            />
-          </div>
-        )}
-      />
+        <TableMenuActionItem
+          label="清空单元格内容"
+          icon={<DeleteBack2LineIcon className="pk:h-4 pk:w-4" />}
+          disabled={!state.canClear}
+          onSelect={() => {
+            editor.focus()
+            clearCurrentCellContent(editor)
+            setMenuOpen(false)
+          }}
+        />
+        <TableMenuActionItem
+          label="删除表格"
+          icon={<DeleteLineIcon className="pk:h-4 pk:w-4" />}
+          disabled={!state.canDeleteTable}
+          onSelect={() => {
+            editor.focus()
+            ;(editor.commands as any).deleteTable?.()
+            setMenuOpen(false)
+          }}
+        />
+      </EditorAnchoredMenu>
     </div>
   )
 

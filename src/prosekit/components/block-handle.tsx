@@ -121,7 +121,7 @@ const handleButtonClassName = cn(
   'prosekit-block-handle-button',
   'pk:flex pk:h-7 pk:w-7 pk:cursor-pointer pk:items-center pk:justify-center',
   'pk:rounded-md pk:border-0 pk:bg-transparent pk:p-0 pk:text-[var(--editor-muted-foreground)]',
-  'pk:outline-none pk:transition-colors hover:pk:bg-[var(--editor-muted)] hover:pk:text-[var(--editor-foreground)]',
+  'pk:outline-none pk:transition-colors pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]',
   'pk:focus-visible:bg-[var(--editor-muted)] pk:focus-visible:text-[var(--editor-foreground)]',
 )
 

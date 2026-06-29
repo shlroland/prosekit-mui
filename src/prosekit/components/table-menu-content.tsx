@@ -11,12 +11,10 @@ import {
   BrushLineIcon,
 } from '../../icons'
 import {
-  EditorHoverPopover,
-  EditorMenuDivider,
-  EditorMenuItemButton,
-  EditorMenuSectionLabel,
-  EditorMenuSubmenuTriggerButton,
-  editorMenuSurfaceClassName,
+  EditorAnchoredMenuDivider,
+  EditorAnchoredMenuItem,
+  EditorAnchoredMenuSectionLabel,
+  EditorAnchoredMenuSubmenu,
 } from '../../ui'
 import type { TableCellTextAlign, TableCellVerticalAlign } from './table-utils'
 
@@ -50,8 +48,6 @@ type TableMenuActionItemProps = {
   onSelect: () => void
   disabled?: boolean
   selected?: boolean
-  closeOnSelect?: boolean
-  className?: string
 }
 
 export function TableMenuActionItem({
@@ -60,13 +56,9 @@ export function TableMenuActionItem({
   onSelect,
   disabled = false,
   selected = false,
-  closeOnSelect = true,
-  className,
 }: TableMenuActionItemProps) {
   return (
-    <EditorMenuItemButton
-      aria-label={label}
-      className={className}
+    <EditorAnchoredMenuItem
       action={{
         key: label,
         label,
@@ -79,9 +71,9 @@ export function TableMenuActionItem({
   )
 }
 
-export const TableMenuDivider = EditorMenuDivider
+export const TableMenuDivider = EditorAnchoredMenuDivider
 
-export const TableMenuSectionLabel = EditorMenuSectionLabel
+export const TableMenuSectionLabel = EditorAnchoredMenuSectionLabel
 
 type TableSubmenuProps = {
   icon: ReactNode
@@ -91,22 +83,9 @@ type TableSubmenuProps = {
 
 function TableSubmenu({ icon, label, children }: TableSubmenuProps) {
   return (
-    <EditorHoverPopover
-      nativeButton
-      hoverDelay={60}
-      closeDelay={220}
-      side="right"
-      align="start"
-      sideOffset={8}
-      popupClassName={editorMenuSurfaceClassName}
-      content={children}
-    >
-      <EditorMenuSubmenuTriggerButton
-        aria-label={label}
-        icon={icon}
-        label={label}
-      />
-    </EditorHoverPopover>
+    <EditorAnchoredMenuSubmenu icon={icon} label={label}>
+      {children}
+    </EditorAnchoredMenuSubmenu>
   )
 }
 

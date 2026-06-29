@@ -1,7 +1,7 @@
-import { Menu } from '@base-ui/react/menu'
 import { ChevronDown } from 'lucide-react'
 import { type ReactNode } from 'react'
 
+import { EditorDropdownMenu, EditorDropdownMenuCustomItem } from '../../ui'
 import { cn } from '../../utils/cn'
 import { getShortcutKeyText } from '../get-shortcut-key-text'
 import { ToolbarItem } from './toolbar-item'
@@ -48,58 +48,40 @@ export function ToolbarMenu<Key extends string = string>({
   }
 
   return (
-    <Menu.Root modal={false}>
-      <Menu.Trigger
-        disabled={disabled}
-        render={(
-          <ToolbarItem
-            tip={tip}
-            content={
-              triggerContent ?? (
-                <span className="toolbar-menu-trigger">
-                  <span className="toolbar-menu-trigger-icon">
-                    {selectedOption.icon}
-                  </span>
-                  <ChevronDown className="toolbar-menu-chevron" strokeWidth={1.85} />
+    <EditorDropdownMenu
+      trigger={(
+        <ToolbarItem
+          tip={tip}
+          content={
+            triggerContent ?? (
+              <span className="toolbar-menu-trigger">
+                <span className="toolbar-menu-trigger-icon">
+                  {selectedOption.icon}
                 </span>
-              )
-            }
-            className={cn(active ? 'tool-active' : undefined, className)}
-            disabled={disabled}
-          />
-        )}
-      />
-      <Menu.Portal>
-        <Menu.Positioner side="bottom" align="start" sideOffset={6}>
-          <Menu.Popup className="toolbar-menu-paper">
-        {options.map((option) => {
-          const selected = option.key === selectedKey
+                <ChevronDown className="toolbar-menu-chevron" strokeWidth={1.85} />
+              </span>
+            )
+          }
+          className={cn(active ? 'tool-active' : undefined, className)}
+          disabled={disabled}
+        />
+      )}
+    >
+      {options.map((option) => {
+        const selected = option.key === selectedKey
 
-          return (
-            <Menu.Item
-              key={option.key}
-              disabled={option.disabled}
-              data-selected={selected ? '' : undefined}
-              className="toolbar-menu-item"
-              onClick={() => handleSelect(option.key)}
-            >
-              <span className="toolbar-menu-item-icon">
-                {option.icon}
-              </span>
-              <span className="toolbar-menu-item-label">
-                {option.label}
-              </span>
-              {option.shortcutKey?.length ? (
-                <span className="toolbar-menu-item-shortcut">
-                  {getShortcutKeyText(option.shortcutKey)}
-                </span>
-              ) : null}
-            </Menu.Item>
-          )
-        })}
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
+        return (
+          <EditorDropdownMenuCustomItem
+            key={option.key}
+            disabled={option.disabled}
+            selected={selected}
+            icon={option.icon}
+            label={option.label}
+            extra={option.shortcutKey?.length ? getShortcutKeyText(option.shortcutKey) : null}
+            onSelect={() => handleSelect(option.key)}
+          />
+        )
+      })}
+    </EditorDropdownMenu>
   )
 }

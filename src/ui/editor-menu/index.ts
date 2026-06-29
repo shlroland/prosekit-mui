@@ -28,11 +28,13 @@ export {
 } from './content'
 export {
   EditorDropdownMenu,
+  EditorDropdownMenuCustomItem,
   EditorDropdownMenuDivider,
   EditorDropdownMenuItem,
   EditorDropdownMenuSectionLabel,
   EditorDropdownMenuSubmenu,
   type EditorDropdownMenuProps,
+  type EditorDropdownMenuCustomItemProps,
 } from './dropdown-menu'
 export { EditorComboboxMenu, type EditorComboboxMenuProps } from './combobox-menu'
 export {
