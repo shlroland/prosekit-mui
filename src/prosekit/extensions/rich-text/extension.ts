@@ -9,6 +9,7 @@ import { defineSuperscript } from 'prosekit/extensions/superscript'
 import { defineTextAlign } from 'prosekit/extensions/text-align'
 import { defineTextColor } from 'prosekit/extensions/text-color'
 
+import { defineAiWritingExtension, type AiWritingOptions } from '../ai-writing'
 import { defineAlertExtension } from '../alert'
 import { defineAttachmentExtension, type AttachmentExtensionOptions } from '../attachment'
 import { defineBasicExtension } from '../basic'
@@ -37,6 +38,7 @@ export type RichTextExtensionOptions = {
   mermaid?: MermaidExtensionOptions
   math?: MathExtensionOptions
   diff?: DiffOptions
+  aiWriting?: AiWritingOptions
 }
 
 export function defineRichTextExtension(options: RichTextExtensionOptions = {}) {
@@ -67,6 +69,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineFontSize(),
     defineTableOfContentsExtension(),
     defineDiffExtension(options.diff),
+    defineAiWritingExtension(options.aiWriting),
     defineHighlight(),
     defineSuperscript(),
     defineSubscript(),

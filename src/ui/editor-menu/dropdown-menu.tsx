@@ -84,7 +84,7 @@ export function EditorDropdownMenu({
             finalFocus={finalFocus}
             className={cn(
               editorMenuSurfaceClassName,
-              'pk:origin-[var(--transform-origin)] pk:transition-[opacity,transform] pk:duration-100 data-[ending-style]:pk:scale-[0.98] data-[ending-style]:pk:opacity-0 data-[starting-style]:pk:scale-[0.98] data-[starting-style]:pk:opacity-0',
+              'pk:origin-[var(--transform-origin,center)] pk:transition-[opacity,transform] pk:duration-100 data-[ending-style]:pk:scale-[0.98] data-[ending-style]:pk:opacity-0 data-[starting-style]:pk:scale-[0.98] data-[starting-style]:pk:opacity-0',
               popupClassName,
             )}
             data-editor-floating

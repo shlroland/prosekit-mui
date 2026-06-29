@@ -1,0 +1,6 @@
+.prosekit-ai-writing-suggestion {
+  color: color-mix(in srgb, var(--editor-foreground) 18%, transparent);
+  pointer-events: none;
+  user-select: none;
+  white-space: pre-wrap;
+}

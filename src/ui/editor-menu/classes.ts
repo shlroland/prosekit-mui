@@ -3,7 +3,7 @@ import { cn } from '../../utils/cn'
 export const editorMenuSurfaceClassName = cn(
   'pk:z-[1500] pk:min-w-[216px] pk:rounded-xl pk:border pk:border-[var(--editor-border)]',
   'pk:bg-[var(--editor-surface)] pk:p-1 pk:text-[var(--editor-foreground)]',
-  'pk:max-h-[min(620px,var(--available-height))] pk:overflow-y-auto',
+  'pk:max-h-[min(620px,var(--available-height,620px))] pk:overflow-y-auto',
   'pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none',
 )
 

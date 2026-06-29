@@ -118,7 +118,7 @@ export function ComboboxContent({
         <BaseCombobox.Popup
           data-slot="combobox-content"
           className={cn(
-            'pk:relative pk:max-h-[var(--available-height)] pk:w-[var(--anchor-width)] pk:min-w-[240px] pk:max-w-[var(--available-width)] pk:origin-[var(--transform-origin)] pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:text-[var(--editor-foreground)] pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)] pk:outline-none',
+            'pk:relative pk:max-h-[var(--available-height,320px)] pk:w-[var(--anchor-width,auto)] pk:min-w-[240px] pk:max-w-[var(--available-width,calc(100vw-16px))] pk:origin-[var(--transform-origin,center)] pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:text-[var(--editor-foreground)] pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)] pk:outline-none',
             'pk:transition-[opacity,transform] pk:duration-100 data-[ending-style]:pk:scale-[0.98] data-[ending-style]:pk:opacity-0 data-[starting-style]:pk:scale-[0.98] data-[starting-style]:pk:opacity-0',
             className,
           )}

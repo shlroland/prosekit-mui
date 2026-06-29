@@ -9,6 +9,7 @@ import {
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
+  AiGenerateTextIcon,
   AlertBlockToolbar,
   ArrowGoBackLineIcon,
   ArrowGoForwardLineIcon,
@@ -24,6 +25,7 @@ import {
   EmojiAutocomplete,
   EmojiPickerPopover,
   EmotionLineIcon,
+  EraserLineIcon,
   ErrorWarningFillIcon,
   FlipGridIcon,
   FlowChartIcon,
@@ -59,6 +61,7 @@ import {
   defaultBlockMathTemplate,
   defaultInlineMathTemplate,
   defineRichTextExtension,
+  getAiWritingState,
   getDiffState,
   getCurrentLinkAttrs,
   isLinkActive,
@@ -570,6 +573,10 @@ function getDiffToolbarSnapshot(editor: any): string {
   })
 }
 
+function getAiWritingToolbarSnapshot(editor: any): string {
+  return JSON.stringify(getAiWritingState(editor.state))
+}
+
 function getToolbarStateSnapshot(editor: any): string {
   return JSON.stringify(getToolbarState(editor))
 }
@@ -630,9 +637,30 @@ function ProseKitAstrobookToolbar() {
       hasBaseline: boolean
     }
   }, [diffSnapshot])
+  const aiWritingSnapshot = useEditorDerivedValue<any, string>(getAiWritingToolbarSnapshot)
+  const aiWritingState = useMemo<{
+    enabled: boolean
+    hasSuggestion: boolean
+    suggestion: string
+  }>(() => {
+    return JSON.parse(aiWritingSnapshot) as {
+      enabled: boolean
+      hasSuggestion: boolean
+      suggestion: string
+    }
+  }, [aiWritingSnapshot])
   const [linkOpen, setLinkOpen] = useState(false)
   const [tablePickerAnchor, setTablePickerAnchor] = useState<HTMLElement | null>(null)
   const tablePickerOpen = Boolean(tablePickerAnchor)
+  const hasInlineFormat = state.bold
+    || state.italic
+    || state.underline
+    || state.strike
+    || state.code
+    || state.highlight
+    || state.superscript
+    || state.subscript
+    || state.tooltip
 
   function focus() {
     editor.focus()
@@ -644,201 +672,57 @@ function ProseKitAstrobookToolbar() {
       .trim()
   }
 
+  function clearFormat() {
+    focus()
+
+    const { state: editorState, view } = editor
+    const { from, to, empty } = editorState.selection
+
+    if (empty) {
+      ;[
+        'unsetBold',
+        'unsetItalic',
+        'unsetUnderline',
+        'unsetStrike',
+        'unsetCode',
+        'unsetHighlight',
+        'unsetSuperscript',
+        'unsetSubscript',
+        'unsetTooltip',
+      ].forEach((commandName) => {
+        ;(editor.commands as any)[commandName]?.()
+      })
+      return
+    }
+
+    view.dispatch(editorState.tr.removeMark(from, to).scrollIntoView())
+  }
+
   return (
-    <div className="pk:border-b pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-2 pk:py-1.5">
-      <div className="pk:flex pk:flex-wrap pk:items-center pk:gap-1">
-        <EditorComboboxMenu
-          options={blockTypeOptions}
-          value={state.headingLevel ? String(state.headingLevel) : 'paragraph'}
-          searchable={false}
-          side="bottom"
-          align="start"
-          sideOffset={6}
-          popupClassName="pk:!w-[160px] pk:!min-w-[160px]"
-          getOptionMeta={() => ''}
-          onSelect={(option) => {
-            focus()
-            if (option.id === 'paragraph') {
-              editor.commands.setParagraph()
-              return
-            }
-            editor.commands.setHeading({ level: Number(option.id) })
-          }}
-        >
-          <button
-            type="button"
-            className="pk:flex pk:h-[34px] pk:min-w-[116px] pk:items-center pk:justify-between pk:gap-2 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-white pk:px-2 pk:text-sm pk:font-medium pk:text-[var(--editor-foreground)] pk:outline-none pk:transition-colors pk:hover:bg-[var(--editor-muted)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]"
-          >
-            <span className="pk:truncate">
-              {state.headingLevel ? `标题 ${state.headingLevel}` : '正文'}
-            </span>
-          </button>
-        </EditorComboboxMenu>
-
-        <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
-
-        <DemoToolbarButton
-          tip="撤销"
-          icon={<ArrowGoBackLineIcon {...iconProps} />}
-          onClick={() => {
-            focus()
-            editor.commands.undo()
-          }}
-        />
-        <DemoToolbarButton
-          tip="重做"
-          icon={<ArrowGoForwardLineIcon {...iconProps} />}
-          onClick={() => {
-            focus()
-            editor.commands.redo()
-          }}
-        />
-
-        <Button
-          size="sm"
-          variant={diffState.hasBaseline && !diffState.isActive ? 'default' : 'outline'}
-          className="pk:h-8 pk:px-2 pk:text-xs"
-          onClick={() => {
-            focus()
-            ;(editor.commands as any).setDiffBaseline?.()
-          }}
-        >
-          Diff 基准
-        </Button>
-        <Button
-          size="sm"
-          variant={diffState.isActive ? 'default' : 'outline'}
-          className="pk:h-8 pk:px-2 pk:text-xs"
-          disabled={!diffState.hasBaseline}
-          onClick={() => {
-            focus()
-            ;(editor.commands as any).toggleDiff?.()
-          }}
-        >
-          {diffState.isActive ? `隐藏 Diff (${diffState.diffCount})` : '显示 Diff'}
-        </Button>
-
-        <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
-
-        <DemoToolbarButton tip="加粗" active={state.bold} icon={<BoldIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBold() }} />
-        <DemoToolbarButton tip="斜体" active={state.italic} icon={<ItalicIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleItalic() }} />
-        <DemoToolbarButton tip="下划线" active={state.underline} icon={<UnderlineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleUnderline() }} />
-        <DemoToolbarButton tip="删除线" active={state.strike} icon={<StrikethroughIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleStrike() }} />
-        <DemoToolbarButton tip="行内代码" active={state.code} icon={<CodeLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleCode() }} />
-        <DemoToolbarButton
-          tip="代码块"
-          active={state.codeBlock}
-          icon={<CodeBoxLineIcon {...iconProps} />}
-          onClick={() => {
-            focus()
-            editor.commands.toggleCodeBlock({
-              language: state.codeBlockLanguage ?? 'text',
-            })
-          }}
-        />
-        <DemoToolbarButton
-          tip="Mermaid 图表"
-          icon={<FlowChartIcon {...iconProps} />}
-          onClick={() => {
-            focus()
-            ;(editor.commands as any).insertMermaidCodeBlock?.(demoMermaidSource)
-          }}
-        />
-        <DemoToolbarButton
-          tip="行内公式"
-          active={state.mathInline}
-          icon={<FormulaIcon {...iconProps} />}
-          onClick={() => {
-            focus()
-            ;(editor.commands as any).setMathInline?.()
-          }}
-        />
-        <DemoToolbarButton
-          tip="公式块"
-          active={state.mathBlock}
-          icon={<FunctionsIcon {...iconProps} />}
-          onClick={() => {
-            focus()
-            ;(editor.commands as any).setMathBlock?.()
-          }}
-        />
-        <DemoToolbarButton tip="高亮" active={state.highlight} icon={<MarkPenLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleHighlight() }} />
-        <DemoToolbarButton
-          tip="文本提示"
-          active={state.tooltip}
-          icon={<TooltipLineIcon {...iconProps} />}
-          onClick={() => {
-            focus()
-            if (state.tooltip) {
-              editor.commands.unsetTooltip()
-            } else {
-              editor.commands.toggleTooltip()
-            }
-          }}
-        />
-        <DemoToolbarButton tip="上标" active={state.superscript} icon={<SuperscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
-        <DemoToolbarButton tip="下标" active={state.subscript} icon={<SubscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
-
-        <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
-
-        <div className="pk:inline-flex pk:items-center pk:gap-px" aria-label="text alignment">
-          {[
-            ['left', <AlignLeftIcon key="left" {...iconProps} />],
-            ['center', <AlignCenterIcon key="center" {...iconProps} />],
-            ['right', <AlignRightIcon key="right" {...iconProps} />],
-            ['justify', <AlignJustifyIcon key="justify" {...iconProps} />],
-          ].map(([value, icon]) => (
-            <ToolbarItem
-              key={value as string}
-              tip={`对齐: ${value}`}
-              icon={icon}
-              onClick={() => {
-                focus()
-                editor.commands.setTextAlign(value as string)
-              }}
-            />
-          ))}
+    <div className="editor-toolbar">
+      <div className="editor-toolbar-row">
+        <div className="editor-toolbar-group">
+          <DemoToolbarButton
+            tip={aiWritingState.hasSuggestion ? 'AI 伴写：按 Tab 接受' : 'AI 伴写'}
+            active={aiWritingState.enabled}
+            icon={<AiGenerateTextIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              ;(editor.commands as any).toggleAiWriting?.()
+            }}
+          />
+          <ToolbarItem
+            tip="表格"
+            icon={<Table2Icon {...iconProps} />}
+            className={tablePickerOpen ? 'tool-active' : undefined}
+            onClick={(event) => {
+              setTablePickerAnchor((current) => current ? null : event.currentTarget)
+            }}
+          />
+          <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertImage({ src: '', width: 760, align: 'center' }) }} />
+          <DemoToolbarButton tip="附件" icon={<AttachmentLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAttachment() }} />
+          <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertFlipGrid(2) }} />
         </div>
-
-        <Separator orientation="vertical" className="pk:mx-1 pk:h-5" />
-
-        <DemoToolbarButton
-          tip="无序列表"
-          icon={<ListUnorderedIcon {...iconProps} />}
-          onClick={() => {
-            focus()
-            editor.commands.toggleList({ kind: 'bullet' })
-          }}
-        />
-        <DemoToolbarButton
-          tip="有序列表"
-          icon={<ListOrdered2Icon {...iconProps} />}
-          onClick={() => {
-            focus()
-            editor.commands.toggleList({ kind: 'ordered' })
-          }}
-        />
-        <DemoToolbarButton
-          tip="任务列表"
-          icon={<ListCheck3Icon {...iconProps} />}
-          onClick={() => {
-            focus()
-            editor.commands.toggleList({ kind: 'task' })
-          }}
-        />
-        <DemoToolbarButton tip="引用" active={state.blockquote} icon={<QuoteTextIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
-        <DemoToolbarButton tip="提示块" icon={<Information2LineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setAlert({ variant: 'info', type: 'icon' }) }} />
-        <DemoToolbarButton tip="警告块" icon={<ErrorWarningFillIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setAlert({ variant: 'warning', type: 'icon' }) }} />
-        <DemoToolbarButton tip="折叠面板" icon={<CollapseIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertDetails() }} />
-        <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
-        <ToolbarItem
-          tip="表格"
-          icon={<Table2Icon {...iconProps} />}
-          className={tablePickerOpen ? 'tool-active' : undefined}
-          onClick={(event) => {
-            setTablePickerAnchor((current) => current ? null : event.currentTarget)
-          }}
-        />
         <TableSizePicker
           anchorEl={tablePickerAnchor}
           open={tablePickerOpen}
@@ -848,14 +732,119 @@ function ProseKitAstrobookToolbar() {
             editor.commands.insertTable({ row: rows, col: columns })
           }}
         />
-        <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertImage({ src: '', width: 760, align: 'center' }) }} />
-        <DemoToolbarButton tip="Excalidraw 绘图" icon={<MindMapIcon {...iconProps} />} onClick={() => { focus(); (editor.commands as any).setExcalidraw?.() }} />
-        <EmojiPickerPopover>
-          <EmotionLineIcon {...iconProps} />
-        </EmojiPickerPopover>
-        <DemoToolbarButton tip="附件" icon={<AttachmentLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAttachment() }} />
-        <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertFlipGrid(2) }} />
-        <LinkEditorPopover
+
+        <Separator orientation="vertical" className="editor-toolbar-divider" />
+
+        <div className="editor-toolbar-group">
+          <DemoToolbarButton
+            tip="撤销"
+            icon={<ArrowGoBackLineIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              editor.commands.undo()
+            }}
+          />
+          <DemoToolbarButton
+            tip="重做"
+            icon={<ArrowGoForwardLineIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              editor.commands.redo()
+            }}
+          />
+          <DemoToolbarButton
+            tip="清除格式"
+            disabled={!hasInlineFormat}
+            icon={<EraserLineIcon {...iconProps} />}
+            onClick={clearFormat}
+          />
+        </div>
+
+        <Separator orientation="vertical" className="editor-toolbar-divider" />
+
+        <div className="editor-toolbar-group">
+          <EditorComboboxMenu
+            options={blockTypeOptions}
+            value={state.headingLevel ? String(state.headingLevel) : 'paragraph'}
+            searchable={false}
+            side="bottom"
+            align="start"
+            sideOffset={6}
+            popupClassName="pk:!w-[160px] pk:!min-w-[160px]"
+            getOptionMeta={() => ''}
+            onSelect={(option) => {
+              focus()
+              if (option.id === 'paragraph') {
+                editor.commands.setParagraph()
+                return
+              }
+              editor.commands.setHeading({ level: Number(option.id) })
+            }}
+          >
+            <button
+              type="button"
+              className="toolbar-select-trigger toolbar-heading-select"
+            >
+              <span className="pk:truncate">
+                {state.headingLevel ? `标题 ${state.headingLevel}` : '正文'}
+              </span>
+            </button>
+          </EditorComboboxMenu>
+        </div>
+
+        <Separator orientation="vertical" className="editor-toolbar-divider" />
+
+        <div className="editor-toolbar-group">
+          <DemoToolbarButton tip="加粗" active={state.bold} icon={<BoldIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBold() }} />
+          <DemoToolbarButton tip="斜体" active={state.italic} icon={<ItalicIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleItalic() }} />
+          <DemoToolbarButton tip="删除线" active={state.strike} icon={<StrikethroughIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleStrike() }} />
+          <DemoToolbarButton tip="下划线" active={state.underline} icon={<UnderlineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleUnderline() }} />
+          <DemoToolbarButton tip="高亮" active={state.highlight} icon={<MarkPenLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleHighlight() }} />
+          <DemoToolbarButton
+            tip="文本提示"
+            active={state.tooltip}
+            icon={<TooltipLineIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              if (state.tooltip) {
+                editor.commands.unsetTooltip()
+              } else {
+                editor.commands.toggleTooltip()
+              }
+            }}
+          />
+          <DemoToolbarButton tip="上标" active={state.superscript} icon={<SuperscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
+          <DemoToolbarButton tip="下标" active={state.subscript} icon={<SubscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
+        </div>
+
+        <Separator orientation="vertical" className="editor-toolbar-divider" />
+
+        <div className="editor-toolbar-group">
+          <DemoToolbarButton
+            tip="无序列表"
+            icon={<ListUnorderedIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              editor.commands.toggleList({ kind: 'bullet' })
+            }}
+          />
+          <DemoToolbarButton
+            tip="有序列表"
+            icon={<ListOrdered2Icon {...iconProps} />}
+            onClick={() => {
+              focus()
+              editor.commands.toggleList({ kind: 'ordered' })
+            }}
+          />
+          <DemoToolbarButton
+            tip="任务列表"
+            icon={<ListCheck3Icon {...iconProps} />}
+            onClick={() => {
+              focus()
+              editor.commands.toggleList({ kind: 'task' })
+            }}
+          />
+          <LinkEditorPopover
           triggerStyle={{ display: 'inline-flex' }}
           open={linkOpen}
           initialHref={currentLink?.href ?? ''}
@@ -883,7 +872,7 @@ function ProseKitAstrobookToolbar() {
         >
           <span className="pk:inline-flex">
             <DemoToolbarButton
-              tip="链接节点"
+              tip="链接"
               active={state.link}
               icon={<LinkIcon {...iconProps} />}
               onClick={() => {
@@ -893,6 +882,108 @@ function ProseKitAstrobookToolbar() {
             />
           </span>
         </LinkEditorPopover>
+        </div>
+
+        <Separator orientation="vertical" className="editor-toolbar-divider" />
+
+        <div className="editor-toolbar-group" aria-label="text alignment">
+          {[
+            ['left', <AlignLeftIcon key="left" {...iconProps} />],
+            ['center', <AlignCenterIcon key="center" {...iconProps} />],
+            ['right', <AlignRightIcon key="right" {...iconProps} />],
+            ['justify', <AlignJustifyIcon key="justify" {...iconProps} />],
+          ].map(([value, icon]) => (
+            <ToolbarItem
+              key={value as string}
+              tip={`对齐: ${value}`}
+              icon={icon}
+              onClick={() => {
+                focus()
+                editor.commands.setTextAlign(value as string)
+              }}
+            />
+          ))}
+        </div>
+
+        <Separator orientation="vertical" className="editor-toolbar-divider" />
+
+        <div className="editor-toolbar-group">
+          <DemoToolbarButton tip="引用" active={state.blockquote} icon={<QuoteTextIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleBlockquote() }} />
+          <DemoToolbarButton
+            tip="代码块"
+            active={state.codeBlock}
+            icon={<CodeBoxLineIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              editor.commands.toggleCodeBlock({
+                language: state.codeBlockLanguage ?? 'text',
+              })
+            }}
+          />
+          <DemoToolbarButton tip="行内代码" active={state.code} icon={<CodeLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleCode() }} />
+          <DemoToolbarButton
+            tip="Mermaid 图表"
+            icon={<FlowChartIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              ;(editor.commands as any).insertMermaidCodeBlock?.(demoMermaidSource)
+            }}
+          />
+          <DemoToolbarButton
+            tip="行内公式"
+            active={state.mathInline}
+            icon={<FormulaIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              ;(editor.commands as any).setMathInline?.()
+            }}
+          />
+          <DemoToolbarButton
+            tip="公式块"
+            active={state.mathBlock}
+            icon={<FunctionsIcon {...iconProps} />}
+            onClick={() => {
+              focus()
+              ;(editor.commands as any).setMathBlock?.()
+            }}
+          />
+          <DemoToolbarButton tip="提示块" icon={<Information2LineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setAlert({ variant: 'info', type: 'icon' }) }} />
+          <DemoToolbarButton tip="警告块" icon={<ErrorWarningFillIcon {...iconProps} />} onClick={() => { focus(); editor.commands.setAlert({ variant: 'warning', type: 'icon' }) }} />
+          <DemoToolbarButton tip="折叠面板" icon={<CollapseIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertDetails() }} />
+          <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
+          <DemoToolbarButton tip="Excalidraw 绘图" icon={<MindMapIcon {...iconProps} />} onClick={() => { focus(); (editor.commands as any).setExcalidraw?.() }} />
+          <EmojiPickerPopover>
+            <EmotionLineIcon {...iconProps} />
+          </EmojiPickerPopover>
+        </div>
+
+        <Separator orientation="vertical" className="editor-toolbar-divider" />
+
+        <div className="editor-toolbar-group editor-toolbar-diff-group">
+          <Button
+            size="sm"
+            variant={diffState.hasBaseline && !diffState.isActive ? 'default' : 'outline'}
+            className="toolbar-text-button"
+            onClick={() => {
+              focus()
+              ;(editor.commands as any).setDiffBaseline?.()
+            }}
+          >
+            Diff 基准
+          </Button>
+          <Button
+            size="sm"
+            variant={diffState.isActive ? 'default' : 'outline'}
+            className="toolbar-text-button"
+            disabled={!diffState.hasBaseline}
+            onClick={() => {
+              focus()
+              ;(editor.commands as any).toggleDiff?.()
+            }}
+          >
+            {diffState.isActive ? `隐藏 Diff (${diffState.diffCount})` : '显示 Diff'}
+          </Button>
+        </div>
       </div>
     </div>
   )
@@ -959,6 +1050,19 @@ export function ProseKitAstrobookDemo() {
       placeholder: '输入内容...',
       codeBlock: {
         themes: [theme === 'dark' ? 'github-dark' : 'github-light'],
+      },
+      aiWriting: {
+        minChars: 4,
+        debounceMs: 500,
+        onGetSuggestion: ({ prefix }) => {
+          const lastLine = prefix.split('\n').at(-1)?.trim() || ''
+
+          if (!lastLine) {
+            return ''
+          }
+
+          return '，并继续补充更清晰的上下文。'
+        },
       },
     })
   }, [theme])

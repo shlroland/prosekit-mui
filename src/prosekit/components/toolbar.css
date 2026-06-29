@@ -56,18 +56,23 @@
   }
 
   .editor-toolbar {
-    @apply w-full;
+    @apply w-full bg-[var(--editor-surface)];
 
     .editor-toolbar-row {
-      @apply flex min-h-11 flex-wrap items-center justify-center gap-x-px gap-y-2;
+      @apply flex min-h-11 flex-nowrap items-center justify-start gap-x-px overflow-x-auto px-1 py-1;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
 
     .editor-toolbar-group {
-      @apply flex shrink-0 items-center;
+      @apply flex shrink-0 items-center gap-px;
     }
 
     .editor-toolbar-divider {
-      @apply mx-[1px] h-5 shrink-0 self-center;
+      @apply mx-1 h-5 shrink-0 self-center;
     }
 
     .editor-toolbar-placeholder {
@@ -76,7 +81,7 @@
     }
 
     .toolbar-item {
-      @apply h-9 min-h-9 min-w-9 rounded-lg p-2 normal-case text-[var(--editor-foreground)];
+      @apply h-9 min-h-9 min-w-9 rounded-md p-2 normal-case text-[var(--editor-foreground)];
 
       &:hover {
         background-color: var(--editor-muted);
@@ -107,6 +112,30 @@
         height: 100%;
         stroke-width: 1.9;
       }
+    }
+
+    .toolbar-select-trigger {
+      @apply inline-flex h-9 items-center justify-center rounded-md border-0 bg-transparent px-2 text-sm font-medium text-[var(--editor-foreground)] outline-none transition-colors;
+
+      &:hover {
+        background-color: var(--editor-muted);
+      }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 2px var(--editor-ring);
+      }
+    }
+
+    .toolbar-heading-select {
+      @apply min-w-[76px] max-w-[116px] justify-start;
+    }
+
+    .toolbar-text-button {
+      @apply h-8 min-h-8 rounded-md px-2 text-xs;
+    }
+
+    .editor-toolbar-diff-group {
+      @apply gap-1;
     }
 
     .toolbar-item-shortcut {
