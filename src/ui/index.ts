@@ -33,7 +33,6 @@ export {
   type ComboboxValueProps,
   useComboboxAnchor,
 } from './combobox'
-export { EditorFloatingMenu, type EditorFloatingMenuOption, type EditorFloatingMenuProps } from './editor-floating-menu'
 export { EditorFloatingPopover, type EditorFloatingPopoverProps } from './editor-floating-popover'
 export { EditorHoverPopover, type EditorHoverPopoverProps } from './editor-hover-popover'
 export {

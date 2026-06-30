@@ -7,7 +7,7 @@ import { CheckboxCircleLineIcon } from '../../icons/checkbox-circle-line-icon'
 import { CodeBoxLineIcon } from '../../icons/code-box-line-icon'
 import { CopyIcon } from '../../icons/copy-icon'
 import { defaultCodeBlockLanguageOptions } from '../extensions/code-block'
-import { Button, EditorFloatingMenu, Tooltip } from '../../ui'
+import { Button, EditorComboboxMenu, Tooltip } from '../../ui'
 
 type ActiveCodeBlockState = {
   language: string
@@ -289,7 +289,7 @@ export function CodeBlockToolbar() {
       }}
     >
       <div className="pk:pointer-events-auto pk:flex pk:items-center pk:gap-1 pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[color:color-mix(in_srgb,var(--editor-surface)_92%,white)] pk:p-1 pk:shadow-[0_12px_32px_rgba(15,23,42,0.16)] pk:backdrop-blur-md">
-        <EditorFloatingMenu
+        <EditorComboboxMenu
           anchor={languageButtonRef}
           open={languageOpen}
           options={languageOptions}
@@ -323,7 +323,7 @@ export function CodeBlockToolbar() {
             <span className="pk:truncate">{currentLanguage.name}</span>
             <ArrowDownSLineIcon className="pk:h-4 pk:w-4" />
           </button>
-        </EditorFloatingMenu>
+        </EditorComboboxMenu>
 
         <Tooltip content={copied ? '复制成功' : '复制代码'}>
           <Button
