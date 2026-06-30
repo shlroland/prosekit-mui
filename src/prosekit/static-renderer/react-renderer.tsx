@@ -23,6 +23,7 @@ import {
   StaticLinkView,
   StaticTooltipView,
 } from './views/react-static-views'
+import { isNodeJSON, normalizeNodeJSON } from '../normalize-node-json'
 
 export type ProseKitReactRendererOptions =
   & StaticRichTextExtensionOptions
@@ -102,7 +103,8 @@ export function createProseKitReactRenderer(options: ProseKitReactRendererOption
   })
 
   return (content: NodeJSON | ProseMirrorNode) => {
-    return <StaticDocView>{render(content)}</StaticDocView>
+    const normalizedContent = isNodeJSON(content) ? normalizeNodeJSON(content) : content
+    return <StaticDocView>{render(normalizedContent)}</StaticDocView>
   }
 }
 
@@ -114,7 +116,7 @@ export function renderProseKitReact(
 
   return <StaticDocView>{renderToReactElement({
     extension,
-    content,
+    content: isNodeJSON(content) ? normalizeNodeJSON(content) : content,
     sanitizeURL: options.sanitizeURL,
     nodeMapping: {
       ...createBuiltinReactNodeMapping(options),

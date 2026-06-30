@@ -5,6 +5,7 @@ import { createHTMLRenderer, renderToHTMLString } from 'prosekit-static-renderer
 
 import { defineStaticRichTextExtension, type StaticRichTextExtensionOptions } from './extension'
 import { createBuiltinHTMLMarkMapping, createBuiltinHTMLNodeMapping } from './html-mapping'
+import { isNodeJSON, normalizeNodeJSON } from '../normalize-node-json'
 
 export type ProseKitHTMLRendererOptions =
   & StaticRichTextExtensionOptions
@@ -29,7 +30,8 @@ export function createProseKitHTMLRenderer(options: ProseKitHTMLRendererOptions 
   })
 
   return (content: NodeJSON | ProseMirrorNode) => {
-    return `<div class="ProseMirror prosekit-static-renderer" data-static-renderer="true">${render(content)}</div>`
+    const normalizedContent = isNodeJSON(content) ? normalizeNodeJSON(content) : content
+    return `<div class="ProseMirror prosekit-static-renderer" data-static-renderer="true">${render(normalizedContent)}</div>`
   }
 }
 
@@ -41,7 +43,7 @@ export function renderProseKitHTML(
 
   const html = renderToHTMLString({
     extension,
-    content,
+    content: isNodeJSON(content) ? normalizeNodeJSON(content) : content,
     sanitizeURL: options.sanitizeURL,
     nodeMapping: {
       ...createBuiltinHTMLNodeMapping(options),

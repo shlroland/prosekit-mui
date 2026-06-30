@@ -5,6 +5,7 @@ import { createMarkdownRenderer, renderToMarkdown } from 'prosekit-static-render
 
 import { defineStaticRichTextExtension, type StaticRichTextExtensionOptions } from './extension'
 import { resolveAssetUrl } from './url'
+import { isNodeJSON, normalizeNodeJSON } from '../normalize-node-json'
 
 export type ProseKitMarkdownRendererOptions =
   & StaticRichTextExtensionOptions
@@ -96,8 +97,7 @@ function createBuiltinMarkdownMarkMapping() {
 
 export function createProseKitMarkdownRenderer(options: ProseKitMarkdownRendererOptions = {}) {
   const extension = defineStaticRichTextExtension(options)
-
-  return createMarkdownRenderer({
+  const render = createMarkdownRenderer({
     extension,
     sanitizeURL: options.sanitizeURL,
     nodeMapping: {
@@ -111,6 +111,10 @@ export function createProseKitMarkdownRenderer(options: ProseKitMarkdownRenderer
     unhandledNode: options.unhandledNode,
     unhandledMark: options.unhandledMark,
   })
+
+  return (content: NodeJSON | ProseMirrorNode) => {
+    return render(isNodeJSON(content) ? normalizeNodeJSON(content) : content)
+  }
 }
 
 export function renderProseKitMarkdown(
@@ -121,7 +125,7 @@ export function renderProseKitMarkdown(
 
   return renderToMarkdown({
     extension,
-    content,
+    content: isNodeJSON(content) ? normalizeNodeJSON(content) : content,
     sanitizeURL: options.sanitizeURL,
     nodeMapping: {
       ...createBuiltinMarkdownNodeMapping(options),

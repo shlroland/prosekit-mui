@@ -1,0 +1,1044 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "ProseKit 完整 NodeJSON 示例"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "这份内容参考 tiptap-v3 demo 的覆盖面，用来测试当前编辑器里的富文本、结构块、媒体、附件、数学公式、Mermaid、表格和扩展节点。"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "富文本与 inline 节点"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "PandaWiki 是一款 "
+        },
+        {
+          "type": "text",
+          "text": "AI",
+          "marks": [
+            {
+              "type": "tooltip",
+              "attrs": {
+                "id": "demo-tooltip-ai",
+                "text": "<strong>AI</strong><br />这里是 tooltip mark 示例。"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " 大模型驱动的"
+        },
+        {
+          "type": "text",
+          "text": "开源知识库",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "搭建系统，支持 "
+        },
+        {
+          "type": "text",
+          "text": "行内代码",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "、"
+        },
+        {
+          "type": "text",
+          "text": "斜体",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "、"
+        },
+        {
+          "type": "text",
+          "text": "下划线",
+          "marks": [
+            {
+              "type": "underline"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "、"
+        },
+        {
+          "type": "text",
+          "text": "删除线",
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "、"
+        },
+        {
+          "type": "text",
+          "text": "高亮",
+          "marks": [
+            {
+              "type": "highlight"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "、H"
+        },
+        {
+          "type": "text",
+          "text": "2",
+          "marks": [
+            {
+              "type": "subscript"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "O 和 x"
+        },
+        {
+          "type": "text",
+          "text": "2",
+          "marks": [
+            {
+              "type": "superscript"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "。"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "颜色和字号："
+        },
+        {
+          "type": "text",
+          "text": "蓝色文字",
+          "marks": [
+            {
+              "type": "textColor",
+              "attrs": {
+                "color": "#2563eb"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "，"
+        },
+        {
+          "type": "text",
+          "text": "浅色背景",
+          "marks": [
+            {
+              "type": "backgroundColor",
+              "attrs": {
+                "color": "#ffedd5"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "，"
+        },
+        {
+          "type": "text",
+          "text": "18px 字号",
+          "marks": [
+            {
+              "type": "fontSize",
+              "attrs": {
+                "size": "18px"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "，以及 emoji "
+        },
+        {
+          "type": "emoji",
+          "attrs": {
+            "name": "sparkles",
+            "native": "✨"
+          }
+        },
+        {
+          "type": "text",
+          "text": "。"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": "center"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "居中段落，包含 inline link："
+        },
+        {
+          "type": "inlineLink",
+          "attrs": {
+            "href": "https://prosekit.dev",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "class": null,
+            "title": "ProseKit",
+            "type": "icon",
+            "download": null
+          }
+        },
+        {
+          "type": "text",
+          "text": "。"
+        }
+      ]
+    },
+    {
+      "type": "blockLink",
+      "attrs": {
+        "href": "https://github.com/prosekit/prosekit",
+        "target": "_blank",
+        "rel": "noopener noreferrer",
+        "class": null,
+        "title": "ProseKit GitHub repository",
+        "type": "block",
+        "download": null
+      }
+    },
+    {
+      "type": "blockquote",
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "textAlign": null
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "这是 blockquote，用于验证块级转换、拖拽菜单和基础排版。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": null
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "无序列表第一项"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": null
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "无序列表第二项"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "orderedList",
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": null
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "有序列表第一项"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": null
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "有序列表第二项"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "taskList",
+      "content": [
+        {
+          "type": "taskItem",
+          "attrs": {
+            "checked": true
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": null
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "已完成任务"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "taskItem",
+          "attrs": {
+            "checked": false
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": null
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "未完成任务"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "代码、Mermaid 与数学公式"
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": {
+        "language": "typescript"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "import { createEditor } from 'prosekit/core'\n\nconst editor = createEditor({\n  defaultContent: '<p>Hello ProseKit</p>',\n})"
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": {
+        "language": "mermaid"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "graph TD\n  Start([Start]) --> Draft[Write proposal]\n  Draft --> Review{Review?}\n  Review -->|Revise| Draft\n  Review -->|Approve| Ship[Ship release]"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "行内数学："
+        },
+        {
+          "type": "mathInline",
+          "content": [
+            {
+              "type": "text",
+              "text": "E = mc^2"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "。"
+        }
+      ]
+    },
+    {
+      "type": "mathBlock",
+      "attrs": {
+        "language": "tex"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "\\int_0^1 x^2 \\, dx"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "媒体、附件与绘图"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "attrs": {
+        "src": "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+        "width": 420,
+        "height": 280,
+        "title": "示例图片",
+        "align": "center"
+      }
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "行内附件："
+        },
+        {
+          "type": "inlineAttachment",
+          "attrs": {
+            "url": "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+            "title": "图片附件.jpeg",
+            "size": "6.81 KB",
+            "type": "icon"
+          }
+        },
+        {
+          "type": "text",
+          "text": "。"
+        }
+      ]
+    },
+    {
+      "type": "blockAttachment",
+      "attrs": {
+        "url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+        "title": "示例附件.pdf",
+        "size": "13 KB",
+        "type": "block",
+        "view": "0",
+        "height": 300
+      }
+    },
+    {
+      "type": "excalidraw"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Alert 与 Details"
+        }
+      ]
+    },
+    {
+      "type": "alert",
+      "attrs": {
+        "id": "alert_demo_warning",
+        "variant": "warning",
+        "type": "icon"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "textAlign": null
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "这是 warning alert，用来检查 alert 工具条、颜色切换和 block handle。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "alert",
+      "attrs": {
+        "id": "alert_demo_info",
+        "variant": "info",
+        "type": "text"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "textAlign": null
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "这是 text 模式 alert，不展示图标。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "details",
+      "attrs": {
+        "open": true
+      },
+      "content": [
+        {
+          "type": "detailsSummary",
+          "content": [
+            {
+              "type": "text",
+              "text": "打开状态的折叠面板"
+            }
+          ]
+        },
+        {
+          "type": "detailsContent",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": null
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "内容区域可编辑，用来检查自定义三角、缩进、边距和 open 状态同步。"
+                }
+              ]
+            },
+            {
+              "type": "details",
+              "attrs": {
+                "open": false
+              },
+              "content": [
+                {
+                  "type": "detailsSummary",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "嵌套关闭面板"
+                    }
+                  ]
+                },
+                {
+                  "type": "detailsContent",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "textAlign": null
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "这里默认隐藏。"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3,
+        "textAlign": null
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "表格与 FlipGrid"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "content": [
+        {
+          "type": "tableRow",
+          "content": [
+            {
+              "type": "tableHeaderCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": "#f8fafc",
+                "textAlign": "center",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "功能"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableHeaderCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": "#f8fafc",
+                "textAlign": "center",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "状态"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableHeaderCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": "#f8fafc",
+                "textAlign": "center",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "备注"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            {
+              "type": "tableCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": null,
+                "textAlign": "center",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "列/行菜单"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": null,
+                "textAlign": "center",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "待验证"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": null,
+                "textAlign": "left",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "点击单元格后检查选中框和浮动工具条。"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            {
+              "type": "tableCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": null,
+                "textAlign": "center",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "合并拆分"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": "#eef6ff",
+                "textAlign": "center",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "蓝色背景"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableCell",
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "bgcolor": null,
+                "textAlign": "left",
+                "verticalAlign": "middle"
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "textAlign": null
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "选择多个单元格后测试合并。"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "flipGrid",
+      "attrs": {
+        "gap": "16px"
+      },
+      "content": [
+        {
+          "type": "flipGridColumn",
+          "attrs": {
+            "width": 42
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "textAlign": null
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "第一栏内容。拖拽中间 handle 可以调整宽度。"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "flipGridColumn",
+          "attrs": {
+            "width": 38
+          },
+          "content": [
+            {
+              "type": "codeBlock",
+              "attrs": {
+                "language": "javascript"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "const sum = (a, b) => a + b\nconsole.log(sum(1, 2))"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "flipGridColumn",
+          "attrs": {
+            "width": 20
+          },
+          "content": [
+            {
+              "type": "bulletList",
+              "content": [
+                {
+                  "type": "listItem",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "textAlign": null
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "三栏布局"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "listItem",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "textAlign": null
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "插入/删除列"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
