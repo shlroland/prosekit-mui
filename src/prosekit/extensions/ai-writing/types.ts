@@ -5,10 +5,25 @@ export type AiWritingSuggestionRequest = {
   suffix: string
 }
 
+export type AiWritingTransformAction =
+  | 'polish'
+  | 'expand'
+  | 'shorten'
+  | 'simplify'
+  | 'formal'
+
+export type AiWritingTransformRequest = {
+  action: AiWritingTransformAction
+  text: string
+  prefix: string
+  suffix: string
+}
+
 export type AiWritingOptions = {
   minChars?: number
   debounceMs?: number
   onGetSuggestion?: (request: AiWritingSuggestionRequest) => Promise<string> | string
+  onTransform?: (request: AiWritingTransformRequest) => Promise<string> | string
 }
 
 export type AiWritingStateSnapshot = {

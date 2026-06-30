@@ -33,6 +33,7 @@ import {
   FunctionsIcon,
   ImageAddLineIcon,
   Information2LineIcon,
+  InlineFormattingMenu,
   ItalicIcon,
   LinkIcon,
   LinkEditorPopover,
@@ -1063,6 +1064,35 @@ export function ProseKitAstrobookDemo() {
 
           return '，并继续补充更清晰的上下文。'
         },
+        onTransform: ({ action, text }) => {
+          const trimmed = text.trim()
+
+          if (!trimmed) {
+            return ''
+          }
+
+          if (action === 'expand') {
+            return `${trimmed}。这里可以进一步补充背景、目标和关键约束，让读者更容易理解上下文。`
+          }
+
+          if (action === 'shorten') {
+            return trimmed
+              .replace(/[，,].*$/, '')
+              .replace(/[。.]$/, '')
+          }
+
+          if (action === 'simplify') {
+            return trimmed
+              .replace(/智能化的/g, '智能的')
+              .replace(/帮助你快速/g, '帮你快速')
+          }
+
+          if (action === 'formal') {
+            return `${trimmed.replace(/你/g, '用户')}。`
+          }
+
+          return `${trimmed.replace(/快速/g, '高效').replace(/搭建/g, '构建')}。`
+        },
       },
     })
   }, [theme])
@@ -1091,6 +1121,7 @@ export function ProseKitAstrobookDemo() {
         <CodeBlockToolbar />
         <TableFloatingToolbar />
         <TableCellFloatingToolbar />
+        <InlineFormattingMenu />
         <BlockHandle />
         <EmojiAutocomplete />
         <SlashCommandAutocomplete />

@@ -1,6 +1,7 @@
 export * from './components/editor-toolbar'
 export * from './editor-content'
 export * from './editor-shell'
+export * from './components/inline-formatting-menu'
 export * from './components/inline-menu'
 export * from './create-prose-kit-editor'
 export * from './prosekit-provider'

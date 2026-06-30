@@ -5,7 +5,12 @@ import type { Command } from 'prosekit/pm/state'
 import { PluginKey, ProseMirrorPlugin } from 'prosekit/pm/state'
 import { Decoration, DecorationSet, type EditorView } from 'prosekit/pm/view'
 
-import type { AiWritingCommandsExtension, AiWritingExtension, AiWritingOptions } from './types'
+import type {
+  AiWritingCommandsExtension,
+  AiWritingExtension,
+  AiWritingOptions,
+  AiWritingTransformRequest,
+} from './types'
 
 type AiWritingPluginState = {
   enabled: boolean
@@ -23,6 +28,8 @@ type AiWritingMeta =
   | { type: 'clearSuggestion' }
 
 export const aiWritingPluginKey = new PluginKey<AiWritingPluginState>('prosekit-ai-writing')
+
+const aiWritingOptionsByView = new WeakMap<EditorView, AiWritingOptions>()
 
 function debounce<F extends (...args: any[]) => void>(fn: F, wait: number) {
   let timer: ReturnType<typeof setTimeout> | null = null
@@ -253,6 +260,8 @@ function defineAiWritingPlugin(options: AiWritingOptions = {}) {
           },
         },
         view: (view) => {
+          aiWritingOptionsByView.set(view, options)
+
           const updateSuggestion = () => {
             const pluginState = aiWritingPluginKey.getState(view.state)
 
@@ -276,6 +285,9 @@ function defineAiWritingPlugin(options: AiWritingOptions = {}) {
 
           return {
             update: updateSuggestion,
+            destroy: () => {
+              aiWritingOptionsByView.delete(view)
+            },
           }
         },
         props: {
@@ -347,6 +359,16 @@ export function getAiWritingState(state: Parameters<typeof aiWritingPluginKey.ge
     hasSuggestion: !!pluginState?.text,
     suggestion: pluginState?.text || '',
   }
+}
+
+export async function requestAiWritingTransform(view: EditorView, request: AiWritingTransformRequest) {
+  const options = aiWritingOptionsByView.get(view)
+
+  if (!options?.onTransform) {
+    return ''
+  }
+
+  return options.onTransform(request)
 }
 
 export function defineAiWritingExtension(options: AiWritingOptions = {}): AiWritingExtension {

@@ -1,46 +1,25 @@
-@reference "tailwindcss";
-
 @layer components {
   .prosekit-inline-menu-root {
-    @apply contents;
+    display: contents;
   }
 
   .prosekit-inline-menu-positioner {
-    @apply z-20;
+    background: none !important;
+    background-color: transparent !important;
   }
 
   .prosekit-inline-menu-popup {
-    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-xl border bg-white p-1 shadow-[0_8px_24px_rgba(23,23,23,0.12)];
-    border-color: rgba(23, 23, 23, 0.12);
+    border-color: color-mix(in srgb, var(--editor-border, rgb(15 23 42 / 0.12)) 80%, transparent) !important;
+    background: color-mix(in srgb, var(--editor-surface, #fff) 92%, var(--editor-surface-muted, #f8fafc)) !important;
+    background-color: color-mix(in srgb, var(--editor-surface, #fff) 92%, var(--editor-surface-muted, #f8fafc)) !important;
+    color: var(--editor-muted-foreground, rgb(100 116 139)) !important;
   }
 
-  .prosekit-inline-menu-group {
-    @apply flex items-center gap-1;
+  .prosekit-inline-menu-button:disabled {
+    color: var(--editor-muted-foreground, rgb(100 116 139)) !important;
   }
 
-  .prosekit-inline-menu-button {
-    @apply h-8 w-8 rounded-lg text-[var(--editor-foreground)];
-
-    &:hover {
-      background-color: rgba(23, 23, 23, 0.05);
-    }
-
-    &.is-active {
-      background-color: var(--editor-primary-soft);
-      color: var(--editor-primary);
-    }
-
-    &:disabled {
-      color: var(--editor-muted-foreground);
-    }
-  }
-
-  .prosekit-inline-menu-divider {
-    @apply mx-1 h-5 w-px shrink-0 bg-black/12;
-  }
-
-  .prosekit-inline-menu-panel {
-    @apply inline-flex items-center gap-2 rounded-lg border bg-white px-2 py-1;
-    border-color: rgba(23, 23, 23, 0.12);
+  .prosekit-inline-menu-button svg {
+    font-size: 1rem !important;
   }
 }
