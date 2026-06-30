@@ -250,5 +250,9 @@ export function createBuiltinHTMLMarkMapping(): MarkMapping<string> {
       const size = normalizeText(mark.attrs.size)
       return `<span${attribute('data-font-size', size)}${styleAttribute({ 'font-size': size || null })}>${children}</span>`
     },
+    fontFamily: ({ mark, children }) => {
+      const family = normalizeText(mark.attrs.family)
+      return `<span${attribute('data-font-family', family)}${styleAttribute({ 'font-family': family || null })}>${children}</span>`
+    },
   }
 }

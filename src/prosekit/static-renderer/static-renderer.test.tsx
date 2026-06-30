@@ -13,6 +13,7 @@ const content = {
       content: [
         { type: 'text', text: 'Hello ' },
         { type: 'emoji', attrs: { name: 'grinning', native: '😀' } },
+        { type: 'text', text: ' font', marks: [{ type: 'fontFamily', attrs: { family: 'Georgia' } }] },
         { type: 'text', text: ' tooltip', marks: [{ type: 'tooltip', attrs: { id: 'tip-1', text: 'Tip text' } }] },
       ],
     },
@@ -128,6 +129,8 @@ describe('static renderer', () => {
     expect(markup).toContain('class="ProseMirror prosekit-static-renderer"')
     expect(markup).toContain('😀')
     expect(markup).not.toContain('data-type="emoji"')
+    expect(markup).toContain('data-font-family="Georgia"')
+    expect(markup).toContain('font-family:Georgia')
     expect(markup).toContain('data-tooltip-text="Tip text"')
     expect(markup).toContain('data-node="alert"')
     expect(markup).toContain('data-variant="warning"')
@@ -155,6 +158,8 @@ describe('static renderer', () => {
     expect(html).toContain('class="ProseMirror prosekit-static-renderer"')
     expect(html).toContain('😀')
     expect(html).not.toContain('data-type="emoji"')
+    expect(html).toContain('data-font-family="Georgia"')
+    expect(html).toContain('font-family: Georgia')
     expect(html).toContain('data-tooltip-text="Tip text"')
     expect(html).toContain('data-node="alert"')
     expect(html).toContain('data-variant="warning"')

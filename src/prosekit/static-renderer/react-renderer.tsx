@@ -82,6 +82,11 @@ export function createBuiltinReactMarkMapping(): MarkMapping<ReactNode> {
         {children}
       </span>
     ),
+    fontFamily: ({ mark, children }) => (
+      <span data-font-family={normalizeText(mark.attrs.family) || undefined} style={{ fontFamily: normalizeText(mark.attrs.family) || undefined }}>
+        {children}
+      </span>
+    ),
   }
 }
 

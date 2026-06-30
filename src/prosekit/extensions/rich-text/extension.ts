@@ -1,7 +1,6 @@
 import { union } from 'prosekit/core'
 import { defineBackgroundColor } from 'prosekit/extensions/background-color'
 import { defineDropCursor } from 'prosekit/extensions/drop-cursor'
-import { defineFontFamily } from 'prosekit/extensions/font-family'
 import { defineHighlight } from 'prosekit/extensions/highlight'
 import { definePlaceholder } from 'prosekit/extensions/placeholder'
 import { defineSubscript } from 'prosekit/extensions/subscript'
@@ -20,6 +19,7 @@ import { defineEmojiExtension } from '../emoji'
 import { defineExcalidrawExtension, type ExcalidrawExtensionOptions } from '../excalidraw'
 import { defineFlipGridExtension } from '../flip-grid'
 import { defineFontSize } from '../font-size'
+import { defineEditorFontFamilyExtension } from '../font-family'
 import { defineImageExtension, type ImageExtensionOptions } from '../image'
 import { defineMathExtension, type MathExtensionOptions } from '../math'
 import { defineMermaidExtension, type MermaidExtensionOptions } from '../mermaid'
@@ -65,7 +65,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     }),
     defineTextColor(),
     defineBackgroundColor(),
-    defineFontFamily(),
+    defineEditorFontFamilyExtension(),
     defineFontSize(),
     defineTableOfContentsExtension(),
     defineDiffExtension(options.diff),

@@ -228,6 +228,22 @@
         },
         {
           "type": "text",
+          "text": "，"
+        },
+        {
+          "type": "text",
+          "text": "Georgia 字体",
+          "marks": [
+            {
+              "type": "fontFamily",
+              "attrs": {
+                "family": "Georgia"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
           "text": "，以及 emoji "
         },
         {

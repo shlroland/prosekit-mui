@@ -30,6 +30,8 @@ import {
   FlipGridIcon,
   FlowChartIcon,
   FormulaIcon,
+  FontFamilyIcon,
+  FontFamilySelect,
   FunctionsIcon,
   ImageAddLineIcon,
   Information2LineIcon,
@@ -510,6 +512,7 @@ const iconProps = {
 
 type ToolbarState = {
   headingLevel: number | null
+  fontFamily: string | null
   bold: boolean
   italic: boolean
   underline: boolean
@@ -525,6 +528,30 @@ type ToolbarState = {
   mathBlock: boolean
   link: boolean
   tooltip: boolean
+}
+
+function getCurrentFontFamily(editor: any): string | null {
+  const markType = editor.state.schema.marks.fontFamily
+  if (!markType) {
+    return null
+  }
+
+  const { selection, storedMarks } = editor.state
+
+  if (selection.empty) {
+    return markType.isInSet(storedMarks ?? selection.$from.marks())?.attrs.family ?? null
+  }
+
+  let family: string | null = null
+  editor.state.doc.nodesBetween(selection.from, selection.to, (node: any) => {
+    if (family || !node.isText) {
+      return
+    }
+
+    family = markType.isInSet(node.marks)?.attrs.family ?? null
+  })
+
+  return family
 }
 
 function getToolbarState(editor: any): ToolbarState {
@@ -548,6 +575,7 @@ function getToolbarState(editor: any): ToolbarState {
 
   return {
     headingLevel,
+    fontFamily: getCurrentFontFamily(editor),
     bold: editor.marks.bold?.isActive() ?? false,
     italic: editor.marks.italic?.isActive() ?? false,
     underline: editor.marks.underline?.isActive() ?? false,
@@ -792,6 +820,29 @@ function ProseKitAstrobookToolbar() {
               </span>
             </button>
           </EditorComboboxMenu>
+        </div>
+
+        <Separator orientation="vertical" className="editor-toolbar-divider" />
+
+        <div className="editor-toolbar-group">
+          <FontFamilySelect
+            value={state.fontFamily}
+            onChange={(family) => {
+              focus()
+              if (family) {
+                editor.commands.addFontFamily({ family })
+              } else {
+                editor.commands.removeFontFamily()
+              }
+            }}
+          >
+            <>
+              <FontFamilyIcon className="pk:h-4 pk:w-4 pk:shrink-0" />
+              <span className="pk:truncate">
+                {state.fontFamily ?? '默认字体'}
+              </span>
+            </>
+          </FontFamilySelect>
         </div>
 
         <Separator orientation="vertical" className="editor-toolbar-divider" />
