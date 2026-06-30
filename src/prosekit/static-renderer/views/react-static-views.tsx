@@ -292,10 +292,12 @@ export function StaticImageView({ attrs, baseUrl }: StaticNodeViewProps) {
     >
       {src ? (
         <img
-          className="pk:block pk:h-auto pk:max-w-full pk:rounded-[var(--radius)]"
+          className="pk:block pk:h-auto pk:max-w-full pk:cursor-zoom-in pk:rounded-[var(--radius)]"
           src={src}
           alt={title}
           title={title || undefined}
+          data-image-viewer-item=""
+          data-src={src}
           width={width || undefined}
           height={height || undefined}
         />

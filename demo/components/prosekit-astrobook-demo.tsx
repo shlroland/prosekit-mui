@@ -3,6 +3,7 @@ import 'prosekit/basic/typography.css'
 import 'prosekit/extensions/list/style.css'
 import 'prosekit/extensions/placeholder/style.css'
 import 'prosekit/extensions/table/style.css'
+import 'react-photo-view/dist/react-photo-view.css'
 
 import {
   AlignCenterIcon,
@@ -34,6 +35,7 @@ import {
   FontFamilySelect,
   FunctionsIcon,
   ImageAddLineIcon,
+  ImageViewerProvider,
   Information2LineIcon,
   InlineFormattingMenu,
   ItalicIcon,
@@ -1157,34 +1159,36 @@ export function ProseKitAstrobookDemo() {
 
   return (
     <div className="pk-mui-theme pk-demo-page" data-theme={theme}>
-      <ProseKitProvider editor={editor}>
-        <div className="pk:grid pk:gap-4 pk:lg:grid-cols-[minmax(0,1fr)_240px] pk:lg:items-start">
-          <EditorShell
-            toolbar={<ProseKitAstrobookToolbar />}
-            content={<EditorContent className="prosekit-astrobook-editor-content" />}
-            footer={<DemoInspector />}
-          />
-          <aside className="pk:sticky pk:top-4 pk:hidden pk:lg:block">
-            <TableOfContents title="目录" />
-          </aside>
-        </div>
-        <DemoContentSync onChange={setContent} />
-        <AlertBlockToolbar />
-        <CodeBlockToolbar />
-        <TableFloatingToolbar />
-        <TableCellFloatingToolbar />
-        <InlineFormattingMenu />
-        <BlockHandle />
-        <EmojiAutocomplete />
-        <SlashCommandAutocomplete />
-        <div className="pk:mt-2">
-          <p className="pk:m-0 pk:text-sm pk:leading-6 pk:text-[var(--editor-muted-foreground)]">
-            This demo intentionally uses ProseKit built-in extensions for repeated
-            features and keeps project-specific code focused on node links,
-            tooltip, flip-grid, and Base UI presentation.
-          </p>
-        </div>
-      </ProseKitProvider>
+      <ImageViewerProvider>
+        <ProseKitProvider editor={editor}>
+          <div className="pk:grid pk:gap-4 pk:lg:grid-cols-[minmax(0,1fr)_240px] pk:lg:items-start">
+            <EditorShell
+              toolbar={<ProseKitAstrobookToolbar />}
+              content={<EditorContent className="prosekit-astrobook-editor-content" />}
+              footer={<DemoInspector />}
+            />
+            <aside className="pk:sticky pk:top-4 pk:hidden pk:lg:block">
+              <TableOfContents title="目录" />
+            </aside>
+          </div>
+          <DemoContentSync onChange={setContent} />
+          <AlertBlockToolbar />
+          <CodeBlockToolbar />
+          <TableFloatingToolbar />
+          <TableCellFloatingToolbar />
+          <InlineFormattingMenu />
+          <BlockHandle />
+          <EmojiAutocomplete />
+          <SlashCommandAutocomplete />
+          <div className="pk:mt-2">
+            <p className="pk:m-0 pk:text-sm pk:leading-6 pk:text-[var(--editor-muted-foreground)]">
+              This demo intentionally uses ProseKit built-in extensions for repeated
+              features and keeps project-specific code focused on node links,
+              tooltip, flip-grid, and Base UI presentation.
+            </p>
+          </div>
+        </ProseKitProvider>
+      </ImageViewerProvider>
     </div>
   )
 }

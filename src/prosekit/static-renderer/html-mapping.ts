@@ -158,7 +158,7 @@ export function createBuiltinHTMLNodeMapping(options: StaticRendererAssetOptions
         'max-width': '100%',
       })
       const image = src
-        ? `<img class="pk:block pk:h-auto pk:max-w-full pk:rounded-[var(--radius)]"${attribute('src', src)}${attribute('alt', title)}${attribute('title', title)}${attribute('width', width)}${attribute('height', height)}>`
+        ? `<img class="pk:block pk:h-auto pk:max-w-full pk:cursor-zoom-in pk:rounded-[var(--radius)]" data-image-viewer-item${attribute('data-src', src)}${attribute('src', src)}${attribute('alt', title)}${attribute('title', title)}${attribute('width', width)}${attribute('height', height)}>`
         : ''
       const caption = title ? `<figcaption class="pk:mt-2 pk:text-center pk:text-sm pk:text-[var(--editor-muted-foreground)]">${escapeHTML(title)}</figcaption>` : ''
 

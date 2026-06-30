@@ -4,6 +4,7 @@ import 'prosekit/extensions/table/style.css'
 
 import { demoContent } from '../components/prosekit-astrobook-demo'
 import { renderProseKitReact } from '../../src/prosekit/static-renderer'
+import { ImageViewerProvider } from '../../src'
 import { PlaygroundShell } from './playground-shell'
 
 function StaticRendererPreviewStory() {
@@ -13,9 +14,11 @@ function StaticRendererPreviewStory() {
       title="Read-only demo content"
       copy="The same JSON used by the editor demo, rendered through the static React renderer without editor interactions."
     >
-      <div className="pk:rounded-2xl pk:border pk:border-black/8 pk:bg-white pk:p-6 pk:shadow-sm">
-        {renderProseKitReact(demoContent)}
-      </div>
+      <ImageViewerProvider>
+        <div className="pk:rounded-2xl pk:border pk:border-black/8 pk:bg-white pk:p-6 pk:shadow-sm">
+          {renderProseKitReact(demoContent)}
+        </div>
+      </ImageViewerProvider>
     </PlaygroundShell>
   )
 }

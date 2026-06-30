@@ -411,10 +411,12 @@ export function ImageView(props: ImageViewProps) {
           <span className="pk:relative pk:block pk:max-w-full" contentEditable={false}>
             <img
               ref={imageRef}
-              className="pk:block pk:max-h-[480px] pk:max-w-full pk:rounded-[10px] pk:object-contain"
+              className="pk:block pk:max-h-[480px] pk:max-w-full pk:cursor-zoom-in pk:rounded-[10px] pk:object-contain"
               src={src}
               alt={title || ''}
               title={title || undefined}
+              data-image-viewer-item=""
+              data-src={src}
               style={{
                 width: width ? `${width}px` : undefined,
                 height: width ? 'auto' : height ? `${height}px` : undefined,
