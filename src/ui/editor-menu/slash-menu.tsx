@@ -22,26 +22,19 @@ export type EditorSlashMenuGroup<TItem extends EditorSlashMenuItem = EditorSlash
   items: TItem[]
 }
 
-export const editorSlashMenuPositionerStyle = {
-  background: 'none',
-  backgroundColor: 'transparent',
-} satisfies CSSProperties
-
 export const editorSlashMenuPopupStyle = {
-  display: 'block',
-  width: '340px',
+  width: 'min(340px, calc(100vw - 24px))',
   maxHeight: 'min(420px, var(--available-height, 420px))',
   overflow: 'hidden',
-  background: 'var(--editor-surface, #ffffff)',
   backgroundColor: 'var(--editor-surface, #ffffff)',
   borderColor: 'var(--editor-border, rgb(15 23 42 / 0.12))',
   color: 'var(--editor-foreground, rgb(15 23 42))',
   boxShadow: '0 18px 48px rgb(15 23 42 / 18%)',
 } satisfies CSSProperties
 
-export const editorSlashMenuPopupClassName = 'slash-command-popup pk:z-[1500] pk:w-[340px] pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:text-[var(--editor-foreground)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none'
+export const editorSlashMenuPopupClassName = 'slash-command-popup pk:z-[1500] pk:box-border pk:origin-[var(--transform-origin,center)] pk:flex pk:min-h-0 pk:flex-col pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:text-[var(--editor-foreground)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none'
 
-export const editorSlashMenuItemClassName = 'slash-command-item pk:block pk:cursor-pointer pk:rounded-lg pk:outline-none pk:transition data-[highlighted]:pk:bg-[var(--editor-muted)]'
+export const editorSlashMenuItemClassName = 'slash-command-item pk:block pk:cursor-pointer pk:rounded-lg pk:outline-none pk:transition pk:hover:bg-[var(--editor-muted)] data-[highlighted]:pk:bg-[var(--editor-muted)]'
 
 export const editorSlashMenuEmptyClassName = 'slash-command-empty pk:flex pk:items-center pk:gap-2 pk:rounded-lg pk:px-3 pk:py-3 pk:text-sm pk:text-[var(--editor-muted-foreground)]'
 

@@ -63,7 +63,6 @@ export {
   editorSlashMenuItemClassName,
   editorSlashMenuPopupClassName,
   editorSlashMenuPopupStyle,
-  editorSlashMenuPositionerStyle,
   type EditorSlashMenuGroup,
   type EditorSlashMenuItem,
   type EditorSlashMenuProps,

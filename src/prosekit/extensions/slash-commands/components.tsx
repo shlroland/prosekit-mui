@@ -14,9 +14,9 @@ import {
   editorSlashMenuItemClassName,
   editorSlashMenuPopupClassName,
   editorSlashMenuPopupStyle,
-  editorSlashMenuPositionerStyle,
 } from '../../../ui'
 import { defaultSlashCommandGroups } from './commands'
+import './slash-command.css'
 import type { SlashCommandGroup, SlashCommandItem } from './types'
 
 const SLASH_COMMAND_REGEX = /(?<!\S)\/([\p{L}\p{N}_-]*)$/u
@@ -85,7 +85,6 @@ export function SlashCommandAutocomplete({
     >
       <AutocompletePositioner
         className="slash-command-positioner"
-        style={editorSlashMenuPositionerStyle}
         placement="bottom-start"
         offset={{ mainAxis: 8, crossAxis: 0 }}
         overflowPadding={12}

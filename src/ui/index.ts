@@ -67,7 +67,6 @@ export {
   editorSlashMenuItemClassName,
   editorSlashMenuPopupClassName,
   editorSlashMenuPopupStyle,
-  editorSlashMenuPositionerStyle,
   type EditorAnchoredMenuProps,
   type EditorComboboxMenuProps,
   type EditorDropdownMenuProps,
