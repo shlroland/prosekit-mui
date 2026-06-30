@@ -16,6 +16,13 @@ import type { EditorMenuOption } from './types'
 type ComboboxContentProps = ComponentProps<typeof ComboboxContent>
 type ComboboxTriggerProps = ComponentProps<typeof ComboboxTrigger>
 
+/**
+ * Searchable single-choice editor menu.
+ *
+ * Use this for dense option sets where typing to filter is useful, such as code
+ * block language selection. It can be trigger-based via `children`, or anchored
+ * externally with `anchor` when used inside an editor floating surface.
+ */
 export type EditorComboboxMenuProps = {
   children?: ReactElement
   options: EditorMenuOption[]

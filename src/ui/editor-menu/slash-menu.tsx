@@ -1,5 +1,12 @@
 import type { CSSProperties, ReactNode } from 'react'
 
+/**
+ * Data model for ProseKit slash autocomplete content.
+ *
+ * This file only owns visual rows and popup styles. ProseKit's autocomplete
+ * extension owns positioning, active item state, filtering lifecycle, and
+ * keyboard selection.
+ */
 export type EditorSlashMenuItem = {
   id: string
   title: string
@@ -42,6 +49,13 @@ export type EditorSlashMenuProps<TItem extends EditorSlashMenuItem = EditorSlash
   groups: EditorSlashMenuGroup<TItem>[]
 }
 
+/**
+ * Visual content for slash-command autocomplete.
+ *
+ * Use with ProseKit's AutocompletePositioner. Do not wrap this in
+ * `EditorDropdownMenu` or `EditorAnchoredMenu`, because autocomplete already
+ * provides the floating container and keyboard navigation.
+ */
 export function EditorSlashMenu<TItem extends EditorSlashMenuItem = EditorSlashMenuItem>({
   groups,
 }: EditorSlashMenuProps<TItem>) {

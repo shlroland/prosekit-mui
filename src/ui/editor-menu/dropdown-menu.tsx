@@ -17,6 +17,14 @@ type MenuTriggerProps = ComponentProps<typeof BaseMenu.Trigger<unknown>>
 type MenuPositionerProps = ComponentProps<typeof BaseMenu.Positioner>
 type MenuPopupProps = ComponentProps<typeof BaseMenu.Popup>
 
+/**
+ * Floating menu with its own visible trigger.
+ *
+ * Use this for toolbar buttons, inline node-view controls, and small "more"
+ * buttons where the trigger is the anchor. Do not use it when the anchor comes
+ * from editor selection, a block handle, or a table cell; use
+ * `EditorAnchoredMenu` for those cases.
+ */
 export type EditorDropdownMenuProps = {
   trigger: ReactElement
   children: ReactNode
@@ -97,6 +105,9 @@ export function EditorDropdownMenu({
   )
 }
 
+/**
+ * Base UI item for custom label/extra rendering under `EditorDropdownMenu`.
+ */
 export function EditorDropdownMenuCustomItem({
   label,
   icon,
@@ -127,6 +138,9 @@ export function EditorDropdownMenuCustomItem({
   )
 }
 
+/**
+ * Base UI item for action-shaped rows under `EditorDropdownMenu`.
+ */
 export function EditorDropdownMenuItem({ action }: { action: EditorMenuAction }) {
   return (
     <BaseMenu.Item
@@ -150,6 +164,15 @@ export function EditorDropdownMenuItem({ action }: { action: EditorMenuAction })
   )
 }
 
+/**
+ * Hover submenu for trigger-based dropdown menus.
+ *
+ * Use this inside `EditorDropdownMenu` when the dropdown needs nested groups.
+ * This intentionally follows Base UI's normal uncontrolled submenu behavior:
+ * the trigger is also the anchor, so the built-in hover, focus, and keyboard
+ * handling is the source of truth. Keep block/table handle special cases in
+ * `EditorAnchoredMenuSubmenu` instead of adding editor-state behavior here.
+ */
 export function EditorDropdownMenuSubmenu({
   icon,
   label,
@@ -167,6 +190,8 @@ export function EditorDropdownMenuSubmenu({
         disabled={disabled}
         label={label}
         openOnHover
+        delay={60}
+        closeDelay={350}
         className={editorMenuSubmenuTriggerClassName}
       >
         <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
@@ -179,10 +204,18 @@ export function EditorDropdownMenuSubmenu({
         <BaseMenu.Positioner
           side="right"
           align="start"
-          sideOffset={8}
+          sideOffset={2}
+          collisionPadding={8}
+          positionMethod="fixed"
           className="pk:isolate pk:z-[1501] pk:outline-none"
         >
-          <BaseMenu.Popup className={editorMenuSurfaceClassName}>
+          <BaseMenu.Popup
+            className={cn(
+              editorMenuSurfaceClassName,
+              'pk:origin-[var(--transform-origin,center)] pk:transition-[opacity,transform] pk:duration-100 data-[ending-style]:pk:scale-[0.98] data-[ending-style]:pk:opacity-0 data-[starting-style]:pk:scale-[0.98] data-[starting-style]:pk:opacity-0',
+            )}
+            data-editor-floating
+          >
             {children}
           </BaseMenu.Popup>
         </BaseMenu.Positioner>

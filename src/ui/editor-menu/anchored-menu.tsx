@@ -1,5 +1,5 @@
 import { Menu as BaseMenu } from '@base-ui/react/menu'
-import type { ComponentProps, ReactNode } from 'react'
+import { useState, type ComponentProps, type ReactNode } from 'react'
 
 import { ArrowDownSLineIcon } from '../../icons/arrow-down-s-line-icon'
 import { cn } from '../../utils/cn'
@@ -16,7 +16,26 @@ import type { EditorMenuAction } from './types'
 type MenuRootProps = ComponentProps<typeof BaseMenu.Root<unknown>>
 type MenuPositionerProps = ComponentProps<typeof BaseMenu.Positioner>
 type MenuPopupProps = ComponentProps<typeof BaseMenu.Popup>
+type MenuOpenChangeDetails = Parameters<NonNullable<MenuRootProps['onOpenChange']>>[1]
 
+/**
+ * Base UI hover submenus can emit transient close events while the pointer
+ * crosses portal boundaries between the trigger and submenu popup. Editor menus
+ * are often anchored to virtual/frozen editor state, so we keep the submenu open
+ * for those transient events and let concrete close reasons handle dismissal.
+ */
+function shouldKeepSubmenuOpenOnClose(eventDetails: MenuOpenChangeDetails) {
+  return eventDetails.reason === 'trigger-hover' || eventDetails.reason === 'focus-out'
+}
+
+/**
+ * Floating menu anchored by external editor state.
+ *
+ * Use this for block handles, table handles, cell toolbars, or any menu whose
+ * anchor is not the trigger element itself. The caller owns `open` and `anchor`;
+ * this wrapper only provides Base UI Menu behavior, portal positioning, and the
+ * shared editor menu surface.
+ */
 export type EditorAnchoredMenuProps = {
   children: ReactNode
   open?: MenuRootProps['open']
@@ -105,6 +124,11 @@ export function EditorAnchoredMenu({
   )
 }
 
+/**
+ * Base UI item for `EditorAnchoredMenu`.
+ *
+ * Use this only under `EditorAnchoredMenu` or `EditorAnchoredMenuSubmenu`.
+ */
 export function EditorAnchoredMenuItem({ action }: { action: EditorMenuAction }) {
   return (
     <BaseMenu.Item
@@ -142,6 +166,14 @@ export function EditorAnchoredMenuQuickAction({ action }: { action: EditorMenuAc
   )
 }
 
+/**
+ * Hover submenu for anchored editor menus.
+ *
+ * Unlike a plain Base UI submenu, this is controlled so it stays open while the
+ * pointer moves from a menu item into a portal-rendered submenu. This matters
+ * for block/table handles because their parent menus are anchored by editor
+ * state rather than a normal DOM trigger.
+ */
 export function EditorAnchoredMenuSubmenu({
   icon,
   label,
@@ -153,15 +185,32 @@ export function EditorAnchoredMenuSubmenu({
   children: ReactNode
   disabled?: boolean
 }) {
+  const [open, setOpen] = useState(false)
+  const openSubmenu = () => {
+    if (!disabled) {
+      setOpen(true)
+    }
+  }
+
   return (
-    <BaseMenu.SubmenuRoot>
+    <BaseMenu.SubmenuRoot
+      open={open}
+      onOpenChange={(nextOpen, eventDetails) => {
+        if (!nextOpen && shouldKeepSubmenuOpenOnClose(eventDetails)) {
+          return
+        }
+
+        setOpen(nextOpen)
+      }}
+    >
       <BaseMenu.SubmenuTrigger
         disabled={disabled}
         label={label}
         openOnHover
-        delay={80}
-        closeDelay={180}
+        delay={60}
+        closeDelay={350}
         className={editorMenuSubmenuTriggerClassName}
+        onPointerEnter={openSubmenu}
       >
         <span className="pk:inline-flex pk:h-4 pk:w-4 pk:items-center pk:justify-center pk:text-[var(--editor-muted-foreground)]">
           {icon}
@@ -173,10 +222,11 @@ export function EditorAnchoredMenuSubmenu({
         <BaseMenu.Positioner
           side="right"
           align="start"
-          sideOffset={8}
+          sideOffset={2}
           collisionPadding={8}
           positionMethod="fixed"
           className="pk:isolate pk:z-[1501] pk:outline-none"
+          onPointerEnter={openSubmenu}
         >
           <BaseMenu.Popup
             className={cn(
@@ -184,6 +234,7 @@ export function EditorAnchoredMenuSubmenu({
               'pk:origin-[var(--transform-origin,center)] pk:transition-[opacity,transform] pk:duration-100 data-[ending-style]:pk:scale-[0.98] data-[ending-style]:pk:opacity-0 data-[starting-style]:pk:scale-[0.98] data-[starting-style]:pk:opacity-0',
             )}
             data-editor-floating
+            onPointerEnter={openSubmenu}
           >
             {children}
           </BaseMenu.Popup>

@@ -1,5 +1,13 @@
 import { cn } from '../../utils/cn'
 
+/**
+ * Shared editor menu class contracts.
+ *
+ * Keep floating shell styling here so Base UI menu, combobox menu, table menu,
+ * block-handle menu, and non-floating menu content do not drift. These classes
+ * intentionally use editor CSS variables instead of app-level shadcn variables,
+ * because editor popups often render through portals outside local theme scope.
+ */
 export const editorMenuSurfaceClassName = cn(
   'pk:z-[1500] pk:min-w-[216px] pk:rounded-xl pk:border pk:border-[var(--editor-border)]',
   'pk:bg-[var(--editor-surface)] pk:p-1 pk:text-[var(--editor-foreground)]',

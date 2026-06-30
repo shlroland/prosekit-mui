@@ -11,6 +11,14 @@ import {
 } from './classes'
 import type { EditorMenuAction } from './types'
 
+/**
+ * Non-floating menu surface.
+ *
+ * Use this inside an existing floating shell, for example a ProseKit
+ * AutocompletePositioner or a custom hover/floating popover. It only supplies
+ * the shared menu look; it does not create a Base UI menu root, trigger,
+ * portal, focus scope, or outside-click behavior.
+ */
 export type EditorMenuSurfaceProps = {
   children: ReactNode
   className?: string
@@ -50,6 +58,13 @@ export type EditorMenuItemButtonProps =
     action: EditorMenuAction
   }
 
+/**
+ * Plain button version of a menu item.
+ *
+ * Use this when the parent container already owns keyboard navigation and
+ * selection, such as autocomplete content. Use `EditorDropdownMenuItem` or
+ * `EditorAnchoredMenuItem` when the parent is a Base UI Menu.
+ */
 export function EditorMenuItemButton({
   action,
   className,
@@ -112,6 +127,13 @@ export type EditorMenuSubmenuTriggerButtonProps =
     label: string
   }
 
+/**
+ * Visual-only submenu trigger row.
+ *
+ * This is for custom, non-Base-UI submenu implementations. For real Base UI
+ * submenus, use `EditorDropdownMenuSubmenu` or `EditorAnchoredMenuSubmenu` so
+ * focus, keyboard navigation, and hover stability remain centralized.
+ */
 export function EditorMenuSubmenuTriggerButton({
   icon,
   label,
