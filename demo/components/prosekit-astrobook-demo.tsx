@@ -59,8 +59,10 @@ import {
   TableOfContents,
   TableSizePicker,
   ToolbarItem,
+  TooltipEditPopover,
   TooltipLineIcon,
   UnderlineIcon,
+  createSelectionAnchor,
   createProseKitEditor,
   defaultMermaidTemplate,
   defaultBlockMathTemplate,
@@ -682,6 +684,8 @@ function ProseKitAstrobookToolbar() {
     }
   }, [aiWritingSnapshot])
   const [linkOpen, setLinkOpen] = useState(false)
+  const [tooltipOpen, setTooltipOpen] = useState(false)
+  const [tooltipAnchor, setTooltipAnchor] = useState<ReturnType<typeof createSelectionAnchor>>(null)
   const [tablePickerAnchor, setTablePickerAnchor] = useState<HTMLElement | null>(null)
   const tablePickerOpen = Boolean(tablePickerAnchor)
   const hasInlineFormat = state.bold
@@ -702,6 +706,27 @@ function ProseKitAstrobookToolbar() {
     return editor.state.doc
       .textBetween(editor.state.selection.from, editor.state.selection.to, ' ')
       .trim()
+  }
+
+  function closeTooltipEditor() {
+    setTooltipOpen(false)
+    setTooltipAnchor(null)
+  }
+
+  function openTooltipEditor() {
+    focus()
+    setTooltipAnchor(createSelectionAnchor(editor))
+    setTooltipOpen(true)
+  }
+
+  function toggleTooltip() {
+    if (state.tooltip) {
+      focus()
+      editor.commands.unsetTooltip()
+      return
+    }
+
+    openTooltipEditor()
   }
 
   function clearFormat() {
@@ -731,7 +756,8 @@ function ProseKitAstrobookToolbar() {
   }
 
   return (
-    <div className="editor-toolbar">
+    <>
+      <div className="editor-toolbar">
       <div className="editor-toolbar-row">
         <div className="editor-toolbar-group">
           <DemoToolbarButton
@@ -859,14 +885,7 @@ function ProseKitAstrobookToolbar() {
             tip="文本提示"
             active={state.tooltip}
             icon={<TooltipLineIcon {...iconProps} />}
-            onClick={() => {
-              focus()
-              if (state.tooltip) {
-                editor.commands.unsetTooltip()
-              } else {
-                editor.commands.toggleTooltip()
-              }
-            }}
+            onClick={toggleTooltip}
           />
           <DemoToolbarButton tip="上标" active={state.superscript} icon={<SuperscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
           <DemoToolbarButton tip="下标" active={state.subscript} icon={<SubscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
@@ -1040,7 +1059,19 @@ function ProseKitAstrobookToolbar() {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+      <TooltipEditPopover
+        anchor={tooltipAnchor}
+        open={tooltipOpen}
+        initialValue=""
+        onClose={closeTooltipEditor}
+        onSubmit={(value) => {
+          focus()
+          editor.commands.setTooltip(value)
+        }}
+        onRemove={closeTooltipEditor}
+      />
+    </>
   )
 }
 

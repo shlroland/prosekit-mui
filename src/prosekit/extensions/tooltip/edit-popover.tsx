@@ -16,7 +16,7 @@ export type TooltipEditPopoverProps = {
   anchor: EditorFloatingPopoverProps['anchor']
   open: boolean
   initialValue: string
-  focusRef: RefObject<HTMLElement | null>
+  focusRef?: RefObject<HTMLElement | null>
   onClose: () => void
   onSubmit: (value: string) => void
   onRemove: () => void
@@ -48,11 +48,7 @@ export function TooltipEditPopover({
 
   function handleSubmit() {
     const nextValue = value.trim()
-    if (nextValue) {
-      onSubmit(nextValue)
-    } else if (initialValue) {
-      onRemove()
-    }
+    onSubmit(nextValue)
     onClose()
   }
 
@@ -76,7 +72,7 @@ export function TooltipEditPopover({
 
   function handleClose() {
     onClose()
-    focusRef.current?.focus()
+    focusRef?.current?.focus()
   }
 
   if (!anchor) {
@@ -131,9 +127,8 @@ export function TooltipEditPopover({
                 size="sm"
                 className="pk:min-h-8 pk:rounded-md pk:px-3 pk:text-[12px] pk:shadow-none"
                 onClick={handleSubmit}
-                disabled={!value.trim() && !initialValue}
               >
-                {value.trim() ? '应用' : '移除'}
+                应用
               </Button>
             </div>
           </div>

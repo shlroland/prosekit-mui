@@ -22,8 +22,10 @@ import {
   type AiWritingTransformAction,
 } from '../extensions/ai-writing'
 import { getCurrentLinkAttrs, isLinkActive, type LinkAttrs } from '../extensions/link'
+import { TooltipEditPopover } from '../extensions/tooltip'
 import { InlineMenu, InlineMenuButton, InlineMenuDivider, InlineMenuGroup } from './inline-menu'
 import { LinkEditorPanel } from './link-editor-popover'
+import { createSelectionAnchor } from './selection-anchor'
 
 type AiSelectionRange = {
   from: number
@@ -79,46 +81,6 @@ function getInlineFormattingSnapshot(editor: any): string {
   } satisfies InlineFormattingState)
 }
 
-function createSelectionAnchor(editor: any): EditorFloatingPopoverProps['anchor'] {
-  const { view } = editor
-  const selection = window.getSelection()
-  const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null
-  const rangeRect = range?.getBoundingClientRect()
-
-  if (
-    range
-    && rangeRect
-    && (rangeRect.width > 0 || rangeRect.height > 0)
-    && view.dom.contains(range.commonAncestorContainer)
-  ) {
-    const anchorRect = new DOMRect(
-      rangeRect.x,
-      rangeRect.y,
-      Math.max(rangeRect.width, 1),
-      Math.max(rangeRect.height, 1),
-    )
-
-    return {
-      contextElement: view.dom,
-      getBoundingClientRect: () => anchorRect,
-    }
-  }
-
-  const { from, to } = view.state.selection
-  const start = view.coordsAtPos(from)
-  const end = view.coordsAtPos(to)
-  const left = Math.min(start.left, end.left)
-  const right = Math.max(start.right, end.right, left + 1)
-  const top = Math.min(start.top, end.top)
-  const bottom = Math.max(start.bottom, end.bottom, top + 1)
-  const anchorRect = new DOMRect(left, top, right - left, bottom - top)
-
-  return {
-    contextElement: view.dom,
-    getBoundingClientRect: () => anchorRect,
-  }
-}
-
 export function InlineFormattingMenu() {
   const editor = useEditor<any>() as any
   const snapshot = useEditorDerivedValue<any, string>(getInlineFormattingSnapshot)
@@ -127,6 +89,8 @@ export function InlineFormattingMenu() {
   }, [snapshot])
   const [linkOpen, setLinkOpen] = useState(false)
   const [linkAnchor, setLinkAnchor] = useState<EditorFloatingPopoverProps['anchor']>(null)
+  const [tooltipOpen, setTooltipOpen] = useState(false)
+  const [tooltipAnchor, setTooltipAnchor] = useState<EditorFloatingPopoverProps['anchor']>(null)
   const [aiOpen, setAiOpen] = useState(false)
   const [aiAnchor, setAiAnchor] = useState<EditorFloatingPopoverProps['anchor']>(null)
   const [aiRange, setAiRange] = useState<AiSelectionRange | null>(null)
@@ -175,6 +139,26 @@ export function InlineFormattingMenu() {
     focus()
     setLinkAnchor(createSelectionAnchor(editor))
     setLinkOpen(true)
+  }
+
+  function closeTooltipEditor() {
+    setTooltipOpen(false)
+    setTooltipAnchor(null)
+  }
+
+  function openTooltipEditor() {
+    focus()
+    setTooltipAnchor(createSelectionAnchor(editor))
+    setTooltipOpen(true)
+  }
+
+  function toggleTooltip() {
+    if (state.tooltip) {
+      run(() => editor.commands.unsetTooltip())
+      return
+    }
+
+    openTooltipEditor()
   }
 
   async function runAiTransform(action: AiWritingTransformAction, range = aiRange) {
@@ -341,13 +325,7 @@ export function InlineFormattingMenu() {
           <InlineMenuButton
             title="文本提示"
             active={state.tooltip}
-            onClick={() => run(() => {
-              if (state.tooltip) {
-                editor.commands.unsetTooltip()
-              } else {
-                editor.commands.toggleTooltip()
-              }
-            })}
+            onClick={toggleTooltip}
           >
             <TooltipLineIcon />
           </InlineMenuButton>
@@ -399,6 +377,18 @@ export function InlineFormattingMenu() {
             }}
           />
         )}
+      />
+
+      <TooltipEditPopover
+        anchor={tooltipAnchor}
+        open={tooltipOpen}
+        initialValue=""
+        onClose={closeTooltipEditor}
+        onSubmit={(value) => {
+          focus()
+          editor.commands.setTooltip(value)
+        }}
+        onRemove={closeTooltipEditor}
       />
 
       <EditorFloatingPopover

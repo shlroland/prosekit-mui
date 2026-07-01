@@ -39,8 +39,10 @@ export function defineTooltipSpec(): TooltipSpecExtension {
           }
 
           const id = node.getAttribute('data-tooltip-id') || createTooltipId()
-          const text = node.getAttribute('data-tooltip-text') || node.getAttribute('data-tooltip') || ''
-          return { id, text, tooltip: text || undefined }
+          const text = node.hasAttribute('data-tooltip-text')
+            ? node.getAttribute('data-tooltip-text') ?? ''
+            : node.getAttribute('data-tooltip') ?? ''
+          return { id, text, tooltip: text }
         },
       },
     ],

@@ -106,10 +106,27 @@ export function updateTooltipMark(
 
   tr.setSelection(TextSelection.create(view.state.doc, range.from, range.to))
   tr.removeMark(range.from, range.to, markType)
+  tr.addMark(range.from, range.to, markType.create({ id, text: nextText, tooltip: nextText }))
 
-  if (nextText) {
-    tr.addMark(range.from, range.to, markType.create({ id, text: nextText, tooltip: nextText }))
+  view.dispatch(tr)
+  view.focus()
+  return true
+}
+
+export function removeTooltipMark(
+  view: EditorView,
+  element: HTMLElement,
+) {
+  const markType = getTooltipType(view)
+  const range = getTooltipRange(view, element)
+
+  if (!markType || !range) {
+    return false
   }
+
+  const tr = view.state.tr
+  tr.setSelection(TextSelection.create(view.state.doc, range.from, range.to))
+  tr.removeMark(range.from, range.to, markType)
 
   view.dispatch(tr)
   view.focus()

@@ -5,7 +5,7 @@ import type { ReactMarkViewProps } from 'prosekit/react'
 import { Button, EditorFloatingPopover, EditorHoverPopover } from '../../../ui'
 import type { EditorFloatingPopoverProps } from '../../../ui'
 import { TooltipEditPopover } from './edit-popover'
-import { createTooltipId, getTooltipId, getTooltipText, updateTooltipMark } from './utils'
+import { createTooltipId, getTooltipId, getTooltipText, removeTooltipMark, updateTooltipMark } from './utils'
 
 const ALLOWED_TOOLTIP_TAGS = new Set([
   'A',
@@ -146,16 +146,6 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
     setIsTouchDevice(isTouchLikeDevice())
   }, [])
 
-  useEffect(() => {
-    if (isEditable && tooltip === '') {
-      const frame = requestAnimationFrame(() => {
-        captureEditAnchor()
-        setEditOpen(true)
-      })
-      return () => cancelAnimationFrame(frame)
-    }
-  }, [isEditable, tooltip])
-
   function handleToggle() {
     if (isTouchReadonly) {
       setOpen((value) => !value)
@@ -183,10 +173,10 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
     setEditAnchor(null)
   }
 
-  const popupContent = tooltip ? (
+  const popupContent = (
     <div className="pk:flex pk:max-w-[20rem] pk:items-center pk:gap-1.5 pk:px-2.5 pk:py-1.5 pk:text-[12px] pk:leading-5 pk:text-[var(--editor-muted-foreground)]">
       <span
-        className="pk:whitespace-pre-wrap pk:break-words"
+        className="pk:min-w-2 pk:whitespace-pre-wrap pk:break-words"
         dangerouslySetInnerHTML={{ __html: tooltipHtml }}
       />
       {isEditable ? (
@@ -204,7 +194,7 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
         </Button>
       ) : null}
     </div>
-  ) : null
+  )
 
   function handleSubmit(value: string) {
     if (!anchorRef.current) {
@@ -219,12 +209,12 @@ export function TooltipView({ contentRef, mark, view }: ReactMarkViewProps) {
       return
     }
 
-    updateTooltipMark(view, anchorRef.current, '')
+    removeTooltipMark(view, anchorRef.current)
   }
 
   return (
     <>
-      {!isTouchReadonly && tooltip ? (
+      {!isTouchReadonly ? (
         <EditorHoverPopover
           disabled={editOpen}
           hoverDelay={150}
