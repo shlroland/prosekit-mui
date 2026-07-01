@@ -64,7 +64,6 @@ export function SlashCommandAutocomplete({
   const [query, setQuery] = useState('')
   const filteredGroups = useMemo(() => filterGroups(groups, query), [groups, query])
   const filteredItems = useMemo(() => flattenGroups(filteredGroups), [filteredGroups])
-  const itemMap = useMemo(() => new Map(filteredItems.map((item) => [item.id, item])), [filteredItems])
 
   return (
     <AutocompleteRoot
@@ -73,14 +72,6 @@ export function SlashCommandAutocomplete({
       filter={() => true}
       onQueryChange={(event) => {
         setQuery(event.detail)
-      }}
-      onValueChange={(event) => {
-        const item = typeof event.detail === 'string' ? itemMap.get(event.detail) : null
-        if (!item) {
-          return
-        }
-
-        item.command(editor)
       }}
     >
       <AutocompletePositioner
@@ -98,6 +89,9 @@ export function SlashCommandAutocomplete({
               key={item.id}
               value={item.id}
               className={editorSlashMenuItemClassName}
+              onSelect={() => {
+                item.command(editor)
+              }}
             >
               <EditorSlashMenuItemView item={item} />
             </AutocompleteItem>
