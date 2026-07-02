@@ -7,7 +7,7 @@ import {
   AutocompleteRoot,
 } from 'prosekit/react/autocomplete'
 import { useEditor } from 'prosekit/react'
-import { useMemo, useState, type CSSProperties, type ReactElement } from 'react'
+import { useMemo, useState, type CSSProperties, type ReactElement, type ReactNode } from 'react'
 
 import { Button, EditorFloatingPopover } from '../../../ui'
 import { cn } from '../../../utils/cn'
@@ -27,10 +27,15 @@ const emojiAutocompleteItemStyle = {
   backgroundColor: 'var(--editor-surface, #ffffff)',
 } satisfies CSSProperties
 
-type EmojiGridProps = {
+type EmojiPickerBodyProps = {
+  query: string
   items: EmojiItem[]
-  onSelect: (item: EmojiItem) => void
-  compact?: boolean
+  activeCategory: string
+  onActiveCategoryChange: (value: string) => void
+  renderItem: (item: EmojiItem) => ReactNode
+  className?: string
+  gridClassName?: string
+  emptyContent?: ReactNode
 }
 
 type EmojiEditorCommands = {
@@ -45,34 +50,60 @@ function insertEmojiCommand(editor: ReturnType<typeof useEditor<any>>, name: str
   (editor.commands as EmojiEditorCommands).insertEmoji({ name })
 }
 
-function EmojiGrid({ items, onSelect, compact = false }: EmojiGridProps) {
-  if (!items.length) {
-    return (
-      <div className="pk:flex pk:flex-col pk:items-center pk:justify-center pk:gap-2 pk:px-4 pk:py-8 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
-        <span className="pk:text-4xl">😕</span>
-        <span>未找到匹配的 emoji</span>
-      </div>
-    )
+function getEmojiPickerItems(query: string, activeCategory: string) {
+  if (query.trim()) {
+    return searchEmojis(query, 160)
   }
 
+  return emojiCategories.find((category) => category.id === activeCategory)?.items.slice(0, 160) ?? []
+}
+
+function EmojiPickerEmpty({ className }: { className?: string }) {
   return (
     <div className={cn(
-      'pk:grid pk:grid-cols-8 pk:gap-1',
-      compact ? 'pk:p-1' : 'pk:p-2',
+      'pk:flex pk:flex-col pk:items-center pk:justify-center pk:gap-2 pk:px-4 pk:py-8 pk:text-sm pk:text-[var(--editor-muted-foreground)]',
+      className,
     )}
     >
-      {items.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          className="pk:flex pk:aspect-square pk:min-h-8 pk:items-center pk:justify-center pk:rounded-md pk:text-xl pk:leading-none pk:outline-none pk:transition pk:hover:scale-110 pk:hover:bg-[var(--editor-muted)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]"
-          title={`:${item.id}: ${item.name}`}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => onSelect(item)}
-        >
-          {item.native}
-        </button>
-      ))}
+      <span className="pk:text-4xl">😕</span>
+      <span>未找到匹配的 emoji</span>
+    </div>
+  )
+}
+
+function EmojiPickerBody({
+  query,
+  items,
+  activeCategory,
+  onActiveCategoryChange,
+  renderItem,
+  className,
+  gridClassName,
+  emptyContent,
+}: EmojiPickerBodyProps) {
+  return (
+    <div className={cn('pk:flex pk:flex-col pk:bg-[var(--editor-surface)]', className)} contentEditable={false}>
+      {!query.trim() ? (
+        <Tabs.Root value={activeCategory} onValueChange={(value) => onActiveCategoryChange(String(value))}>
+          <Tabs.List className="pk:flex pk:min-h-9 pk:overflow-x-auto pk:border-b pk:border-[var(--editor-border)]">
+            {emojiCategories.map((category) => (
+              <Tabs.Tab
+                key={category.id}
+                value={category.id}
+                className={cn(
+                  'pk:flex pk:h-9 pk:shrink-0 pk:items-center pk:justify-center pk:border-b-2 pk:border-transparent pk:px-3 pk:text-xs pk:font-medium pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors pk:hover:text-[var(--editor-foreground)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]',
+                  activeCategory === category.id && 'pk:border-[var(--editor-primary)] pk:text-[var(--editor-primary)]',
+                )}
+              >
+                {category.label}
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs.Root>
+      ) : null}
+      <div className={cn('pk:grid pk:max-h-[280px] pk:grid-cols-8 pk:gap-1 pk:overflow-y-auto pk:p-2', gridClassName)}>
+        {items.length ? items.map(renderItem) : emptyContent ?? <EmojiPickerEmpty className="pk:col-span-8" />}
+      </div>
     </div>
   )
 }
@@ -80,7 +111,9 @@ function EmojiGrid({ items, onSelect, compact = false }: EmojiGridProps) {
 export function EmojiAutocomplete() {
   const editor = useEditor<any>()
   const [query, setQuery] = useState('')
-  const items = useMemo(() => searchEmojis(query, query ? 100 : 64), [query])
+  const [activeCategory, setActiveCategory] = useState(emojiCategories[0]?.id ?? '')
+
+  const items = useMemo(() => getEmojiPickerItems(query, activeCategory), [activeCategory, query])
 
   return (
     <AutocompleteRoot
@@ -90,12 +123,6 @@ export function EmojiAutocomplete() {
       onQueryChange={(event) => {
         setQuery(event.detail)
       }}
-      onValueChange={(event) => {
-        const name = event.detail
-        if (typeof name === 'string' && name) {
-          insertEmojiCommand(editor, name)
-        }
-      }}
     >
       <AutocompletePositioner
         className="emoji-autocomplete-positioner"
@@ -103,31 +130,35 @@ export function EmojiAutocomplete() {
         offset={{ mainAxis: 6, crossAxis: 0 }}
       >
         <AutocompletePopup
-          className="emoji-autocomplete-popup pk:z-[1500] pk:w-[300px] pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-1 pk:text-[var(--editor-foreground)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none"
+          className="emoji-autocomplete-popup pk:z-[1500] pk:w-[320px] pk:max-w-[calc(100vw-2rem)] pk:overflow-hidden pk:rounded-xl pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:text-[var(--editor-foreground)] pk:shadow-[0_18px_48px_rgb(15_23_42_/_18%)] pk:outline-none"
           style={emojiAutocompletePopupStyle}
         >
-          {items.map((item) => (
-            <AutocompleteItem
-              key={item.id}
-              value={item.id}
-              className="emoji-autocomplete-item pk:flex pk:cursor-pointer pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-2 pk:text-sm pk:text-[var(--editor-foreground)] pk:outline-none pk:transition data-[highlighted]:pk:bg-[var(--editor-muted)]"
-              style={emojiAutocompleteItemStyle}
-            >
-              <span className="pk:flex pk:h-6 pk:w-6 pk:items-center pk:justify-center pk:text-xl pk:leading-none">
+          <EmojiPickerBody
+            query={query}
+            items={items}
+            activeCategory={activeCategory}
+            onActiveCategoryChange={setActiveCategory}
+            renderItem={(item) => (
+              <AutocompleteItem
+                key={item.id}
+                value={item.id}
+                className="emoji-autocomplete-item pk:flex pk:aspect-square pk:min-h-8 pk:cursor-pointer pk:items-center pk:justify-center pk:rounded-md pk:text-xl pk:leading-none pk:outline-none pk:transition pk:hover:scale-110 pk:hover:bg-[var(--editor-muted)] data-[highlighted]:pk:bg-[var(--editor-muted)]"
+                style={emojiAutocompleteItemStyle}
+                title={`:${item.id}: ${item.name}`}
+                onSelect={() => {
+                  insertEmojiCommand(editor, item.id)
+                }}
+              >
                 {item.native}
-              </span>
-              <span className="pk:min-w-0 pk:flex-1 pk:truncate">
-                :{item.id}:
-              </span>
-              <span className="pk:truncate pk:text-xs pk:text-[var(--editor-muted-foreground)]">
-                {item.name}
-              </span>
-            </AutocompleteItem>
-          ))}
-          <AutocompleteEmpty className="emoji-autocomplete-empty pk:flex pk:items-center pk:gap-2 pk:rounded-lg pk:px-2.5 pk:py-2 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
-            <span>😕</span>
-            未找到匹配的 emoji
-          </AutocompleteEmpty>
+              </AutocompleteItem>
+            )}
+            emptyContent={(
+              <AutocompleteEmpty className="emoji-autocomplete-empty pk:col-span-8 pk:flex pk:flex-col pk:items-center pk:justify-center pk:gap-2 pk:px-4 pk:py-8 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
+                <span className="pk:text-4xl">😕</span>
+                <span>未找到匹配的 emoji</span>
+              </AutocompleteEmpty>
+            )}
+          />
         </AutocompletePopup>
       </AutocompletePositioner>
     </AutocompleteRoot>
@@ -140,13 +171,7 @@ export function EmojiPickerPopover({ children }: EmojiPickerPopoverProps) {
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState(emojiCategories[0]?.id ?? '')
 
-  const items = useMemo(() => {
-    if (query.trim()) {
-      return searchEmojis(query, 160)
-    }
-
-    return emojiCategories.find((category) => category.id === activeCategory)?.items.slice(0, 160) ?? []
-  }, [activeCategory, query])
+  const items = useMemo(() => getEmojiPickerItems(query, activeCategory), [activeCategory, query])
 
   function insertEmoji(item: EmojiItem) {
     editor.focus()
@@ -178,27 +203,25 @@ export function EmojiPickerPopover({ children }: EmojiPickerPopoverProps) {
               }}
             />
           </div>
-          {!query.trim() ? (
-            <Tabs.Root value={activeCategory} onValueChange={(value) => setActiveCategory(String(value))}>
-              <Tabs.List className="pk:flex pk:min-h-9 pk:overflow-x-auto pk:border-b pk:border-[var(--editor-border)]">
-                {emojiCategories.map((category) => (
-                  <Tabs.Tab
-                    key={category.id}
-                    value={category.id}
-                    className={cn(
-                      'pk:flex pk:h-9 pk:shrink-0 pk:items-center pk:justify-center pk:border-b-2 pk:border-transparent pk:px-3 pk:text-xs pk:font-medium pk:text-[var(--editor-muted-foreground)] pk:outline-none pk:transition-colors pk:hover:text-[var(--editor-foreground)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]',
-                      activeCategory === category.id && 'pk:border-[var(--editor-primary)] pk:text-[var(--editor-primary)]',
-                    )}
-                  >
-                    {category.label}
-                  </Tabs.Tab>
-                ))}
-              </Tabs.List>
-            </Tabs.Root>
-          ) : null}
-          <div className="pk:max-h-[280px] pk:overflow-y-auto">
-            <EmojiGrid items={items} onSelect={insertEmoji} />
-          </div>
+          <EmojiPickerBody
+            query={query}
+            items={items}
+            activeCategory={activeCategory}
+            onActiveCategoryChange={setActiveCategory}
+            gridClassName="pk:max-h-[280px]"
+            renderItem={(item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="pk:flex pk:aspect-square pk:min-h-8 pk:items-center pk:justify-center pk:rounded-md pk:text-xl pk:leading-none pk:outline-none pk:transition pk:hover:scale-110 pk:hover:bg-[var(--editor-muted)] pk:focus-visible:ring-2 pk:focus-visible:ring-[var(--editor-ring)]"
+                title={`:${item.id}: ${item.name}`}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => insertEmoji(item)}
+              >
+                {item.native}
+              </button>
+            )}
+          />
         </div>
       )}
     >
