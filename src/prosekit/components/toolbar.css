@@ -1,60 +1,6 @@
 @reference "tailwindcss";
 
 @layer components {
-  .minimal-prosekit-editor-shell {
-    @apply overflow-hidden rounded-2xl border bg-[var(--editor-surface)] shadow-none;
-    border-color: var(--editor-border);
-  }
-
-  .minimal-prosekit-editor-toolbar-frame {
-    @apply border-b bg-[var(--editor-surface-muted)] px-1.5 py-1;
-    border-color: var(--editor-border);
-  }
-
-  .minimal-prosekit-editor-content {
-    @apply px-2 py-1.5;
-
-    .ProseMirror {
-      min-height: 240px;
-      outline: none;
-      white-space: pre-wrap;
-    }
-
-    .ProseMirror pre {
-      position: relative;
-      margin: 1rem 0;
-      overflow-x: auto;
-      border: 1px solid var(--editor-border);
-      border-radius: 0.875rem;
-      background: var(--prosemirror-highlight-bg, var(--editor-surface-muted));
-      color: var(--prosemirror-highlight, var(--editor-foreground));
-      padding: 1rem;
-      white-space: pre;
-      font-family: "Geist Variable", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      font-size: 0.875rem;
-      line-height: 1.7;
-    }
-
-    .ProseMirror pre[data-language]::before {
-      content: attr(data-language);
-      display: block;
-      margin-bottom: 0.75rem;
-      color: var(--editor-muted-foreground);
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .ProseMirror pre code {
-      display: block;
-      background: transparent;
-      color: inherit;
-      padding: 0;
-      font: inherit;
-    }
-  }
-
   .editor-toolbar {
     @apply w-full bg-[var(--editor-surface)];
 
@@ -80,40 +26,6 @@
       border-color: var(--editor-border);
     }
 
-    .toolbar-item {
-      @apply h-9 min-h-9 min-w-9 rounded-md p-2 normal-case text-[var(--editor-foreground)];
-
-      &:hover {
-        background-color: var(--editor-muted);
-      }
-
-      &.tool-active {
-        background-color: var(--editor-primary-soft);
-        color: var(--editor-primary);
-      }
-
-      &:disabled {
-        color: var(--editor-muted-foreground);
-      }
-    }
-
-    .toolbar-item-content {
-      @apply shrink-0;
-      line-height: 1;
-    }
-
-    .toolbar-item-icon {
-      @apply inline-flex shrink-0 items-center justify-center;
-      width: 1rem;
-      height: 1rem;
-
-      svg {
-        width: 100%;
-        height: 100%;
-        stroke-width: 1.9;
-      }
-    }
-
     .toolbar-select-trigger {
       @apply inline-flex h-9 items-center justify-center rounded-md border-0 bg-transparent px-2 text-sm font-medium text-[var(--editor-foreground)] outline-none transition-colors;
 
@@ -137,83 +49,6 @@
     .editor-toolbar-diff-group {
       @apply gap-1;
     }
-
-    .toolbar-item-shortcut {
-      @apply text-xs text-white/70;
-    }
-
-    .toolbar-menu-trigger {
-      @apply inline-grid items-center gap-1.5;
-      grid-template-columns: 1rem 0.875rem;
-    }
-
-    .toolbar-menu-trigger-icon {
-      @apply inline-flex h-4 w-4 items-center justify-center;
-    }
-
-    .toolbar-menu-chevron {
-      @apply pointer-events-none h-3 w-3 text-[var(--editor-muted-foreground)];
-    }
-
-    .toolbar-heading-trigger {
-      @apply relative inline-flex h-5 items-center pr-3;
-    }
-
-    .toolbar-heading-icon {
-      @apply inline-flex h-5 w-5 items-center justify-start;
-
-      svg {
-        width: 1rem;
-        height: 1rem;
-        stroke-width: 1.9;
-      }
-    }
-
-    .toolbar-heading-chevron {
-      @apply pointer-events-none absolute right-[-1px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--editor-muted-foreground)];
-    }
-
-    .toolbar-font-size-trigger {
-      @apply relative pr-3;
-    }
-
-    .toolbar-font-size-label {
-      @apply inline-block w-6 text-left text-[12px] font-medium leading-none tracking-[0.01em];
-    }
-
-    .toolbar-font-size-chevron {
-      @apply pointer-events-none absolute right-[-1px] top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--editor-muted-foreground)];
-    }
-
-    .toolbar-color-trigger {
-      @apply relative inline-flex;
-    }
-
-    .toolbar-color-indicator {
-      @apply pointer-events-none absolute bottom-[6px] left-[10px] z-[1] h-[2px] w-[14px] rounded-sm;
-    }
-
-    .toolbar-color-main-button {
-      @apply min-w-11 justify-start pr-5;
-    }
-
-    .toolbar-color-arrow-button {
-      @apply absolute right-[3px] top-0 z-[1] h-full w-[14px] min-w-0 p-0;
-      color: var(--editor-muted-foreground);
-      border-radius: 0;
-    }
-
-    .toolbar-color-arrow-button-open {
-      .toolbar-color-arrow {
-        transform: rotate(-180deg);
-      }
-    }
-
-    .toolbar-color-arrow {
-      @apply h-4 w-4 transition-transform duration-300;
-      pointer-events: none;
-    }
-
   }
 
 }

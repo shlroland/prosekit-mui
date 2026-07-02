@@ -10,8 +10,8 @@ import {
   type ReactNode,
 } from 'react'
 
-import { Button } from '../../ui'
 import { cn } from '../../utils/cn'
+import { EditorMenuButton } from './editor-menu-button'
 import './inline-menu.css'
 
 type InlinePopoverRootProps = ComponentProps<typeof InlinePopoverRoot>
@@ -110,22 +110,15 @@ export const InlineMenuButton = forwardRef<HTMLButtonElement, InlineMenuButtonPr
     children,
   }, ref) => {
     return (
-      <Button
+      <EditorMenuButton
         ref={ref}
-        variant="ghost"
-        size="icon"
-        aria-label={title}
-        title={title}
+        surface="inline"
+        label={title}
+        active={active}
         disabled={disabled}
-        onMouseDown={(event) => event.preventDefault()}
+        icon={children}
         onClick={onClick}
-        className={cn(
-          'prosekit-inline-menu-button pk:h-7 pk:w-7 pk:rounded-md pk:text-[var(--editor-muted-foreground)] pk:transition-colors pk:hover:bg-[color:color-mix(in_srgb,var(--editor-primary)_8%,var(--editor-muted))] pk:hover:text-[var(--editor-foreground)] pk:focus-visible:bg-[color:color-mix(in_srgb,var(--editor-primary)_8%,var(--editor-muted))] pk:focus-visible:text-[var(--editor-foreground)]',
-          active && 'is-active pk:bg-[color:color-mix(in_srgb,var(--editor-primary)_14%,var(--editor-surface))] pk:text-[var(--editor-primary)] pk:hover:bg-[color:color-mix(in_srgb,var(--editor-primary)_18%,var(--editor-surface))] pk:hover:text-[var(--editor-primary)]',
-        )}
-      >
-        {children}
-      </Button>
+      />
     )
   },
 )

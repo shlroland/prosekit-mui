@@ -1,9 +1,6 @@
 import { forwardRef, type MouseEvent, type ReactNode } from 'react'
 
-import { Button, Tooltip } from '../../ui'
-import { cn } from '../../utils/cn'
-import { getShortcutKeyText } from '../get-shortcut-key-text'
-import './toolbar.css'
+import { EditorMenuButton } from './editor-menu-button'
 
 export type ToolbarItemProps = {
   tip?: string
@@ -13,42 +10,12 @@ export type ToolbarItemProps = {
   shortcutKey?: string[]
   icon?: ReactNode
   className?: string
+  active?: boolean
   disabled?: boolean
+  preventMouseDownDefault?: boolean
+  disableMouseDown?: boolean
   onMouseDown?: (event: MouseEvent<HTMLButtonElement>) => void
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void
-}
-
-function ToolbarItemTooltipContent({
-  tip,
-  customComponent,
-  shortcutKeyText,
-}: {
-  tip?: string
-  customComponent?: ReactNode
-  shortcutKeyText?: string
-}) {
-  if (!tip) {
-    return null
-  }
-
-  return (
-    <>
-      <span
-        className={cn(
-          'pk:flex pk:items-center pk:justify-center',
-          customComponent ? 'pk:flex-row pk:gap-2' : 'pk:flex-col pk:gap-0',
-        )}
-      >
-        <span>{tip}</span>
-        {shortcutKeyText ? (
-          <span className="toolbar-item-shortcut">
-            {shortcutKeyText}
-          </span>
-        ) : null}
-      </span>
-      {customComponent}
-    </>
-  )
 }
 
 export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
@@ -63,56 +30,31 @@ export const ToolbarItem = forwardRef<HTMLButtonElement, ToolbarItemProps>(
       onClick,
       onMouseDown,
       className,
+      active,
       disabled,
-      ...rest
+      preventMouseDownDefault,
+      disableMouseDown,
     },
     ref,
   ) => {
-    const shortcutKeyText = getShortcutKeyText(shortcutKey)
-
     return (
-      <Tooltip
-        content={
-          <ToolbarItemTooltipContent
-            tip={tip}
-            customComponent={customComponent}
-            shortcutKeyText={shortcutKeyText}
-          />
-        }
-        disabled={!tip}
-      >
-        <Button
-          ref={ref}
-          variant="ghost"
-          size="icon"
-          aria-label={tip}
-          onMouseDown={(event) => {
-            event.preventDefault()
-            onMouseDown?.(event)
-          }}
-          onClick={onClick}
-          className={cn('toolbar-item', className)}
-          disabled={disabled}
-          {...rest}
-        >
-          <span
-            className="toolbar-item-content pk:inline-flex pk:items-center pk:gap-1"
-          >
-            {content ? (
-              content
-            ) : icon ? (
-              <span className="toolbar-item-icon">
-                {icon}
-              </span>
-            ) : null}
-            {!content && text ? (
-              <span className="pk:text-xs pk:font-bold">
-                {text}
-              </span>
-            ) : null}
-          </span>
-        </Button>
-      </Tooltip>
+      <EditorMenuButton
+        ref={ref}
+        surface="toolbar"
+        label={tip ?? ''}
+        tooltip={customComponent}
+        shortcutKey={shortcutKey}
+        content={content}
+        icon={icon}
+        text={text}
+        active={active}
+        onClick={onClick}
+        onMouseDown={onMouseDown}
+        className={className}
+        disabled={disabled}
+        preventMouseDownDefault={preventMouseDownDefault}
+        disableMouseDown={disableMouseDown}
+      />
     )
   },
 )

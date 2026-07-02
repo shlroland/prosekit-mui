@@ -1,0 +1,57 @@
+@reference "tailwindcss";
+
+@layer components {
+  .minimal-prosekit-editor-shell {
+    @apply overflow-hidden rounded-2xl border bg-[var(--editor-surface)] shadow-none;
+    border-color: var(--editor-border);
+  }
+
+  .minimal-prosekit-editor-toolbar-frame {
+    @apply border-b bg-[var(--editor-surface-muted)] px-1.5 py-1;
+    border-color: var(--editor-border);
+  }
+
+  .minimal-prosekit-editor-content {
+    @apply px-2 py-1.5;
+
+    .ProseMirror {
+      min-height: 240px;
+      outline: none;
+      white-space: pre-wrap;
+    }
+
+    .ProseMirror pre {
+      position: relative;
+      margin: 1rem 0;
+      overflow-x: auto;
+      border: 1px solid var(--editor-border);
+      border-radius: 0.875rem;
+      background: var(--prosemirror-highlight-bg, var(--editor-surface-muted));
+      color: var(--prosemirror-highlight, var(--editor-foreground));
+      padding: 1rem;
+      white-space: pre;
+      font-family: "Geist Variable", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.875rem;
+      line-height: 1.7;
+    }
+
+    .ProseMirror pre[data-language]::before {
+      content: attr(data-language);
+      display: block;
+      margin-bottom: 0.75rem;
+      color: var(--editor-muted-foreground);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .ProseMirror pre code {
+      display: block;
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      font: inherit;
+    }
+  }
+}

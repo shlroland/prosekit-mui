@@ -22,10 +22,13 @@ import {
   CodeLineIcon,
   CollapseIcon,
   EditorContent,
+  EditorEmojiMenuButton,
   EditorShell,
   EmojiAutocomplete,
-  EmojiPickerPopover,
   EmotionLineIcon,
+  EditorLinkMenuButton,
+  EditorTableSizeMenuButton,
+  EditorTooltipMenuButton,
   EraserLineIcon,
   ErrorWarningFillIcon,
   FlipGridIcon,
@@ -40,7 +43,6 @@ import {
   InlineFormattingMenu,
   ItalicIcon,
   LinkIcon,
-  LinkEditorPopover,
   ListCheck3Icon,
   ListOrdered2Icon,
   ListUnorderedIcon,
@@ -57,12 +59,9 @@ import {
   TableCellFloatingToolbar,
   TableFloatingToolbar,
   TableOfContents,
-  TableSizePicker,
   ToolbarItem,
-  TooltipEditPopover,
   TooltipLineIcon,
   UnderlineIcon,
-  createSelectionAnchor,
   createProseKitEditor,
   defaultMermaidTemplate,
   defaultBlockMathTemplate,
@@ -639,7 +638,7 @@ function DemoToolbarButton({
     <ToolbarItem
       tip={tip}
       icon={icon}
-      className={active ? 'tool-active' : undefined}
+      active={active}
       disabled={disabled}
       onClick={onClick}
     />
@@ -683,11 +682,6 @@ function ProseKitAstrobookToolbar() {
       suggestion: string
     }
   }, [aiWritingSnapshot])
-  const [linkOpen, setLinkOpen] = useState(false)
-  const [tooltipOpen, setTooltipOpen] = useState(false)
-  const [tooltipAnchor, setTooltipAnchor] = useState<ReturnType<typeof createSelectionAnchor>>(null)
-  const [tablePickerAnchor, setTablePickerAnchor] = useState<HTMLElement | null>(null)
-  const tablePickerOpen = Boolean(tablePickerAnchor)
   const hasInlineFormat = state.bold
     || state.italic
     || state.underline
@@ -706,27 +700,6 @@ function ProseKitAstrobookToolbar() {
     return editor.state.doc
       .textBetween(editor.state.selection.from, editor.state.selection.to, ' ')
       .trim()
-  }
-
-  function closeTooltipEditor() {
-    setTooltipOpen(false)
-    setTooltipAnchor(null)
-  }
-
-  function openTooltipEditor() {
-    focus()
-    setTooltipAnchor(createSelectionAnchor(editor))
-    setTooltipOpen(true)
-  }
-
-  function toggleTooltip() {
-    if (state.tooltip) {
-      focus()
-      editor.commands.unsetTooltip()
-      return
-    }
-
-    openTooltipEditor()
   }
 
   function clearFormat() {
@@ -769,28 +742,16 @@ function ProseKitAstrobookToolbar() {
               ;(editor.commands as any).toggleAiWriting?.()
             }}
           />
-          <ToolbarItem
-            tip="表格"
+          <EditorTableSizeMenuButton
             icon={<Table2Icon {...iconProps} />}
-            className={tablePickerOpen ? 'tool-active' : undefined}
-            onClick={(event) => {
-              setTablePickerAnchor((current) => current ? null : event.currentTarget)
+            onSelect={({ rows, columns }) => {
+              editor.commands.insertTable({ row: rows, col: columns })
             }}
           />
           <DemoToolbarButton tip="图片" icon={<ImageAddLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertImage({ src: '', width: 760, align: 'center' }) }} />
           <DemoToolbarButton tip="附件" icon={<AttachmentLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertAttachment() }} />
           <DemoToolbarButton tip="分栏" icon={<FlipGridIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertFlipGrid(2) }} />
         </div>
-        <TableSizePicker
-          anchorEl={tablePickerAnchor}
-          open={tablePickerOpen}
-          onClose={() => setTablePickerAnchor(null)}
-          onSelect={({ rows, columns }) => {
-            focus()
-            editor.commands.insertTable({ row: rows, col: columns })
-          }}
-        />
-
         <Separator orientation="vertical" className="editor-toolbar-divider" />
 
         <div className="editor-toolbar-group">
@@ -881,11 +842,10 @@ function ProseKitAstrobookToolbar() {
           <DemoToolbarButton tip="删除线" active={state.strike} icon={<StrikethroughIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleStrike() }} />
           <DemoToolbarButton tip="下划线" active={state.underline} icon={<UnderlineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleUnderline() }} />
           <DemoToolbarButton tip="高亮" active={state.highlight} icon={<MarkPenLineIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleHighlight() }} />
-          <DemoToolbarButton
-            tip="文本提示"
+          <EditorTooltipMenuButton
+            surface="toolbar"
             active={state.tooltip}
             icon={<TooltipLineIcon {...iconProps} />}
-            onClick={toggleTooltip}
           />
           <DemoToolbarButton tip="上标" active={state.superscript} icon={<SuperscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSuperscript() }} />
           <DemoToolbarButton tip="下标" active={state.subscript} icon={<SubscriptIcon {...iconProps} />} onClick={() => { focus(); editor.commands.toggleSubscript() }} />
@@ -918,44 +878,13 @@ function ProseKitAstrobookToolbar() {
               editor.commands.toggleList({ kind: 'task' })
             }}
           />
-          <LinkEditorPopover
-          triggerStyle={{ display: 'inline-flex' }}
-          open={linkOpen}
-          initialHref={currentLink?.href ?? ''}
-          initialTitle={currentLink?.title ?? getSelectedText()}
-          initialType={currentLink?.type ?? 'icon'}
-          initialTarget={currentLink?.target ?? '_blank'}
-          showAdvancedOptions
-          submitLabel={currentLink ? '修改链接' : '插入链接'}
-          onClose={() => setLinkOpen(false)}
-          onRemove={currentLink ? () => {
-            focus()
-            editor.commands.removeLink()
-            setLinkOpen(false)
-          } : undefined}
-          onSubmit={(value) => {
-            focus()
-            editor.commands.setLink({
-              href: value.href,
-              title: value.title || getSelectedText(),
-              type: value.type,
-              target: value.target,
-            })
-            setLinkOpen(false)
-          }}
-        >
-          <span className="pk:inline-flex">
-            <DemoToolbarButton
-              tip="链接"
-              active={state.link}
-              icon={<LinkIcon {...iconProps} />}
-              onClick={() => {
-                focus()
-                setLinkOpen(true)
-              }}
-            />
-          </span>
-        </LinkEditorPopover>
+          <EditorLinkMenuButton
+            surface="toolbar"
+            active={state.link}
+            currentLink={currentLink}
+            selectedText={getSelectedText()}
+            icon={<LinkIcon {...iconProps} />}
+          />
         </div>
 
         <Separator orientation="vertical" className="editor-toolbar-divider" />
@@ -1026,9 +955,7 @@ function ProseKitAstrobookToolbar() {
           <DemoToolbarButton tip="折叠面板" icon={<CollapseIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertDetails() }} />
           <DemoToolbarButton tip="分割线" icon={<SeparatorIcon {...iconProps} />} onClick={() => { focus(); editor.commands.insertHorizontalRule() }} />
           <DemoToolbarButton tip="Excalidraw 绘图" icon={<MindMapIcon {...iconProps} />} onClick={() => { focus(); (editor.commands as any).setExcalidraw?.() }} />
-          <EmojiPickerPopover>
-            <EmotionLineIcon {...iconProps} />
-          </EmojiPickerPopover>
+          <EditorEmojiMenuButton icon={<EmotionLineIcon {...iconProps} />} />
         </div>
 
         <Separator orientation="vertical" className="editor-toolbar-divider" />
@@ -1060,17 +987,6 @@ function ProseKitAstrobookToolbar() {
         </div>
       </div>
       </div>
-      <TooltipEditPopover
-        anchor={tooltipAnchor}
-        open={tooltipOpen}
-        initialValue=""
-        onClose={closeTooltipEditor}
-        onSubmit={(value) => {
-          focus()
-          editor.commands.setTooltip(value)
-        }}
-        onRemove={closeTooltipEditor}
-      />
     </>
   )
 }

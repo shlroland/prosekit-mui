@@ -1,6 +1,7 @@
 import { useEditor } from 'prosekit/react'
 
 import { cn } from '../utils/cn'
+import './editor-shell.css'
 
 export type EditorContentProps = {
   className?: string

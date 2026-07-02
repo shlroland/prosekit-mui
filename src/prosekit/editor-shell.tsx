@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import './editor-shell.css'
 
 export type EditorShellProps = {
   toolbar?: ReactNode
