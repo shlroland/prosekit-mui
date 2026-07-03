@@ -8,6 +8,7 @@ import {
   getFallbackFontFamilyOptions,
   type FontFamilyOption,
 } from '../extensions/font-family'
+import { EditorMenuButton } from './editor-menu-button'
 
 export type FontFamilySelectProps = {
   value?: string | null
@@ -89,15 +90,17 @@ export function FontFamilySelect({
         )
       }}
     >
-      <button
-        type="button"
+      <EditorMenuButton
+        surface="toolbar"
+        label="字体"
+        disableTooltip
+        preventMouseDownDefault={false}
         className={cn(
-          'toolbar-select-trigger pk:min-w-[132px] pk:max-w-[180px] pk:justify-start pk:gap-1.5',
+          'toolbar-select-trigger pk:w-auto pk:min-w-[132px] pk:max-w-[180px] pk:justify-start pk:gap-1.5',
           triggerClassName,
           className,
         )}
-      >
-        {children ?? (
+        content={children ?? (
           <>
             <FontFamilyIcon className="pk:h-4 pk:w-4 pk:shrink-0" />
             <span className="pk:truncate">
@@ -105,7 +108,7 @@ export function FontFamilySelect({
             </span>
           </>
         )}
-      </button>
+      />
     </EditorComboboxMenu>
   )
 }

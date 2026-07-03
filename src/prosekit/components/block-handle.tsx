@@ -167,6 +167,19 @@ function isSameBlockState(a: BlockHandleState, b: BlockHandleState) {
   return a.pos === b.pos && a.node.eq(b.node)
 }
 
+function isDirectDocChildBlockState(view: EditorView, state: ActiveBlockHandleState) {
+  let isDirectChild = false
+
+  view.state.doc.forEach((child, offset) => {
+    if (offset === state.pos && child.eq(state.node)) {
+      isDirectChild = true
+      return false
+    }
+  })
+
+  return isDirectChild
+}
+
 function setViewDragging(view: EditorView, state: ActiveBlockHandleState) {
   ;(view as EditorView & {
     dragging?: {
@@ -1228,7 +1241,11 @@ export function BlockHandle() {
       return
     }
 
-    const nextState = event.detail
+    const eventState = event.detail
+    const view = getEditorView(editor)
+    const nextState = eventState && view && isDirectDocChildBlockState(view, eventState)
+      ? eventState
+      : null
     if (!isSameBlockState(blockState, nextState)) {
       updateMenuOpen(false)
     }
@@ -1242,6 +1259,7 @@ export function BlockHandle() {
           className={cn(
             'prosekit-block-handle-positioner',
             menuOpen && 'pk:invisible',
+            !blockState && 'pk:hidden',
           )}
           placement="left-start"
           offset={8}

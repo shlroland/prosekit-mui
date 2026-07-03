@@ -25,6 +25,7 @@ export type EditorMenuButtonProps = Omit<
   content?: ReactNode
   icon?: ReactNode
   text?: ReactNode
+  disableTooltip?: boolean
   preventMouseDownDefault?: boolean
   disableMouseDown?: boolean
 }
@@ -74,6 +75,7 @@ export const EditorMenuButton = forwardRef<HTMLButtonElement, EditorMenuButtonPr
       content,
       icon,
       text,
+      disableTooltip = false,
       className,
       preventMouseDownDefault = true,
       disableMouseDown = false,
@@ -142,7 +144,7 @@ export const EditorMenuButton = forwardRef<HTMLButtonElement, EditorMenuButtonPr
       </Button>
     )
 
-    if (surface === 'inline') {
+    if (surface === 'inline' || disableTooltip) {
       return button
     }
 
