@@ -1,4 +1,5 @@
 export * from './extension'
+export * from './html-adapter'
 export * from './html-renderer'
 export * from './markdown-renderer'
 export * from './react-renderer'

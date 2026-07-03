@@ -40,6 +40,7 @@ import { defineImageSpec, type ImageExtensionOptions } from '../extensions/image
 import { defineLinkSpec } from '../extensions/link'
 import { defineTableCellAttrs } from '../extensions/table-cell-attrs/attrs'
 import { defineTableCellVerticalAlignAttrs } from '../extensions/table-cell-vertical-align/attrs'
+import { defineTableOfContentsAttrs } from '../extensions/table-of-contents/extension'
 import { defineTooltipSpec } from '../extensions/tooltip'
 
 export type StaticRichTextExtensionOptions = {
@@ -65,6 +66,7 @@ export function defineStaticBasicExtension() {
     defineText(),
     defineParagraph(),
     defineHeading(),
+    defineTableOfContentsAttrs(),
     defineListSpec(),
     defineBlockquote(),
     defineImage(),

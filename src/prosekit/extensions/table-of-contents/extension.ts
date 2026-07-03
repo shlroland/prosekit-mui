@@ -74,7 +74,7 @@ function createSyncHeadingsTransaction(state: EditorState): Transaction | null {
   return changed ? tr : null
 }
 
-function defineTableOfContentsAttrs(): TableOfContentsAttrsExtension {
+export function defineTableOfContentsAttrs(): TableOfContentsAttrsExtension {
   return union(
     defineNodeAttr<'heading', 'id', string | null>({
       type: 'heading',
