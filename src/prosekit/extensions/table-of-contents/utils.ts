@@ -70,3 +70,24 @@ export function getTableOfContents(state: EditorState): TableOfContentsItem[] {
 
   return items
 }
+
+export function getActiveTableOfContentsId(state: EditorState): string | null {
+  const activePos = state.selection.$head.pos
+  let activeId: string | null = null
+
+  state.doc.descendants((node, pos) => {
+    if (pos > activePos) {
+      return false
+    }
+
+    if (node.type.name !== 'heading') {
+      return true
+    }
+
+    const attrs = node.attrs as TableOfContentsHeadingAttrs
+    activeId = attrs.tocId || attrs.id || null
+    return false
+  })
+
+  return activeId
+}
