@@ -7,11 +7,13 @@ import { HexAlphaColorPicker } from 'react-colorful'
 
 import { Button, EditorFloatingPopover } from '../../ui'
 import { cn } from '../../utils/cn'
+import type { EditorColorPresetGroup } from './color-presets'
 import './color-picker.css'
 
 export type ColorPickerPreset = {
   key: string
-  color: string
+  color?: string
+  value?: string | null
   label?: string
 }
 
@@ -21,6 +23,7 @@ export type ColorPickerProps = {
   value: string
   defaultColor: string
   presets?: ColorPickerPreset[]
+  presetGroups?: EditorColorPresetGroup[]
   onClose: () => void
   onChange: (color: string) => void
   onSubmit: (color: string) => void
@@ -48,6 +51,7 @@ export function ColorPicker({
   value,
   defaultColor,
   presets = [],
+  presetGroups,
   onClose,
   onChange,
   onSubmit,
@@ -56,6 +60,23 @@ export function ColorPicker({
   className,
 }: ColorPickerProps) {
   const canSubmit = useMemo(() => isValidHexColor(value), [value])
+  const groups = useMemo(() => {
+    if (presetGroups) {
+      return presetGroups
+    }
+
+    return [
+      {
+        key: 'presets',
+        label: '常用',
+        presets: presets.map((preset) => ({
+          key: preset.key,
+          label: preset.label ?? preset.color ?? preset.value ?? '默认',
+          value: preset.value ?? preset.color ?? null,
+        })),
+      },
+    ]
+  }, [presetGroups, presets])
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     onChange(event.target.value)
@@ -113,20 +134,41 @@ export function ColorPicker({
             </span>
           </div>
 
-          <div className="prosekit-color-picker-grid">
-            {presets.map((preset) => (
-              <button
-                key={preset.key}
-                type="button"
-                className="prosekit-color-picker-swatch"
-                style={{ backgroundColor: preset.color }}
-                title={preset.label ?? preset.color}
-                onClick={() => {
-                  onChange(preset.color)
-                  onSubmit(preset.color)
-                  onClose()
-                }}
-              />
+          <div className="prosekit-color-picker-groups">
+            {groups.map((group) => (
+              <div key={group.key} className="prosekit-color-picker-group">
+                <span className="prosekit-color-picker-group-label">
+                  {group.label}
+                </span>
+                <div className="prosekit-color-picker-grid">
+                  {group.presets.map((preset) => {
+                    const color = preset.value ?? defaultColor
+
+                    return (
+                      <button
+                        key={preset.key}
+                        type="button"
+                        className={cn(
+                          'prosekit-color-picker-swatch',
+                          preset.value === null && 'prosekit-color-picker-swatch-default',
+                        )}
+                        style={{ backgroundColor: color }}
+                        title={preset.label ?? color}
+                        onClick={() => {
+                          if (preset.value === null) {
+                            handleReset()
+                            return
+                          }
+
+                          onChange(preset.value)
+                          onSubmit(preset.value)
+                          onClose()
+                        }}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
             ))}
           </div>
 

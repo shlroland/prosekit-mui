@@ -50,6 +50,11 @@ import {
 } from '../../icons'
 import { cn } from '../../utils/cn'
 import {
+  backgroundColorPresets,
+  getPresetSwatchColor,
+  textColorPresets,
+} from './color-presets'
+import {
   EditorAnchoredMenu,
   EditorAnchoredMenuDivider,
   EditorAnchoredMenuItem,
@@ -98,12 +103,6 @@ type LinewiseTarget =
   | { type: 'codeBlock' }
   | { type: 'alert', attrs: { variant: 'info' | 'warning', type: 'icon' } }
 
-type ColorPreset = {
-  key: string
-  label: string
-  value: string | null
-}
-
 type FontSizePreset = {
   key: string
   label: string
@@ -131,24 +130,6 @@ const menuPopupClassName = cn(
 )
 
 const menuIconClassName = editorMenuIconClassName
-
-const textColorPresets: ColorPreset[] = [
-  { key: 'foreground', label: '默认文字', value: null },
-  { key: 'blue', label: '蓝色', value: '#2563eb' },
-  { key: 'green', label: '绿色', value: '#16a34a' },
-  { key: 'amber', label: '琥珀色', value: '#d97706' },
-  { key: 'red', label: '红色', value: '#dc2626' },
-  { key: 'purple', label: '紫色', value: '#7c3aed' },
-]
-
-const backgroundColorPresets: ColorPreset[] = [
-  { key: 'transparent', label: '透明背景', value: null },
-  { key: 'blue-tint', label: '浅蓝', value: '#dbeafe' },
-  { key: 'green-tint', label: '浅绿', value: '#dcfce7' },
-  { key: 'amber-tint', label: '浅黄', value: '#fef3c7' },
-  { key: 'red-tint', label: '浅红', value: '#fee2e2' },
-  { key: 'purple-tint', label: '浅紫', value: '#ede9fe' },
-]
 
 const fontSizePresets: FontSizePreset[] = [
   { key: 'default', label: '默认字号', value: null },
@@ -907,7 +888,7 @@ function BlockColorSubmenu({
           action={{
             key: `text-color-${preset.key}`,
             label: preset.label,
-            icon: <ColorSwatch color={preset.value ?? 'var(--editor-foreground)'} />,
+            icon: <ColorSwatch color={getPresetSwatchColor(preset, 'var(--editor-foreground)')} />,
             onSelect: () => onApplyTextColor(preset.value),
           }}
         />
@@ -920,7 +901,7 @@ function BlockColorSubmenu({
           action={{
             key: `background-color-${preset.key}`,
             label: preset.label,
-            icon: <ColorSwatch color={preset.value} />,
+            icon: <ColorSwatch color={getPresetSwatchColor(preset, 'transparent')} />,
             onSelect: () => onApplyBackgroundColor(preset.value),
           }}
         />

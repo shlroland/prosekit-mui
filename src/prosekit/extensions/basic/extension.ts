@@ -28,6 +28,7 @@ import { defineUnderline, type UnderlineExtension } from 'prosekit/extensions/un
 import { defineVirtualSelection, type VirtualSelectionExtension } from 'prosekit/extensions/virtual-selection'
 
 import { defineLinkExtension, type LinkExtension } from '../link'
+import { defineInsertContentCommands, type InsertContentCommandsExtension } from '../insert-content'
 import { defineTableExtension, type TableOverlayExtension } from '../table'
 
 export type BasicExtension = Union<
@@ -51,6 +52,7 @@ export type BasicExtension = Union<
     LinkExtension,
     BaseKeymapExtension,
     BaseCommandsExtension,
+    InsertContentCommandsExtension,
     HistoryExtension,
     GapCursorExtension,
     VirtualSelectionExtension,
@@ -79,6 +81,7 @@ export function defineBasicExtension(): BasicExtension {
     defineLinkExtension(),
     defineBaseKeymap(),
     defineBaseCommands(),
+    defineInsertContentCommands(),
     defineHistory(),
     defineGapCursor(),
     defineVirtualSelection(),
