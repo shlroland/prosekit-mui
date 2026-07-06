@@ -29,6 +29,24 @@ function isDetailsOpen(node: ReactNodeViewProps['node']) {
   return node.attrs.open !== false
 }
 
+function getDirectDetailsContent(wrapper: HTMLDivElement) {
+  const contentRoot = wrapper.querySelector(':scope > [data-node-view-content]')
+
+  if (!contentRoot) {
+    return null
+  }
+
+  for (const child of Array.from(contentRoot.children)) {
+    const content = child.firstElementChild
+
+    if (content instanceof HTMLElement && content.dataset.type === 'detailsContent') {
+      return content
+    }
+  }
+
+  return null
+}
+
 function focusSummaryWhenClosing(props: ReactNodeViewProps) {
   const { getPos, node, view } = props
   const pos = getPos()
@@ -66,6 +84,35 @@ function focusSummaryWhenClosing(props: ReactNodeViewProps) {
 export function DetailsView(props: ReactNodeViewProps) {
   const { node, contentRef, selected, view, getPos } = props
   const open = isDetailsOpen(node)
+  const contentWrapperRef = useRef<HTMLDivElement | null>(null)
+
+  useLayoutEffect(() => {
+    const wrapper = contentWrapperRef.current
+
+    if (!wrapper) {
+      return
+    }
+
+    function syncDirectContentHidden() {
+      const content = wrapper ? getDirectDetailsContent(wrapper) : null
+
+      if (content) {
+        content.hidden = !open
+      }
+    }
+
+    syncDirectContentHidden()
+
+    const observer = new MutationObserver(syncDirectContentHidden)
+    observer.observe(wrapper, {
+      childList: true,
+      subtree: true,
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [node, open])
 
   function toggleOpen() {
     const nextOpen = !open
@@ -116,49 +163,21 @@ export function DetailsView(props: ReactNodeViewProps) {
         aria-expanded={open ? 'true' : 'false'}
         onClick={toggleOpen}
       />
-      <div ref={contentRef} className={detailsContentWrapperClassName} />
+      <div
+        ref={(element) => {
+          contentWrapperRef.current = element
+          contentRef(element)
+        }}
+        className={detailsContentWrapperClassName}
+      />
     </div>
   )
 }
 
-export function DetailsContentView({ contentRef, node }: ReactNodeViewProps) {
-  const rootRef = useRef<HTMLDivElement | null>(null)
-
-  useLayoutEffect(() => {
-    const root = rootRef.current
-    if (!root) {
-      return
-    }
-
-    const details = root.closest<HTMLElement>('[data-type="details"]')
-
-    function syncHidden() {
-      root.hidden = details?.dataset.open !== 'true'
-    }
-
-    syncHidden()
-
-    if (!details) {
-      return
-    }
-
-    const observer = new MutationObserver(syncHidden)
-    observer.observe(details, {
-      attributes: true,
-      attributeFilter: ['data-open'],
-    })
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [node])
-
+export function DetailsContentView({ contentRef }: ReactNodeViewProps) {
   return (
     <div
-      ref={(element) => {
-        rootRef.current = element
-        contentRef(element)
-      }}
+      ref={contentRef}
       data-type="detailsContent"
       className={detailsContentClassName}
     />
