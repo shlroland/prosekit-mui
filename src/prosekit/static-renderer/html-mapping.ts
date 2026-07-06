@@ -4,6 +4,8 @@ import katex from 'katex'
 import { getEmojiNativeById } from '../extensions/emoji/data'
 import { resolveAssetUrl, type StaticRendererAssetOptions } from './url'
 import { attribute, escapeHTML, joinHTML, styleAttribute } from './html-utils'
+import { renderStaticMermaid } from './views/react-static-views'
+import { renderHighlightedCodeBlockHTML } from './views/shiki-highlight'
 
 function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value : ''
@@ -120,8 +122,8 @@ export function createBuiltinHTMLNodeMapping(options: StaticRendererAssetOptions
       const open = node.attrs.open !== false
       return `<details class="${open ? 'cq-details is-open' : 'cq-details'}"${open ? ' open=""' : ''}>${joinHTML(children)}</details>`
     },
-    detailsSummary: ({ children }) => `<summary class="cq-details-summary pk:relative pk:list-none pk:font-semibold pk:outline-none pk:marker:hidden">${joinHTML(children)}</summary>`,
-    detailsContent: ({ children }) => `<div class="cq-details-content" data-type="detailsContent">${joinHTML(children)}</div>`,
+    detailsSummary: ({ children }) => `<summary class="cq-details-summary pk:relative pk:flex pk:cursor-pointer pk:list-none pk:items-start pk:gap-1 pk:px-4 pk:py-3 pk:font-semibold pk:outline-none pk:marker:hidden"><span class="cq-details-toggle pk:mt-[0.1rem] pk:inline-flex pk:h-6 pk:w-5 pk:shrink-0 pk:items-center pk:justify-center pk:rounded pk:text-[0.625rem] pk:text-[var(--editor-foreground)] pk:before:flex pk:before:h-full pk:before:w-full pk:before:items-center pk:before:justify-center pk:before:content-['▶'] pk:before:transition-transform pk:before:duration-200 pk:before:ease-in-out pk:[details[open]_&]:before:rotate-90" aria-hidden="true"></span><span class="pk:min-h-6 pk:min-w-0 pk:flex-1">${joinHTML(children)}</span></summary>`,
+    detailsContent: ({ children }) => `<div class="cq-details-content pk:min-h-6 pk:px-4 pk:pb-4" data-type="detailsContent">${joinHTML(children)}</div>`,
     inlineAttachment: ({ node }) => {
       const attrs = node.attrs
       const href = resolveAssetUrl(attrs.url, options.baseUrl)
@@ -163,6 +165,23 @@ export function createBuiltinHTMLNodeMapping(options: StaticRendererAssetOptions
       const caption = title ? `<figcaption class="pk:mt-2 pk:text-center pk:text-sm pk:text-[var(--editor-muted-foreground)]">${escapeHTML(title)}</figcaption>` : ''
 
       return `<figure class="pk:my-4 pk:max-w-full"${attribute('data-image-align', align)}${figureStyle}>${image}${caption}</figure>`
+    },
+    codeBlock: ({ node }) => {
+      const source = node.textContent
+      const language = normalizeText(node.attrs.language) || 'text'
+
+      if (language === 'mermaid') {
+        const preview = renderStaticMermaid(source)
+        const previewHTML = preview.error
+          ? `<div class="pk:rounded-lg pk:border pk:border-[color:rgb(220_38_38_/_0.18)] pk:bg-[color:rgb(220_38_38_/_0.08)] pk:p-3 pk:text-sm pk:text-[color:rgb(153_27_27)]"><div class="pk:mb-1 pk:font-medium">Mermaid 语法错误</div><pre class="pk:m-0 pk:whitespace-pre-wrap pk:bg-transparent pk:p-0 pk:text-[13px] pk:leading-6 pk:text-inherit">${escapeHTML(preview.error)}</pre></div>`
+          : preview.svg
+            ? `<div class="pk:overflow-auto pk:rounded-lg pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-4">${preview.svg}</div>`
+            : '<div class="pk:flex pk:min-h-[144px] pk:items-center pk:justify-center pk:rounded-lg pk:border pk:border-dashed pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:px-6 pk:text-sm pk:text-[var(--editor-muted-foreground)]">空 Mermaid 图表</div>'
+
+        return `<figure class="prosekit-static-mermaid pk:my-4 pk:overflow-hidden pk:rounded-[var(--radius)] pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)]" data-language="mermaid" data-static-renderer="true"><div class="pk:border-b pk:border-[var(--editor-border)] pk:px-4 pk:py-2 pk:text-xs pk:font-medium pk:text-[var(--editor-muted-foreground)]">Mermaid</div><div class="pk:bg-[var(--editor-surface-muted)] pk:p-4">${previewHTML}</div><details class="prosekit-static-mermaid-source pk:border-t pk:border-[var(--editor-border)]" data-static-mermaid-source="true"><summary class="pk:cursor-pointer pk:px-4 pk:py-2 pk:text-xs pk:font-medium pk:text-[var(--editor-muted-foreground)]">Mermaid 源码</summary>${renderHighlightedCodeBlockHTML(source, 'mermaid')}</details></figure>`
+      }
+
+      return renderHighlightedCodeBlockHTML(source, language)
     },
     mathInline: ({ node }) => {
       const latex = node.textContent

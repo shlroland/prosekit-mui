@@ -2,68 +2,21 @@ import { union } from 'prosekit/core'
 import {
   defineCodeBlockPreviewPlugin,
   defineCodeBlockShiki,
-  shikiBundledLanguagesInfo,
 } from 'prosekit/extensions/code-block'
 
 import { defineCodeBlockNodeView } from './node-view'
-import type { CodeBlockExtension, CodeBlockExtensionOptions, CodeBlockLanguageOption } from './types'
+import {
+  defaultCodeBlockLanguages,
+  defaultCodeBlockLanguageOptions,
+  defaultCodeBlockTheme,
+} from './languages'
+import type { CodeBlockExtension, CodeBlockExtensionOptions } from './types'
 
-const defaultLanguageIds = [
-  'text',
-  'mermaid',
-  'typescript',
-  'tsx',
-  'javascript',
-  'jsx',
-  'python',
-  'java',
-  'go',
-  'rust',
-  'php',
-  'ruby',
-  'c',
-  'cpp',
-  'csharp',
-  'kotlin',
-  'scala',
-  'swift',
-  'dart',
-  'elixir',
-  'erlang',
-  'haskell',
-  'clojure',
-  'lua',
-  'perl',
-  'r',
-  'matlab',
-  'json',
-  'html',
-  'css',
-  'markdown',
-  'yaml',
-  'toml',
-  'xml',
-  'ini',
-  'graphql',
-  'http',
-  'shellscript',
-  'powershell',
-  'dockerfile',
-  'nginx',
-  'sql',
-  'diff',
-] as const
-
-const builtInLanguageMap = new Map(
-  shikiBundledLanguagesInfo.map((item) => [item.id, item.name] as const),
-)
-
-export const defaultCodeBlockLanguages = [...defaultLanguageIds]
-
-export const defaultCodeBlockLanguageOptions: CodeBlockLanguageOption[] = defaultLanguageIds.map((id) => ({
-  id,
-  name: id === 'text' ? 'Plain Text' : builtInLanguageMap.get(id) ?? id,
-}))
+export {
+  defaultCodeBlockLanguages,
+  defaultCodeBlockLanguageOptions,
+  defaultCodeBlockTheme,
+} from './languages'
 
 export function defineCodeBlockExtension(
   options: CodeBlockExtensionOptions = {},
@@ -78,7 +31,7 @@ export function defineCodeBlockExtension(
   } = options
 
   const shikiExtension = defineCodeBlockShiki({
-    themes: themes ?? ['github-light'],
+    themes: themes ?? [defaultCodeBlockTheme],
     langs: langs ?? defaultCodeBlockLanguages,
     nodeTypes: nodeTypes ?? ['codeBlock'],
     engine,

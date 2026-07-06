@@ -80,6 +80,16 @@ const content = {
       ],
     },
     {
+      type: 'codeBlock',
+      attrs: { language: 'typescript' },
+      content: [{ type: 'text', text: 'const value = 1' }],
+    },
+    {
+      type: 'codeBlock',
+      attrs: { language: 'mermaid' },
+      content: [{ type: 'text', text: 'graph TD\n  Start --> End' }],
+    },
+    {
       type: 'mathBlock',
       attrs: { language: 'tex' },
       content: [{ type: 'text', text: '\\\\int_0^1 x dx' }],
@@ -135,6 +145,9 @@ describe('static renderer', () => {
     expect(markup).toContain('data-node="alert"')
     expect(markup).toContain('data-variant="warning"')
     expect(markup).toContain('<details')
+    expect(markup).toContain('cq-details-toggle')
+    expect(markup).toContain("pk:before:content-[&#x27;▶&#x27;]")
+    expect(markup).toContain('pk:min-h-6')
     expect(markup).toContain('href="https://cdn.example.com/files/a.pdf"')
     expect(markup).toContain('src="https://cdn.example.com/files/b.pdf"')
     expect(markup).toContain('href="https://example.org"')
@@ -142,6 +155,16 @@ describe('static renderer', () => {
     expect(markup).toContain('prosemirror-math-inline')
     expect(markup).toContain('prosemirror-math-block')
     expect(markup).toContain('katex')
+    expect(markup).toContain('prosekit-static-code-block')
+    expect(markup).toContain('shiki github-light')
+    expect(markup).toContain('style="color:#D73A49"')
+    expect(markup).toContain('data-language="typescript"')
+    expect(markup).toContain('value')
+    expect(markup).toContain('prosekit-static-mermaid')
+    expect(markup).toContain('data-static-mermaid-source="true"')
+    expect(markup).toContain('<details class="prosekit-static-mermaid-source')
+    expect(markup).toContain('Mermaid 源码')
+    expect(markup).toContain('<svg')
     expect(markup).toContain('data-type="excalidraw"')
     expect(markup).toContain('src="https://cdn.example.com/drawings/a.svg"')
     expect(markup).toContain('Drawing A')
@@ -164,6 +187,9 @@ describe('static renderer', () => {
     expect(html).toContain('data-node="alert"')
     expect(html).toContain('data-variant="warning"')
     expect(html).toContain('<details')
+    expect(html).toContain('cq-details-toggle')
+    expect(html).toContain("pk:before:content-['▶']")
+    expect(html).toContain('pk:min-h-6')
     expect(html).toContain('href="https://cdn.example.com/files/a.pdf"')
     expect(html).toContain('src="https://cdn.example.com/files/b.pdf"')
     expect(html).toContain('href="https://example.org"')
@@ -171,6 +197,16 @@ describe('static renderer', () => {
     expect(html).toContain('prosemirror-math-inline')
     expect(html).toContain('prosemirror-math-block')
     expect(html).toContain('katex')
+    expect(html).toContain('prosekit-static-code-block')
+    expect(html).toContain('shiki github-light')
+    expect(html).toContain('style="color:#D73A49"')
+    expect(html).toContain('data-language="typescript"')
+    expect(html).toContain('value')
+    expect(html).toContain('prosekit-static-mermaid')
+    expect(html).toContain('data-static-mermaid-source="true"')
+    expect(html).toContain('<details class="prosekit-static-mermaid-source')
+    expect(html).toContain('Mermaid 源码')
+    expect(html).toContain('<svg')
     expect(html).toContain('data-type="excalidraw"')
     expect(html).toContain('src="https://cdn.example.com/drawings/a.svg"')
     expect(html).toContain('Drawing A')
