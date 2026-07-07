@@ -8,28 +8,25 @@ import { EditorContent } from './editor-content'
 import { EditorShell } from './editor-shell'
 import { defineRichTextExtension, type RichTextExtensionOptions } from './extensions/rich-text'
 import {
-  compareDocuments,
   getDiffState,
-  type DiffComparison,
-  type DiffOptions,
 } from './extensions/diff'
-import { normalizeNodeJSON } from './normalize-node-json'
 import {
-  parseProseKitHTMLToNodeJSON,
-  type ProseKitHTMLAdapterOptions,
-} from './static-renderer/html-adapter'
+  editorDiff,
+  type EditorDiffInput,
+  type EditorDiffOptions,
+  type EditorDiffResult,
+} from './static-renderer/diff-renderer/editor-diff'
 import { ProseKitProvider } from './prosekit-provider'
 
-export type EditorDiffInput = NodeJSON | string
-
-export type EditorDiffOptions =
-  & DiffOptions
-  & ProseKitHTMLAdapterOptions
-
-export type EditorDiffResult = DiffComparison & {
-  baseline: NodeJSON
-  current: NodeJSON
-}
+export {
+  editorDiff,
+  normalizeEditorDiffInput,
+} from './static-renderer/diff-renderer/editor-diff'
+export type {
+  EditorDiffInput,
+  EditorDiffOptions,
+  EditorDiffResult,
+} from './static-renderer/diff-renderer/editor-diff'
 
 export type EditorDiffViewState = {
   isActive: boolean
@@ -49,31 +46,6 @@ export type EditorDiffViewProps = {
 }
 
 const emptyEditorDiffOptions: EditorDiffOptions = {}
-
-export function normalizeEditorDiffInput(
-  content: EditorDiffInput,
-  options: ProseKitHTMLAdapterOptions = {},
-): NodeJSON {
-  return typeof content === 'string'
-    ? parseProseKitHTMLToNodeJSON(content, options)
-    : normalizeNodeJSON(content)
-}
-
-export function editorDiff(
-  oldContent: EditorDiffInput,
-  newContent: EditorDiffInput,
-  options: EditorDiffOptions = {},
-): EditorDiffResult {
-  const baseline = normalizeEditorDiffInput(oldContent, options)
-  const current = normalizeEditorDiffInput(newContent, options)
-  const comparison = compareDocuments(baseline, current, options)
-
-  return {
-    ...comparison,
-    baseline,
-    current,
-  }
-}
 
 function EditorDiffAutoShow({ baseline }: { baseline: NodeJSON }) {
   const editor = useEditor<any>() as any
