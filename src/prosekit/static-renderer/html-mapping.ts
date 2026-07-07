@@ -100,6 +100,13 @@ function renderKatexHTML(value: unknown, displayMode: boolean) {
 export function createBuiltinHTMLNodeMapping(options: StaticRendererAssetOptions = {}): NodeMapping<string> {
   return {
     doc: ({ children }) => `<div class="ProseMirror prosekit-static-renderer" data-static-renderer="true">${joinHTML(children)}</div>`,
+    paragraph: ({ node, children }) => {
+      const textAlign = normalizeText(node.attrs.textAlign)
+      const style = styleAttribute({ 'text-align': textAlign || null })
+      const content = node.childCount > 0 ? joinHTML(children) : '<br class="ProseMirror-trailingBreak">'
+
+      return `<p${style}>${content}</p>`
+    },
     alert: ({ node, children }) => {
       const attrs = node.attrs
       const variant = normalizeAlertVariant(attrs.variant)

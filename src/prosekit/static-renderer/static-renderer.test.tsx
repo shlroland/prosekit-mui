@@ -18,6 +18,9 @@ const content = {
       ],
     },
     {
+      type: 'paragraph',
+    },
+    {
       type: 'alert',
       attrs: { id: 'alert-1', variant: 'warning', type: 'icon' },
       content: [
@@ -138,6 +141,7 @@ describe('static renderer', () => {
 
     expect(markup).toContain('class="ProseMirror prosekit-static-renderer"')
     expect(markup).toContain('😀')
+    expect(markup).toContain('class="ProseMirror-trailingBreak"')
     expect(markup).not.toContain('data-type="emoji"')
     expect(markup).toContain('data-font-family="Georgia"')
     expect(markup).toContain('font-family:Georgia')
@@ -184,6 +188,7 @@ describe('static renderer', () => {
 
     expect(html).toContain('class="ProseMirror prosekit-static-renderer"')
     expect(html).toContain('😀')
+    expect(html).toContain('class="ProseMirror-trailingBreak"')
     expect(html).not.toContain('data-type="emoji"')
     expect(html).toContain('data-font-family="Georgia"')
     expect(html).toContain('font-family: Georgia')

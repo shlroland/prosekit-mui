@@ -22,6 +22,7 @@ import {
   StaticMathInlineView,
   StaticInlineAttachmentView,
   StaticLinkView,
+  StaticParagraphView,
   StaticTooltipView,
 } from './views/react-static-views'
 import { isNodeJSON, normalizeNodeJSON } from '../normalize-node-json'
@@ -46,6 +47,11 @@ function keyedChildren(children: ReactNode | ReactNode[]) {
 export function createBuiltinReactNodeMapping(options: StaticRichTextExtensionOptions = {}): NodeMapping<ReactNode> {
   return {
     doc: ({ children }) => <StaticDocView>{keyedChildren(children)}</StaticDocView>,
+    paragraph: ({ node, children }) => (
+      <StaticParagraphView attrs={node.attrs}>
+        {node.childCount > 0 ? keyedChildren(children) : undefined}
+      </StaticParagraphView>
+    ),
     alert: ({ node, children }) => <StaticAlertView attrs={node.attrs}>{keyedChildren(children)}</StaticAlertView>,
     details: ({ node, children }) => <StaticDetailsView attrs={node.attrs}>{keyedChildren(children)}</StaticDetailsView>,
     detailsSummary: ({ children }) => <StaticDetailsSummaryView>{keyedChildren(children)}</StaticDetailsSummaryView>,
