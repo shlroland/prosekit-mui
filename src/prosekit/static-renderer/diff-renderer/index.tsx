@@ -6,13 +6,13 @@ import {
   type EditorDiffInput,
   type EditorDiffOptions,
   type EditorDiffResult,
-} from '../editor-diff'
+} from '../../editor-diff'
 import {
   getDeletedNodePreviewText,
   type DiffItem,
-} from '../extensions/diff'
-import { attribute, escapeHTML, joinHTML, styleAttribute } from './html-utils'
-import { renderProseKitHTML, type ProseKitHTMLRendererOptions } from './html-renderer'
+} from '../../extensions/diff'
+import { attribute, escapeHTML, joinHTML, styleAttribute } from '../html-utils'
+import { renderProseKitHTML, type ProseKitHTMLRendererOptions } from '../html-renderer'
 
 type MarkJSON = {
   type: string
