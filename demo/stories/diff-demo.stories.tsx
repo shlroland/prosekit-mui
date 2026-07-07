@@ -13,15 +13,50 @@ const baselineContent = {
     {
       type: 'heading',
       attrs: { level: 2, textAlign: null },
-      content: [{ type: 'text', text: 'Launch checklist' }],
+      content: [{ type: 'text', text: 'Q3 release plan' }],
     },
     {
       type: 'paragraph',
       attrs: { textAlign: 'left' },
+      content: [{ type: 'text', text: 'Ship the editor demo with link cards and static previews.' }],
+    },
+    {
+      type: 'paragraph',
+      attrs: { textAlign: null },
+      content: [
+        { type: 'text', text: 'Read ' },
+        {
+          type: 'inlineLink',
+          attrs: {
+            href: 'https://example.com/original-spec',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            class: null,
+            title: 'Original spec',
+            type: 'icon',
+            download: null,
+          },
+        },
+        { type: 'text', text: ' before publishing the docs.' },
+      ],
+    },
+    {
+      type: 'details',
+      attrs: { open: false },
       content: [
         {
-          type: 'text',
-          text: 'Ship the editor demo with link cards and code previews.',
+          type: 'detailsSummary',
+          content: [{ type: 'text', text: 'Implementation notes' }],
+        },
+        {
+          type: 'detailsContent',
+          content: [
+            {
+              type: 'paragraph',
+              attrs: { textAlign: null },
+              content: [{ type: 'text', text: 'Keep details panels collapsed in archived exports.' }],
+            },
+          ],
         },
       ],
     },
@@ -72,6 +107,10 @@ const baselineContent = {
         download: null,
       },
     },
+    {
+      type: 'paragraph',
+      attrs: { textAlign: null },
+    },
   ],
 } satisfies NodeJSON
 
@@ -81,15 +120,50 @@ const currentContent = {
     {
       type: 'heading',
       attrs: { level: 2, textAlign: null },
-      content: [{ type: 'text', text: 'Launch checklist' }],
+      content: [{ type: 'text', text: 'Q3 release plan' }],
     },
     {
       type: 'paragraph',
       attrs: { textAlign: 'center' },
+      content: [{ type: 'text', text: 'Ship the polished editor demo with link cards, static diffs, and node-view parity.' }],
+    },
+    {
+      type: 'paragraph',
+      attrs: { textAlign: null },
+      content: [
+        { type: 'text', text: 'Read ' },
+        {
+          type: 'inlineLink',
+          attrs: {
+            href: 'https://github.com/prosekit/prosekit',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            class: null,
+            title: 'Updated ProseKit spec',
+            type: 'icon',
+            download: null,
+          },
+        },
+        { type: 'text', text: ' before publishing the docs and examples.' },
+      ],
+    },
+    {
+      type: 'details',
+      attrs: { open: true },
       content: [
         {
-          type: 'text',
-          text: 'Ship the polished editor demo with link cards, diff mode, and code previews.',
+          type: 'detailsSummary',
+          content: [{ type: 'text', text: 'Implementation notes and QA' }],
+        },
+        {
+          type: 'detailsContent',
+          content: [
+            {
+              type: 'paragraph',
+              attrs: { textAlign: null },
+              content: [{ type: 'text', text: 'Keep details panels open in previews so static rendering can be inspected.' }],
+            },
+          ],
         },
       ],
     },
@@ -129,6 +203,27 @@ const currentContent = {
       ],
     },
     {
+      type: 'alert',
+      attrs: { id: 'diff-alert', variant: 'info', type: 'icon' },
+      content: [
+        {
+          type: 'paragraph',
+          attrs: { textAlign: null },
+          content: [{ type: 'text', text: 'Static diff is now projected into a renderable document before React rendering.' }],
+        },
+      ],
+    },
+    {
+      type: 'codeBlock',
+      attrs: { language: 'typescript' },
+      content: [{ type: 'text', text: "const mode = 'static-diff'\nconsole.log(mode)" }],
+    },
+    {
+      type: 'codeBlock',
+      attrs: { language: 'mermaid' },
+      content: [{ type: 'text', text: 'graph TD\n  A[JSON or HTML] --> B[Diff document]\n  B --> C[React renderer]' }],
+    },
+    {
       type: 'blockLink',
       attrs: {
         href: 'https://github.com/prosekit/prosekit',
@@ -143,35 +238,49 @@ const currentContent = {
     {
       type: 'paragraph',
       attrs: { textAlign: null },
-      content: [
-        {
-          type: 'text',
-          text: 'New release note: static rendering now mirrors editor node views.',
-        },
-      ],
+      content: [{ type: 'text', text: 'New release note: static rendering now mirrors editor node views.' }],
     },
   ],
 } satisfies NodeJSON
 
 const baselineHTML = `
-  <h2>Launch checklist</h2>
-  <p style="text-align: left;">Ship the editor demo with link cards and code previews.</p>
+  <h2>Q3 release plan</h2>
+  <p style="text-align: left;">Ship the editor demo with link cards and static previews.</p>
+  <p>Read <a href="https://example.com/original-spec" target="_blank" rel="noopener noreferrer" title="Original spec" type="icon">Original spec</a> before publishing the docs.</p>
+  <details>
+    <summary>Implementation notes</summary>
+    <p>Keep details panels collapsed in archived exports.</p>
+  </details>
   <ul>
     <li><p>Add details panels</p></li>
     <li><p>Render Mermaid diagrams</p></li>
     <li><p>Verify uploads</p></li>
   </ul>
   <a href="https://example.com/spec" target="_blank" rel="noopener noreferrer" title="Original implementation brief" type="block">Original implementation brief</a>
+  <p></p>
 `
 
 const currentHTML = `
-  <h2>Launch checklist</h2>
-  <p style="text-align: center;">Ship the polished editor demo with link cards, diff mode, and code previews.</p>
+  <h2>Q3 release plan</h2>
+  <p style="text-align: center;">Ship the polished editor demo with link cards, static diffs, and node-view parity.</p>
+  <p>Read <a href="https://github.com/prosekit/prosekit" target="_blank" rel="noopener noreferrer" title="Updated ProseKit spec" type="icon">Updated ProseKit spec</a> before publishing the docs and examples.</p>
+  <details open>
+    <summary>Implementation notes and QA</summary>
+    <p>Keep details panels open in previews so static rendering can be inspected.</p>
+  </details>
   <ul>
     <li><p>Add details panels</p></li>
     <li><p>Render Mermaid diagrams with source toggles</p></li>
     <li><p>Publish static renderer docs</p></li>
   </ul>
+  <div data-node="alert" data-variant="info" data-type="icon">
+    <p>Static diff is now projected into a renderable document before React rendering.</p>
+  </div>
+  <pre><code class="language-typescript">const mode = 'static-diff'
+console.log(mode)</code></pre>
+  <pre><code class="language-mermaid">graph TD
+  A[HTML] --> B[Diff document]
+  B --> C[React renderer]</code></pre>
   <a href="https://github.com/prosekit/prosekit" target="_blank" rel="noopener noreferrer" title="Updated ProseKit implementation brief" type="block">Updated ProseKit implementation brief</a>
   <p>New release note: static rendering now mirrors editor node views.</p>
 `
@@ -194,10 +303,10 @@ function DiffDemoSurface({
           {description}
         </p>
         <p className="pk:m-0">
-          Baseline: shorter paragraph, old block link, and a removed upload checklist item.
+          Baseline: older copy, original inline/block links, collapsed details, a removed checklist item, and an empty paragraph.
         </p>
         <p className="pk:m-0">
-          Current: centered paragraph, updated link metadata, inserted release note, and revised checklist items.
+          Current: centered copy, updated links, open details, inserted alert/code/Mermaid blocks, and revised checklist items.
         </p>
       </div>
       <EditorDiffView

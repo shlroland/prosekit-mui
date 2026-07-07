@@ -6,7 +6,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import { editorDiff, normalizeEditorDiffInput } from './editor-diff'
-import { renderEditorDiffHTML, StaticEditorDiffView } from './static-renderer'
+import { createStaticDiffDocument, renderEditorDiffHTML, StaticEditorDiffView } from './static-renderer'
 
 const baseline = {
   type: 'doc',
@@ -69,7 +69,7 @@ describe('editorDiff', () => {
     expect(html).toContain('prosekit-diff-insert')
     expect(html).toContain('brave ')
     expect(html).toContain('prosekit-diff-modify-node')
-    expect(html).toContain('style="text-align: center;"')
+    expect(html).toContain('style="text-align:center"')
   })
 
   it('renders a static HTML diff for HTML documents', () => {
@@ -82,6 +82,17 @@ describe('editorDiff', () => {
     expect(html).toContain('brave ')
     expect(html).toContain('prosekit-diff-delete')
     expect(html).toContain('Removed paragraph')
+  })
+
+  it('projects a comparison into a static diff document', () => {
+    const diffDoc = createStaticDiffDocument(
+      '<p>Hello world</p><p>Removed paragraph</p>',
+      '<p>Hello brave world</p>',
+    )
+    const json = JSON.stringify(diffDoc)
+
+    expect(json).toContain('"type":"diffInsert"')
+    expect(json).toContain('"type":"diffDeleteBlock"')
   })
 
   it('renders a React static diff view', () => {
