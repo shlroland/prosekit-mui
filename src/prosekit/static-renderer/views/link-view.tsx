@@ -1,6 +1,11 @@
 import { ChromeIcon } from '../../../icons'
+import { cn } from '../../../utils/cn'
 import type { StaticNodeViewProps } from './types'
 import { normalizeText } from './utils'
+
+export const staticLinkFaviconWrapperClassName = 'pk:inline-flex pk:shrink-0 pk:items-center pk:justify-center pk:self-center pk:overflow-hidden pk:rounded-full pk:bg-white'
+export const staticLinkFaviconObjectClassName = 'pk:pointer-events-none pk:block pk:h-full pk:w-full'
+export const staticLinkFaviconFallbackClassName = 'pk:text-[var(--editor-primary)]'
 
 function getLinkTitle(href: string) {
   try {
@@ -19,6 +24,50 @@ function getLinkRel(target: string | null, rel: string | null) {
   return target === '_blank' ? 'noopener noreferrer' : undefined
 }
 
+export function getStaticLinkFavicon(href: string) {
+  try {
+    return href ? `${new URL(href).origin}/favicon.ico` : ''
+  } catch {
+    return ''
+  }
+}
+
+export function StaticLinkFavicon({
+  src,
+  isBlock,
+}: {
+  src: string
+  isBlock: boolean
+}) {
+  return (
+    <span
+      className={cn(staticLinkFaviconWrapperClassName, isBlock ? 'pk:h-8 pk:w-8' : 'pk:h-4 pk:w-4')}
+      data-static-link-favicon="true"
+    >
+      {src ? (
+        <object
+          className={staticLinkFaviconObjectClassName}
+          data={src}
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          <ChromeIcon
+            className={staticLinkFaviconFallbackClassName}
+            data-static-link-favicon-fallback="true"
+            style={{ fontSize: isBlock ? '2rem' : '1rem' }}
+          />
+        </object>
+      ) : (
+        <ChromeIcon
+          className={staticLinkFaviconFallbackClassName}
+          data-static-link-favicon-fallback="true"
+          style={{ fontSize: isBlock ? '2rem' : '1rem' }}
+        />
+      )}
+    </span>
+  )
+}
+
 export function StaticLinkView({ attrs }: StaticNodeViewProps) {
   const href = normalizeText(attrs.href)
   const target = normalizeText(attrs.target) || '_blank'
@@ -27,12 +76,7 @@ export function StaticLinkView({ attrs }: StaticNodeViewProps) {
   const isBlock = attrs.type === 'block'
 
   if (isBlock) {
-    let favicon = ''
-    try {
-      favicon = href ? `${new URL(href).origin}/favicon.ico` : ''
-    } catch {
-      favicon = ''
-    }
+    const favicon = getStaticLinkFavicon(href)
 
     return (
       <a
@@ -43,9 +87,7 @@ export function StaticLinkView({ attrs }: StaticNodeViewProps) {
         title={title || undefined}
         type="block"
       >
-        <span className="pk:inline-flex pk:h-8 pk:w-8 pk:shrink-0 pk:items-center pk:justify-center pk:self-center pk:overflow-hidden pk:rounded-full pk:bg-white">
-          {favicon ? <img className="pk:h-full pk:w-full pk:object-cover" src={favicon} alt="" /> : <ChromeIcon className="pk:text-[var(--editor-primary)]" style={{ fontSize: '2rem' }} />}
-        </span>
+        <StaticLinkFavicon src={favicon} isBlock />
         <span className="pk:min-w-0 pk:flex-1">
           <span className="pk:block pk:truncate pk:font-medium">{title}</span>
           {href ? <span className="pk:block pk:truncate pk:text-sm pk:text-[var(--editor-muted-foreground)]">{href}</span> : null}
@@ -63,6 +105,7 @@ export function StaticLinkView({ attrs }: StaticNodeViewProps) {
       title={title || undefined}
       type={normalizeText(attrs.type) || 'icon'}
     >
+      {normalizeText(attrs.type) !== 'text' ? <StaticLinkFavicon src={getStaticLinkFavicon(href)} isBlock={false} /> : null}
       <span className="pk:min-w-0 pk:truncate">{title}</span>
     </a>
   )

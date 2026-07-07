@@ -1,9 +1,12 @@
 import type { MarkMapping, NodeMapping } from 'prosekit-static-renderer'
 import katex from 'katex'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 import { getEmojiNativeById } from '../extensions/emoji/data'
 import { resolveAssetUrl, type StaticRendererAssetOptions } from './url'
 import { attribute, escapeHTML, joinHTML, styleAttribute } from './html-utils'
+import { getStaticLinkFavicon, StaticLinkFavicon } from './views/link-view'
 import { renderStaticMermaid } from './views/react-static-views'
 import { renderHighlightedCodeBlockHTML } from './views/shiki-highlight'
 
@@ -68,6 +71,10 @@ function getLinkRel(target: string | null, rel: string | null) {
   }
 
   return target === '_blank' ? 'noopener noreferrer' : undefined
+}
+
+function renderStaticLinkFaviconHTML(src: string, isBlock: boolean) {
+  return renderToStaticMarkup(createElement(StaticLinkFavicon, { src, isBlock }))
 }
 
 function renderKatexHTML(value: unknown, displayMode: boolean) {
@@ -203,8 +210,9 @@ export function createBuiltinHTMLNodeMapping(options: StaticRendererAssetOptions
       const rel = getLinkRel(target, normalizeText(attrs.rel) || null)
       const title = normalizeText(attrs.title) || getLinkTitle(href)
       const type = normalizeText(attrs.type) || 'icon'
+      const favicon = type === 'text' ? '' : renderStaticLinkFaviconHTML(getStaticLinkFavicon(href), false)
 
-      return `<a class="pk:inline-flex pk:max-w-full pk:items-baseline pk:gap-1 pk:rounded-[var(--radius-md)] pk:text-[var(--editor-primary)] pk:no-underline pk:hover:underline"${attribute('href', href)}${attribute('target', target)}${attribute('rel', rel)}${attribute('title', title)}${attribute('type', type)}><span class="pk:min-w-0 pk:truncate">${escapeHTML(title)}</span></a>`
+      return `<a class="pk:inline-flex pk:max-w-full pk:items-baseline pk:gap-1 pk:rounded-[var(--radius-md)] pk:text-[var(--editor-primary)] pk:no-underline pk:hover:underline"${attribute('href', href)}${attribute('target', target)}${attribute('rel', rel)}${attribute('title', title)}${attribute('type', type)}>${favicon}<span class="pk:min-w-0 pk:truncate">${escapeHTML(title)}</span></a>`
     },
     blockLink: ({ node }) => {
       const attrs = node.attrs
@@ -212,8 +220,9 @@ export function createBuiltinHTMLNodeMapping(options: StaticRendererAssetOptions
       const target = normalizeText(attrs.target) || '_blank'
       const rel = getLinkRel(target, normalizeText(attrs.rel) || null)
       const title = normalizeText(attrs.title) || getLinkTitle(href)
+      const favicon = getStaticLinkFavicon(href)
 
-      return `<a class="pk:my-4 pk:flex pk:w-full pk:items-center pk:gap-4 pk:rounded-[var(--radius-md)] pk:border pk:border-[var(--editor-border)] pk:p-4 pk:text-left pk:text-[inherit] pk:no-underline pk:hover:border-[var(--editor-primary)]"${attribute('href', href)}${attribute('target', target)}${attribute('rel', rel)}${attribute('title', title)} type="block"><span class="pk:min-w-0 pk:flex-1"><span class="pk:block pk:truncate pk:font-medium">${escapeHTML(title)}</span>${href ? `<span class="pk:block pk:truncate pk:text-sm pk:text-[var(--editor-muted-foreground)]">${escapeHTML(href)}</span>` : ''}</span></a>`
+      return `<a class="pk:my-4 pk:flex pk:w-full pk:items-center pk:gap-4 pk:rounded-[var(--radius-md)] pk:border pk:border-[var(--editor-border)] pk:p-4 pk:text-left pk:text-[inherit] pk:no-underline pk:hover:border-[var(--editor-primary)]"${attribute('href', href)}${attribute('target', target)}${attribute('rel', rel)}${attribute('title', title)} type="block">${renderStaticLinkFaviconHTML(favicon, true)}<span class="pk:min-w-0 pk:flex-1"><span class="pk:block pk:truncate pk:font-medium">${escapeHTML(title)}</span>${href ? `<span class="pk:block pk:truncate pk:text-sm pk:text-[var(--editor-muted-foreground)]">${escapeHTML(href)}</span>` : ''}</span></a>`
     },
     flipGrid: ({ node, children }) => {
       const gap = normalizeText(node.attrs.gap) || '1rem'

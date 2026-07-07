@@ -267,7 +267,7 @@
       "content": [
         {
           "type": "text",
-          "text": "居中段落，包含 inline link："
+          "text": "居中段落，包含 inline icon link："
         },
         {
           "type": "inlineLink",
@@ -277,6 +277,38 @@
             "rel": "noopener noreferrer",
             "class": null,
             "title": "ProseKit",
+            "type": "icon",
+            "download": null
+          }
+        },
+        {
+          "type": "text",
+          "text": "，inline text link："
+        },
+        {
+          "type": "inlineLink",
+          "attrs": {
+            "href": "https://mui.com",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "class": null,
+            "title": "Material UI",
+            "type": "text",
+            "download": null
+          }
+        },
+        {
+          "type": "text",
+          "text": "，inline fallback icon："
+        },
+        {
+          "type": "inlineLink",
+          "attrs": {
+            "href": "https://favicon-fallback.invalid/inline",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "class": null,
+            "title": "Missing favicon",
             "type": "icon",
             "download": null
           }
@@ -295,6 +327,18 @@
         "rel": "noopener noreferrer",
         "class": null,
         "title": "ProseKit GitHub repository",
+        "type": "block",
+        "download": null
+      }
+    },
+    {
+      "type": "blockLink",
+      "attrs": {
+        "href": "https://favicon-fallback.invalid/block",
+        "target": "_blank",
+        "rel": "noopener noreferrer",
+        "class": null,
+        "title": "Block link with favicon fallback",
         "type": "block",
         "download": null
       }

@@ -96,7 +96,7 @@ export const demoContent: NodeJSON = {
       type: 'paragraph',
       attrs: { textAlign: null },
       content: [
-        { type: 'text', text: 'Select text and use the link button to insert an inline or block link. Existing examples: ' },
+        { type: 'text', text: 'Select text and use the link button to insert links. Inline icon link: ' },
         {
           type: 'inlineLink',
           attrs: {
@@ -109,7 +109,7 @@ export const demoContent: NodeJSON = {
             download: null,
           },
         },
-        { type: 'text', text: ' and ' },
+        { type: 'text', text: ', inline text link: ' },
         {
           type: 'inlineLink',
           attrs: {
@@ -119,6 +119,19 @@ export const demoContent: NodeJSON = {
             class: null,
             title: 'Material UI',
             type: 'text',
+            download: null,
+          },
+        },
+        { type: 'text', text: ', inline fallback icon: ' },
+        {
+          type: 'inlineLink',
+          attrs: {
+            href: 'https://favicon-fallback.invalid/inline',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            class: null,
+            title: 'Missing favicon',
+            type: 'icon',
             download: null,
           },
         },
@@ -181,6 +194,18 @@ export const demoContent: NodeJSON = {
         rel: 'noopener noreferrer',
         class: null,
         title: 'ProseKit GitHub repository',
+        type: 'block',
+        download: null,
+      },
+    },
+    {
+      type: 'blockLink',
+      attrs: {
+        href: 'https://favicon-fallback.invalid/block',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: null,
+        title: 'Block link with favicon fallback',
         type: 'block',
         download: null,
       },
