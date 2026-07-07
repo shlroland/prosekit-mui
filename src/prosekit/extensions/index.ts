@@ -1,6 +1,7 @@
 export * from './basic/'
 export * from './ai-writing/'
 export * from './code-block/'
+export * from './character-count/'
 export * from './alert/'
 export * from './details/'
 export * from './diff/'

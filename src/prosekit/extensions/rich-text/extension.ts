@@ -12,6 +12,7 @@ import { defineAiWritingExtension, type AiWritingOptions } from '../ai-writing'
 import { defineAlertExtension } from '../alert'
 import { defineAttachmentExtension, type AttachmentExtensionOptions } from '../attachment'
 import { defineBasicExtension } from '../basic'
+import { defineCharacterCountExtension, type CharacterCountOptions } from '../character-count'
 import { defineCodeBlockExtension, type CodeBlockExtensionOptions } from '../code-block'
 import { defineDetailsExtension } from '../details'
 import { defineDiffExtension, type DiffOptions } from '../diff'
@@ -39,6 +40,7 @@ export type RichTextExtensionOptions = {
   math?: MathExtensionOptions
   diff?: DiffOptions
   aiWriting?: AiWritingOptions
+  characterCount?: CharacterCountOptions
 }
 
 export function defineRichTextExtension(options: RichTextExtensionOptions = {}) {
@@ -67,6 +69,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineBackgroundColor(),
     defineEditorFontFamilyExtension(),
     defineFontSize(),
+    defineCharacterCountExtension(options.characterCount),
     defineTableOfContentsExtension(),
     defineDiffExtension(options.diff),
     defineAiWritingExtension(options.aiWriting),
