@@ -1,5 +1,6 @@
 export * from './components/editor-toolbar'
 export * from './editor-content'
+export * from './editor-diff'
 export * from './editor-shell'
 export * from './components/inline-formatting-menu'
 export * from './components/inline-menu'

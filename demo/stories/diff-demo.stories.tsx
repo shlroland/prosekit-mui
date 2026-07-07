@@ -3,18 +3,8 @@ import 'prosekit/basic/typography.css'
 import 'prosekit/extensions/list/style.css'
 
 import type { NodeJSON } from 'prosekit/core'
-import { useEditor, useEditorDerivedValue } from 'prosekit/react'
-import { useEffect, useMemo } from 'react'
 
-import {
-  EditorContent,
-  EditorShell,
-  ProseKitProvider,
-  createProseKitEditor,
-  defineRichTextExtension,
-  getDiffState,
-} from '../../src'
-import { Button } from '../../src/ui'
+import { EditorDiffView, type EditorDiffInput } from '../../src'
 import { ClientOnlyStoryFrame } from './client-only-story-frame'
 
 const baselineContent = {
@@ -163,94 +153,64 @@ const currentContent = {
   ],
 } satisfies NodeJSON
 
-function DiffToolbar({ baseline }: { baseline: NodeJSON }) {
-  const editor = useEditor<any>() as any
-  const snapshot = useEditorDerivedValue<any, string>((currentEditor) => {
-    const state = getDiffState(currentEditor.state)
-    return JSON.stringify({
-      isActive: state.isActive,
-      diffCount: state.diffCount,
-    })
-  })
-  const diffState = useMemo(() => JSON.parse(snapshot) as { isActive: boolean; diffCount: number }, [snapshot])
+const baselineHTML = `
+  <h2>Launch checklist</h2>
+  <p style="text-align: left;">Ship the editor demo with link cards and code previews.</p>
+  <ul>
+    <li><p>Add details panels</p></li>
+    <li><p>Render Mermaid diagrams</p></li>
+    <li><p>Verify uploads</p></li>
+  </ul>
+  <a href="https://example.com/spec" target="_blank" rel="noopener noreferrer" title="Original implementation brief" type="block">Original implementation brief</a>
+`
 
+const currentHTML = `
+  <h2>Launch checklist</h2>
+  <p style="text-align: center;">Ship the polished editor demo with link cards, diff mode, and code previews.</p>
+  <ul>
+    <li><p>Add details panels</p></li>
+    <li><p>Render Mermaid diagrams with source toggles</p></li>
+    <li><p>Publish static renderer docs</p></li>
+  </ul>
+  <a href="https://github.com/prosekit/prosekit" target="_blank" rel="noopener noreferrer" title="Updated ProseKit implementation brief" type="block">Updated ProseKit implementation brief</a>
+  <p>New release note: static rendering now mirrors editor node views.</p>
+`
+
+type DiffDemoStoryProps = {
+  oldContent: EditorDiffInput
+  newContent: EditorDiffInput
+  description: string
+}
+
+function DiffDemoSurface({
+  oldContent,
+  newContent,
+  description,
+}: DiffDemoStoryProps) {
   return (
-    <div className="pk:flex pk:flex-wrap pk:items-center pk:justify-between pk:gap-3 pk:border-b pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface-muted)] pk:px-4 pk:py-3">
-      <div className="pk:flex pk:flex-wrap pk:items-center pk:gap-2 pk:text-xs pk:text-[var(--editor-muted-foreground)]">
-        <span className="pk:inline-flex pk:items-center pk:gap-1">
-          <span className="pk:h-2.5 pk:w-2.5 pk:rounded-sm pk:bg-[var(--editor-success,#16a34a)]" />
-          Insert
-        </span>
-        <span className="pk:inline-flex pk:items-center pk:gap-1">
-          <span className="pk:h-2.5 pk:w-2.5 pk:rounded-sm pk:bg-[var(--editor-danger,#dc2626)]" />
-          Delete
-        </span>
-        <span className="pk:inline-flex pk:items-center pk:gap-1">
-          <span className="pk:h-2.5 pk:w-2.5 pk:rounded-sm pk:bg-[var(--editor-warning,#d97706)]" />
-          Modify
-        </span>
+    <div className="pk:grid pk:gap-4">
+      <div className="pk:grid pk:gap-3 pk:rounded-[var(--radius)] pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-4 pk:text-sm pk:leading-6 pk:text-[var(--editor-muted-foreground)]">
+        <p className="pk:m-0 pk:font-medium pk:text-[var(--editor-foreground)]">
+          {description}
+        </p>
+        <p className="pk:m-0">
+          Baseline: shorter paragraph, old block link, and a removed upload checklist item.
+        </p>
+        <p className="pk:m-0">
+          Current: centered paragraph, updated link metadata, inserted release note, and revised checklist items.
+        </p>
       </div>
-      <div className="pk:flex pk:items-center pk:gap-2">
-        <span className="pk:text-xs pk:font-medium pk:text-[var(--editor-muted-foreground)]">
-          {diffState.isActive ? `${diffState.diffCount} changes` : 'Diff hidden'}
-        </span>
-        <Button
-          size="sm"
-          variant={diffState.isActive ? 'outline' : 'default'}
-          onClick={() => {
-            ;(editor.commands as any).toggleDiff?.(baseline)
-          }}
-        >
-          {diffState.isActive ? 'Hide diff' : 'Show diff'}
-        </Button>
-      </div>
+      <EditorDiffView
+        oldContent={oldContent}
+        newContent={newContent}
+        extensionOptions={{ placeholder: 'Edit the current document to update the diff.' }}
+        contentClassName="prosekit-astrobook-editor-content"
+      />
     </div>
   )
 }
 
-function DiffAutoOpen({ baseline }: { baseline: NodeJSON }) {
-  const editor = useEditor<any>() as any
-
-  useEffect(() => {
-    ;(editor.commands as any).showDiff?.(baseline)
-  }, [baseline, editor])
-
-  return null
-}
-
-function DiffDemoSurface() {
-  const extension = useMemo(() => defineRichTextExtension({
-    placeholder: 'Edit the current document to update the diff.',
-  }), [])
-  const editor = useMemo(() => createProseKitEditor({
-    extension,
-    defaultContent: currentContent,
-  }), [extension])
-
-  return (
-    <ProseKitProvider editor={editor}>
-      <div className="pk-mui-theme pk-demo-page">
-        <div className="pk:grid pk:gap-4">
-          <div className="pk:grid pk:gap-3 pk:rounded-[var(--radius)] pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-4 pk:text-sm pk:leading-6 pk:text-[var(--editor-muted-foreground)]">
-            <p className="pk:m-0">
-              Baseline: shorter paragraph, old block link, and a removed upload checklist item.
-            </p>
-            <p className="pk:m-0">
-              Current: centered paragraph, updated link metadata, inserted release note, and revised checklist items.
-            </p>
-          </div>
-          <EditorShell
-            toolbar={<DiffToolbar baseline={baselineContent} />}
-            content={<EditorContent className="prosekit-astrobook-editor-content" />}
-          />
-        </div>
-        <DiffAutoOpen baseline={baselineContent} />
-      </div>
-    </ProseKitProvider>
-  )
-}
-
-function DiffDemoStory() {
+function DiffDemoStory(args: DiffDemoStoryProps) {
   return (
     <ClientOnlyStoryFrame
       eyebrow="Diff"
@@ -258,7 +218,7 @@ function DiffDemoStory() {
       copy="A focused demo of the ProseKit diff extension comparing the current document against a saved baseline."
       loadingLabel="Loading diff demo..."
     >
-      <DiffDemoSurface />
+      <DiffDemoSurface {...args} />
     </ClientOnlyStoryFrame>
   )
 }
@@ -267,4 +227,18 @@ export default {
   component: DiffDemoStory,
 }
 
-export const Default = {}
+export const JsonInput = {
+  args: {
+    oldContent: baselineContent,
+    newContent: currentContent,
+    description: 'editorDiff input: two ProseMirror/ProseKit JSON documents.',
+  } satisfies DiffDemoStoryProps,
+}
+
+export const HtmlInput = {
+  args: {
+    oldContent: baselineHTML,
+    newContent: currentHTML,
+    description: 'editorDiff input: two saved HTML strings parsed with the static renderer schema.',
+  } satisfies DiffDemoStoryProps,
+}
