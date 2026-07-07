@@ -68,6 +68,7 @@ import {
   defaultInlineMathTemplate,
   defineRichTextExtension,
   getAiWritingState,
+  getCharacterCountState,
   getDiffState,
   getCurrentLinkAttrs,
   isLinkActive,
@@ -83,6 +84,7 @@ import { useDemoTheme } from './use-demo-theme'
 
 const demoImageSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360"%3E%3Cdefs%3E%3ClinearGradient id="bg" x1="0" x2="1" y1="0" y2="1"%3E%3Cstop offset="0" stop-color="%23fcfaf5"/%3E%3Cstop offset="0.5" stop-color="%23f5efe4"/%3E%3Cstop offset="1" stop-color="%23dbe8e1"/%3E%3C/linearGradient%3E%3CradialGradient id="clay" cx="18%25" cy="16%25" r="50%25"%3E%3Cstop offset="0" stop-color="%23b85c38" stop-opacity="0.38"/%3E%3Cstop offset="1" stop-color="%23b85c38" stop-opacity="0"/%3E%3C/radialGradient%3E%3CradialGradient id="moss" cx="88%25" cy="86%25" r="52%25"%3E%3Cstop offset="0" stop-color="%232f5d50" stop-opacity="0.34"/%3E%3Cstop offset="1" stop-color="%232f5d50" stop-opacity="0"/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width="960" height="360" rx="28" fill="url(%23bg)"/%3E%3Crect width="960" height="360" rx="28" fill="url(%23clay)"/%3E%3Crect width="960" height="360" rx="28" fill="url(%23moss)"/%3E%3Ccircle cx="760" cy="94" r="46" fill="%23ffffff" fill-opacity="0.68"/%3E%3Ccircle cx="812" cy="118" r="26" fill="%23ffffff" fill-opacity="0.5"/%3E%3Cpath d="M0 285 C155 225 253 257 372 220 C510 178 626 210 735 170 C832 134 893 146 960 118 L960 360 L0 360 Z" fill="%232f5d50" fill-opacity="0.2"/%3E%3Cpath d="M0 314 C152 255 258 291 390 252 C528 211 626 241 746 202 C844 170 906 184 960 160 L960 360 L0 360 Z" fill="%23b85c38" fill-opacity="0.18"/%3E%3Ctext x="56" y="112" fill="%23171717" font-family="Roboto,Arial,sans-serif" font-size="42" font-weight="700"%3EImage block preview%3C/text%3E%3Ctext x="56" y="164" fill="%23171717" fill-opacity="0.68" font-family="Roboto,Arial,sans-serif" font-size="22"%3EUpload tab, embed link tab, title and dimensions%3C/text%3E%3C/svg%3E'
 const demoMermaidSource = defaultMermaidTemplate
+const demoCharacterLimit = 12000
 
 export const demoContent: NodeJSON = {
   type: 'doc',
@@ -1019,21 +1021,27 @@ function ProseKitAstrobookToolbar() {
 function DemoInspector() {
   const editor = useEditor<any>() as any
   const statsSnapshot = useEditorDerivedValue<any, string>((currentEditor) => {
-    const text = currentEditor.state.doc.textBetween(0, currentEditor.state.doc.content.size, '\n')
-    return JSON.stringify({
-      text,
-      chars: text.length,
-    })
+    return JSON.stringify(getCharacterCountState(currentEditor.state))
   })
-  const stats = useMemo<{ text: string; chars: number }>(() => {
-    return JSON.parse(statsSnapshot) as { text: string; chars: number }
+  const stats = useMemo<ReturnType<typeof getCharacterCountState>>(() => {
+    return JSON.parse(statsSnapshot) as ReturnType<typeof getCharacterCountState>
   }, [statsSnapshot])
+  const limitLabel = stats.limit == null ? 'unlimited' : stats.limit.toLocaleString()
+  const remainingLabel = stats.remaining == null ? 'unlimited' : stats.remaining.toLocaleString()
 
   return (
-    <div className="pk:flex pk:items-center pk:justify-between pk:gap-2">
-      <p className="pk:m-0 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
-        Characters: {stats.chars}
-      </p>
+    <div className="pk:flex pk:flex-wrap pk:items-center pk:justify-between pk:gap-2">
+      <div className="pk:flex pk:flex-wrap pk:items-center pk:gap-x-3 pk:gap-y-1 pk:text-sm pk:text-[var(--editor-muted-foreground)]">
+        <span>
+          Characters: {stats.characters.toLocaleString()} / {limitLabel}
+        </span>
+        <span>
+          Words: {stats.words.toLocaleString()}
+        </span>
+        <span>
+          Remaining: {remainingLabel}
+        </span>
+      </div>
       <Button
         size="sm"
         variant="outline"
@@ -1119,6 +1127,10 @@ export function ProseKitAstrobookDemo() {
 
           return `${trimmed.replace(/快速/g, '高效').replace(/搭建/g, '构建')}。`
         },
+      },
+      characterCount: {
+        limit: demoCharacterLimit,
+        textCounter: (text) => [...text].length,
       },
     })
   }, [theme])
