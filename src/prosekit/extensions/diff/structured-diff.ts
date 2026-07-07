@@ -433,12 +433,6 @@ function compareNodes(nodeA: NodeJSON | undefined, nodeB: NodeJSON | undefined, 
     return diffs
   }
 
-  if (isInlineContainer(nodeA) && isInlineContainer(nodeB)) {
-    diffs.push(...compareInlineContainer(nodeA, nodeB, path, options))
-    diffs.push(...compareInlineContainerChildren(nodeA, nodeB, path, options))
-    return diffs
-  }
-
   const attrsA = nodeA.attrs as Record<string, unknown> | undefined
   const attrsB = nodeB.attrs as Record<string, unknown> | undefined
   const allAttrKeys = new Set([...Object.keys(attrsA || {}), ...Object.keys(attrsB || {})])
@@ -455,6 +449,12 @@ function compareNodes(nodeA: NodeJSON | undefined, nodeB: NodeJSON | undefined, 
         },
       })
     }
+  }
+
+  if (isInlineContainer(nodeA) && isInlineContainer(nodeB)) {
+    diffs.push(...compareInlineContainer(nodeA, nodeB, path, options))
+    diffs.push(...compareInlineContainerChildren(nodeA, nodeB, path, options))
+    return diffs
   }
 
   const contentA = nodeA.content || []

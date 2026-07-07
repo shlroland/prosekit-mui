@@ -2,8 +2,11 @@
 
 import { describe, expect, it } from 'vitest'
 import type { NodeJSON } from 'prosekit/core'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 import { editorDiff, normalizeEditorDiffInput } from './editor-diff'
+import { renderEditorDiffHTML, StaticEditorDiffView } from './static-renderer'
 
 const baseline = {
   type: 'doc',
@@ -57,5 +60,36 @@ describe('editorDiff', () => {
         },
       ],
     })
+  })
+
+  it('renders a static HTML diff for NodeJSON documents', () => {
+    const html = renderEditorDiffHTML(baseline, current)
+
+    expect(html).toContain('data-static-diff-renderer="true"')
+    expect(html).toContain('prosekit-diff-insert')
+    expect(html).toContain('brave ')
+    expect(html).toContain('prosekit-diff-modify-node')
+    expect(html).toContain('style="text-align: center;"')
+  })
+
+  it('renders a static HTML diff for HTML documents', () => {
+    const html = renderEditorDiffHTML(
+      '<p>Hello world</p><p>Removed paragraph</p>',
+      '<p>Hello brave world</p>',
+    )
+
+    expect(html).toContain('prosekit-diff-insert')
+    expect(html).toContain('brave ')
+    expect(html).toContain('prosekit-diff-delete')
+    expect(html).toContain('Removed paragraph')
+  })
+
+  it('renders a React static diff view', () => {
+    const markup = renderToStaticMarkup(
+      createElement(StaticEditorDiffView, { oldContent: baseline, newContent: current }),
+    )
+
+    expect(markup).toContain('prosekit-static-diff-renderer')
+    expect(markup).toContain('prosekit-diff-insert')
   })
 })

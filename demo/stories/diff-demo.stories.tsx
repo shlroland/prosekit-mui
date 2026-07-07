@@ -4,7 +4,7 @@ import 'prosekit/extensions/list/style.css'
 
 import type { NodeJSON } from 'prosekit/core'
 
-import { EditorDiffView, type EditorDiffInput } from '../../src'
+import { EditorDiffView, StaticEditorDiffView, type EditorDiffInput } from '../../src'
 import { ClientOnlyStoryFrame } from './client-only-story-frame'
 
 const baselineContent = {
@@ -206,6 +206,18 @@ function DiffDemoSurface({
         extensionOptions={{ placeholder: 'Edit the current document to update the diff.' }}
         contentClassName="prosekit-astrobook-editor-content"
       />
+      <div className="pk:grid pk:gap-3">
+        <div className="pk:text-sm pk:font-medium pk:text-[var(--editor-foreground)]">
+          Static renderer diff
+        </div>
+        <div className="pk:rounded-[var(--radius)] pk:border pk:border-[var(--editor-border)] pk:bg-[var(--editor-surface)] pk:p-4">
+          <StaticEditorDiffView
+            oldContent={oldContent}
+            newContent={newContent}
+            className="prosekit-astrobook-editor-content"
+          />
+        </div>
+      </div>
     </div>
   )
 }

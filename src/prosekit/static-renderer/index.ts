@@ -1,6 +1,7 @@
 export * from './extension'
 export * from './html-adapter'
 export * from './html-renderer'
+export * from './diff-renderer'
 export * from './markdown-renderer'
 export * from './react-renderer'
 export * from './url'
