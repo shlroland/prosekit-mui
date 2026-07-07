@@ -1,4 +1,9 @@
-import { bundledLanguages, bundledThemes } from 'shiki/bundle/full'
+import {
+  bundledLanguages,
+  bundledThemes,
+  type BundledLanguage,
+  type BundledTheme,
+} from 'shiki/bundle/full'
 import { createHighlighterCoreSync } from 'shiki/core'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 
@@ -9,12 +14,14 @@ import {
 import { escapeHTML } from '../html-utils'
 import { normalizeText } from './utils'
 
-type BundledLanguageId = keyof typeof bundledLanguages
-type BundledThemeId = keyof typeof bundledThemes
+const codeBlockTheme: BundledTheme = defaultCodeBlockTheme
 
-const loadedLanguageIds = defaultCodeBlockLanguages.filter((language): language is BundledLanguageId => {
+function isBundledLanguage(language: string): language is BundledLanguage {
   return language in bundledLanguages
-})
+}
+
+const loadedLanguageIds = defaultCodeBlockLanguages.filter(isBundledLanguage)
+const loadedLanguageSet = new Set<string>(loadedLanguageIds)
 
 const loadedLanguages = (
   await Promise.all(
@@ -25,7 +32,7 @@ const loadedLanguages = (
   )
 ).flat()
 
-const themeModule = await bundledThemes[defaultCodeBlockTheme as BundledThemeId]()
+const themeModule = await bundledThemes[codeBlockTheme]()
 
 const highlighter = createHighlighterCoreSync({
   themes: [themeModule.default],
@@ -44,7 +51,7 @@ function normalizeShikiLanguage(language: unknown) {
     return 'text'
   }
 
-  return loadedLanguageIds.includes(value as BundledLanguageId) ? value : 'text'
+  return loadedLanguageSet.has(value) ? value : 'text'
 }
 
 function renderPlainCodeBlockHTML(source: string, language: string) {
@@ -68,7 +75,7 @@ export function renderHighlightedCodeBlockHTML(source: string, language: unknown
     return enhanceShikiHTML(
       highlighter.codeToHtml(source, {
         lang: normalizedLanguage,
-        theme: defaultCodeBlockTheme,
+        theme: codeBlockTheme,
       }),
       normalizedLanguage,
     )
