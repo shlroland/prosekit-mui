@@ -665,30 +665,61 @@ export function applyTextColorToSelection(editor: any, color: string | null) {
     return false
   }
 
+  function dispatchTransaction(tr: any) {
+    const nextTr = tr.scrollIntoView()
+    if (editor.mounted) {
+      editor.view.dispatch(nextTr)
+    } else {
+      editor.updateState(editor.state.apply(nextTr))
+    }
+  }
+
+  function applyTextColorToCell(tr: any, cellNode: ProseMirrorNode, cellPos: number) {
+    if (cellNode.content.size === 0) {
+      return tr
+    }
+
+    const from = cellPos + 1
+    const to = cellPos + cellNode.nodeSize - 1
+
+    if (from >= to) {
+      return tr
+    }
+
+    tr.removeMark(from, to, textColorMark)
+
+    if (color) {
+      tr.addMark(from, to, textColorMark.create({ color }))
+    }
+
+    return tr
+  }
+
   if (editor.state.selection instanceof CellSelection) {
     const tr = editor.state.tr
 
     editor.state.selection.forEachCell((cellNode: ProseMirrorNode, cellPos: number) => {
-      if (cellNode.content.size === 0) {
-        return
-      }
-
-      const from = cellPos + 1
-      const to = cellPos + cellNode.nodeSize - 1
-
-      if (from >= to) {
-        return
-      }
-
-      tr.removeMark(from, to, textColorMark)
-
-      if (color) {
-        tr.addMark(from, to, textColorMark.create({ color }))
-      }
+      applyTextColorToCell(tr, cellNode, cellPos)
     })
 
     if (tr.docChanged) {
-      editor.view.dispatch(tr.scrollIntoView())
+      dispatchTransaction(tr)
+      return true
+    }
+
+    return false
+  }
+
+  const cell = cellAround(editor.state.selection.$anchor)
+  if (cell) {
+    const cellNode = editor.state.doc.nodeAt(cell.pos)
+    if (!cellNode) {
+      return false
+    }
+
+    const tr = applyTextColorToCell(editor.state.tr, cellNode, cell.pos)
+    if (tr.docChanged) {
+      dispatchTransaction(tr)
       return true
     }
 
