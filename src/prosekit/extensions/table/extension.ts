@@ -1,5 +1,8 @@
 import {
+  defineCommands,
   definePlugin,
+  getNodeType,
+  insertNode,
   union,
   type PlainExtension,
   type Union,
@@ -17,7 +20,8 @@ import {
   type TableRowSpecExtension,
   type TableSpecExtension,
 } from 'prosekit/extensions/table'
-import type { Node as ProseMirrorNode } from 'prosekit/pm/model'
+import type { Node as ProseMirrorNode, NodeType, Schema } from 'prosekit/pm/model'
+import type { Command } from 'prosekit/pm/state'
 import type { EditorView, NodeView, ViewMutationRecord } from 'prosekit/pm/view'
 import {
   columnResizing,
@@ -80,6 +84,71 @@ function defineTableOverlayPlugins(): PlainExtension {
   ])
 }
 
+type InsertTableOptions = {
+  row: number
+  col: number
+  header?: boolean
+}
+
+function createDefaultCellContent(cellType: NodeType) {
+  const defaultType = cellType.contentMatch.defaultType
+  if (!defaultType) {
+    return null
+  }
+
+  const attrs = defaultType.spec.attrs && 'textAlign' in defaultType.spec.attrs
+    ? { textAlign: null }
+    : null
+
+  return defaultType.createAndFill(attrs)
+}
+
+function createTableCell(cellType: NodeType) {
+  const content = createDefaultCellContent(cellType)
+  return content ? cellType.createAndFill(null, content) : cellType.createAndFill()
+}
+
+function repeatNode(node: ProseMirrorNode | null, length: number) {
+  return Array.from({ length }, () => node).filter((item): item is ProseMirrorNode => Boolean(item))
+}
+
+function createEmptyTable(schema: Schema, row: number, col: number, header: boolean) {
+  const tableType = getNodeType(schema, 'table')
+  const tableRowType = getNodeType(schema, 'tableRow')
+  const tableCellType = getNodeType(schema, 'tableCell')
+  const tableHeaderCellType = getNodeType(schema, 'tableHeaderCell')
+
+  if (header) {
+    const headerCells = repeatNode(createTableCell(tableHeaderCellType), col)
+    const headerRow = tableRowType.createAndFill(null, headerCells)
+    const bodyCells = repeatNode(createTableCell(tableCellType), col)
+    const bodyRows = repeatNode(tableRowType.createAndFill(null, bodyCells), row - 1)
+    return tableType.createAndFill(null, [headerRow, ...bodyRows].filter((item): item is ProseMirrorNode => Boolean(item)))
+  }
+
+  const bodyCells = repeatNode(createTableCell(tableCellType), col)
+  const bodyRows = repeatNode(tableRowType.createAndFill(null, bodyCells), row)
+  return tableType.createAndFill(null, bodyRows)
+}
+
+function insertTableWithoutCellParagraphAlign(options: InsertTableOptions): Command {
+  return (state, dispatch, view) => {
+    const { row, col, header = false } = options
+    const table = createEmptyTable(state.schema, row, col, header)
+    if (!table) {
+      return false
+    }
+
+    return insertNode({ node: table })(state, dispatch, view)
+  }
+}
+
+function defineTableInsertCommands() {
+  return defineCommands({
+    insertTable: insertTableWithoutCellParagraphAlign,
+  })
+}
+
 export type TableOverlayExtension = Union<
   [
     TableSpecExtension,
@@ -98,6 +167,7 @@ export function defineTableExtension(): TableOverlayExtension {
     defineTableHeaderCellSpec(),
     defineTableOverlayPlugins(),
     defineTableCommands(),
+    defineTableInsertCommands(),
     defineTableDropIndicator(),
   ) as TableOverlayExtension
 }
