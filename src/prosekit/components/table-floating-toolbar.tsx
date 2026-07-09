@@ -110,6 +110,45 @@ type TableHandleHoverState = {
   geometry: TableHandleGeometry
 }
 
+export type TableAxisMenuTarget = {
+  orientation: TableOrientation
+  index: number | null
+  tablePos: number | null
+}
+
+function getStateAxisTarget(
+  state: TableHandleSnapshot,
+  orientation: TableOrientation,
+): TableAxisMenuTarget {
+  return {
+    orientation,
+    index: orientation === 'row' ? state.rowIndex : state.columnIndex,
+    tablePos: state.tablePos,
+  }
+}
+
+export function isSameTableAxisMenuTarget(
+  a: TableAxisMenuTarget,
+  b: TableAxisMenuTarget,
+) {
+  return (
+    a.orientation === b.orientation
+    && a.index != null
+    && b.index != null
+    && a.index === b.index
+    && a.tablePos != null
+    && a.tablePos === b.tablePos
+  )
+}
+
+export function shouldCloseTableHandleMenuOnTrigger(
+  openMenu: TableOrientation | null,
+  selectedTarget: TableAxisMenuTarget,
+  nextTarget: TableAxisMenuTarget,
+) {
+  return openMenu === nextTarget.orientation && isSameTableAxisMenuTarget(selectedTarget, nextTarget)
+}
+
 function getHandleGeometry(cell: HoveringTableCellInfo): TableHandleGeometry {
   return {
     columnStyle: {
@@ -647,15 +686,16 @@ export function TableFloatingToolbar() {
   )
 
   function openHandleMenu(orientation: TableOrientation) {
-    const index = orientation === 'row' ? state.rowIndex : state.columnIndex
-    if (index == null || state.tablePos == null) {
+    const target = getStateAxisTarget(state, orientation)
+    const selectedTarget = getStateAxisTarget(baseState, orientation)
+    if (target.index == null || target.tablePos == null) {
       return
     }
 
     editor.focus()
-    selectAxis(editor, orientation, index, state.tablePos)
+    selectAxis(editor, orientation, target.index, target.tablePos)
     setActiveHandle(orientation)
-    setOpenMenu((current) => current === orientation ? null : orientation)
+    setOpenMenu((current) => shouldCloseTableHandleMenuOnTrigger(current, selectedTarget, target) ? null : orientation)
   }
 
   useEffect(() => {
@@ -663,6 +703,35 @@ export function TableFloatingToolbar() {
       setOpenMenu(null)
     }
   }, [hoverState, state.tablePos])
+
+  useEffect(() => {
+    if (!openMenu) {
+      return
+    }
+
+    const target = getStateAxisTarget(state, openMenu)
+    const selectedTarget = getStateAxisTarget(baseState, openMenu)
+    if (
+      target.index == null
+      || target.tablePos == null
+      || isSameTableAxisMenuTarget(selectedTarget, target)
+    ) {
+      return
+    }
+
+    selectAxis(editor, openMenu, target.index, target.tablePos)
+    setActiveHandle(openMenu)
+  }, [
+    baseState.columnIndex,
+    baseState.rowIndex,
+    baseState.tablePos,
+    editor,
+    openMenu,
+    state.columnIndex,
+    state.rowIndex,
+    state.tablePos,
+    setActiveHandle,
+  ])
 
   const showRowHandle = Boolean(
     state.rowIndex != null

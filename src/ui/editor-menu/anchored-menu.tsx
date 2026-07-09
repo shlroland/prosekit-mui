@@ -17,15 +17,23 @@ type MenuRootProps = ComponentProps<typeof BaseMenu.Root<unknown>>
 type MenuPositionerProps = ComponentProps<typeof BaseMenu.Positioner>
 type MenuPopupProps = ComponentProps<typeof BaseMenu.Popup>
 type MenuOpenChangeDetails = Parameters<NonNullable<MenuRootProps['onOpenChange']>>[1]
+type MenuCloseReasonDetails = Pick<MenuOpenChangeDetails, 'reason'>
 
 /**
- * Base UI hover submenus can emit transient close events while the pointer
- * crosses portal boundaries between the trigger and submenu popup. Editor menus
- * are often anchored to virtual/frozen editor state, so we keep the submenu open
- * for those transient events and let concrete close reasons handle dismissal.
+ * Base UI can emit transient close events while the pointer crosses portal
+ * boundaries between an anchored menu and a submenu popup. Editor menus are
+ * often anchored to virtual/frozen editor state, so keep them open for those
+ * transient events and let concrete close reasons handle dismissal.
  */
-function shouldKeepSubmenuOpenOnClose(eventDetails: MenuOpenChangeDetails) {
-  return eventDetails.reason === 'trigger-hover' || eventDetails.reason === 'focus-out'
+export function shouldKeepAnchoredSubmenuOpenOnClose(eventDetails: MenuCloseReasonDetails) {
+  return (
+    eventDetails.reason === 'trigger-hover'
+    || eventDetails.reason === 'focus-out'
+  )
+}
+
+export function shouldKeepAnchoredRootOpenOnClose(eventDetails: MenuCloseReasonDetails) {
+  return eventDetails.reason === 'sibling-open' || shouldKeepAnchoredSubmenuOpenOnClose(eventDetails)
 }
 
 /**
@@ -85,7 +93,7 @@ export function EditorAnchoredMenu({
       defaultOpen={defaultOpen}
       modal={modal}
       onOpenChange={(nextOpen, eventDetails) => {
-        if (!nextOpen && eventDetails.reason === 'sibling-open') {
+        if (!nextOpen && shouldKeepAnchoredRootOpenOnClose(eventDetails)) {
           return
         }
 
@@ -196,7 +204,7 @@ export function EditorAnchoredMenuSubmenu({
     <BaseMenu.SubmenuRoot
       open={open}
       onOpenChange={(nextOpen, eventDetails) => {
-        if (!nextOpen && shouldKeepSubmenuOpenOnClose(eventDetails)) {
+        if (!nextOpen && shouldKeepAnchoredSubmenuOpenOnClose(eventDetails)) {
           return
         }
 
