@@ -24,6 +24,7 @@ import { defineEditorFontFamilyExtension } from '../font-family'
 import { defineImageExtension, type ImageExtensionOptions } from '../image'
 import { defineMathExtension, type MathExtensionOptions } from '../math'
 import { defineMermaidExtension, type MermaidExtensionOptions } from '../mermaid'
+import { defineSearchExtension } from '../search'
 import { defineTableCellVerticalAlignExtension } from '../table-cell-vertical-align'
 import { defineTableCellAttrsExtension } from '../table-cell-attrs'
 import { defineTableOfContentsExtension } from '../table-of-contents'
@@ -71,6 +72,7 @@ export function defineRichTextExtension(options: RichTextExtensionOptions = {}) 
     defineFontSize(),
     defineCharacterCountExtension(options.characterCount),
     defineTableOfContentsExtension(),
+    defineSearchExtension(),
     defineDiffExtension(options.diff),
     defineAiWritingExtension(options.aiWriting),
     defineHighlight(),

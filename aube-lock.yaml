@@ -693,6 +693,9 @@ importers:
       prosemirror-math:
         specifier: ^0.2.2
         version: 0.2.2
+      prosemirror-search:
+        specifier: ^1.1.1
+        version: 1.1.1
       prosemirror-tables:
         specifier: ^1.8.5
         version: 1.8.5

@@ -50,6 +50,7 @@ import {
   MindMapIcon,
   ProseKitProvider,
   QuoteTextIcon,
+  SearchReplacePanel,
   SeparatorIcon,
   SlashCommandAutocomplete,
   StrikethroughIcon,
@@ -1075,6 +1076,7 @@ export function ProseKitAstrobookDemo() {
   const theme = useDemoTheme()
   const [content, setContent] = useState<NodeJSON>(fullNodeJsonDemoContent as NodeJSON)
   const contentRef = useRef<NodeJSON>(fullNodeJsonDemoContent as NodeJSON)
+  const searchPanelAnchorRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     contentRef.current = content
@@ -1146,11 +1148,13 @@ export function ProseKitAstrobookDemo() {
       <ImageViewerProvider>
         <ProseKitProvider editor={editor}>
           <div className="pk:grid pk:gap-4 pk:lg:grid-cols-[minmax(0,1fr)_240px] pk:lg:items-start">
-            <EditorShell
-              toolbar={<ProseKitAstrobookToolbar />}
-              content={<EditorContent className="prosekit-astrobook-editor-content" />}
-              footer={<DemoInspector />}
-            />
+            <div ref={searchPanelAnchorRef} className="pk:min-w-0">
+              <EditorShell
+                toolbar={<ProseKitAstrobookToolbar />}
+                content={<EditorContent className="prosekit-astrobook-editor-content" />}
+                footer={<DemoInspector />}
+              />
+            </div>
             <aside className="pk:sticky pk:top-4 pk:hidden pk:lg:block">
               <TableOfContents title="目录" />
             </aside>
@@ -1160,6 +1164,7 @@ export function ProseKitAstrobookDemo() {
           <CodeBlockToolbar />
           <TableFloatingToolbar />
           <TableCellFloatingToolbar />
+          <SearchReplacePanel anchor={() => searchPanelAnchorRef.current} />
           <InlineFormattingMenu />
           <BlockHandle />
           <EmojiAutocomplete />
