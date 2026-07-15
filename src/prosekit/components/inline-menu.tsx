@@ -22,6 +22,7 @@ export type InlineMenuProps = PropsWithChildren<{
   positionerClassName?: string
   placement?: InlinePopoverPositionerProps['placement']
   offset?: InlinePopoverPositionerProps['offset']
+  hoist?: InlinePopoverPositionerProps['hoist']
   defaultOpen?: InlinePopoverRootProps['defaultOpen']
   open?: InlinePopoverRootProps['open']
   disabled?: InlinePopoverRootProps['disabled']
@@ -55,6 +56,7 @@ export function InlineMenu({
   positionerClassName,
   placement = 'top',
   offset = 10,
+  hoist = true,
   defaultOpen,
   open,
   disabled,
@@ -77,6 +79,7 @@ export function InlineMenu({
         )}
         placement={placement}
         offset={offset}
+        hoist={hoist}
       >
         <InlinePopoverPopup
           className={cn(

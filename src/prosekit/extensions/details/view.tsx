@@ -161,6 +161,7 @@ export function DetailsView(props: ReactNodeViewProps) {
         contentEditable={false}
         aria-label={open ? '收起面板' : '展开面板'}
         aria-expanded={open ? 'true' : 'false'}
+        onMouseDown={(event) => event.preventDefault()}
         onClick={toggleOpen}
       />
       <div

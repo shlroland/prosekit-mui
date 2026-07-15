@@ -110,6 +110,7 @@ function AlertToolbarButton({
           'pk:h-7 pk:w-7 pk:rounded-md pk:text-[var(--editor-muted-foreground)] pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]',
           active && 'pk:bg-[var(--editor-primary-soft)] pk:text-[var(--editor-primary)]',
         )}
+        onMouseDown={(event) => event.preventDefault()}
         onClick={onClick}
       >
         {icon}
@@ -140,6 +141,7 @@ function AlertTypeMenu({
           aria-label="展示类型"
           title="展示类型"
           className="pk:h-7 pk:w-7 pk:rounded-md pk:text-[var(--editor-muted-foreground)] pk:hover:bg-[var(--editor-muted)] pk:hover:text-[var(--editor-foreground)]"
+          onMouseDown={(event) => event.preventDefault()}
         >
           {selectedOption.icon}
         </Button>
@@ -199,6 +201,7 @@ export function AlertView({ node, contentRef, selected, view, getPos }: ReactNod
     view.focus()
   }
 
+  // The editable root must not inherit button focus semantics from the hover trigger.
   const content = (
     <div
       className={cn(
@@ -207,6 +210,8 @@ export function AlertView({ node, contentRef, selected, view, getPos }: ReactNod
       )}
       data-drag-handle
       data-node="alert"
+      role={undefined}
+      tabIndex={undefined}
       data-id={typeof node.attrs.id === 'string' && node.attrs.id ? node.attrs.id : undefined}
       data-variant={variant}
       data-type={type}

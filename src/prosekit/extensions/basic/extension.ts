@@ -25,11 +25,14 @@ import { defineParagraph, type ParagraphExtension } from 'prosekit/extensions/pa
 import { defineStrike, type StrikeExtension } from 'prosekit/extensions/strike'
 import { defineText, type TextExtension } from 'prosekit/extensions/text'
 import { defineUnderline, type UnderlineExtension } from 'prosekit/extensions/underline'
-import { defineVirtualSelection, type VirtualSelectionExtension } from 'prosekit/extensions/virtual-selection'
 
 import { defineLinkExtension, type LinkExtension } from '../link'
 import { defineInsertContentCommands, type InsertContentCommandsExtension } from '../insert-content'
 import { defineTableExtension, type TableOverlayExtension } from '../table'
+import {
+  defineVirtualSelectionExtension,
+  type VirtualSelectionExtension,
+} from '../virtual-selection'
 
 export type BasicExtension = Union<
   [
@@ -84,7 +87,7 @@ export function defineBasicExtension(): BasicExtension {
     defineInsertContentCommands(),
     defineHistory(),
     defineGapCursor(),
-    defineVirtualSelection(),
+    defineVirtualSelectionExtension(),
     defineModClickPrevention(),
   )
 }
